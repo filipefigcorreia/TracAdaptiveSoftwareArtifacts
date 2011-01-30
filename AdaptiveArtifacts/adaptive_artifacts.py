@@ -15,10 +15,10 @@ class AdaptiveArtifactsPlugin(Component):
 
     # INavigationContributor methods
     def get_active_navigation_item(self, req):
-        return 'Adaptive Artifacts'
+        return 'adaptiveartifacts'
 
     def get_navigation_items(self, req):
-        yield 'mainnav', 'Adaptive Artifacts', Markup('<a href="%s">Adaptive Artifacts</a>' % (
+        yield 'mainnav', 'adaptiveartifacts', Markup('<a href="%s">Adaptive Artifacts</a>' % (
                 self.env.href.adaptiveartifacts() ) )
 
     # IRequestHandler methods
