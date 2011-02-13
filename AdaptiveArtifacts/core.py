@@ -38,16 +38,23 @@ class Instance(object):
         else:
             self.identifier = identifier
         self.__meta_name = meta
-        self.states = {} # dictionay in which each key,value is of type Version,InstanceState
+        #self.states = {} # dictionay in which each key,value is of type Version,InstanceState
+        self.values = {} # refactor this to self.states
         pool.add(self)
         self.pool = pool
 
     def get_meta(self):
         return self.pool.get(name=self.__meta_name)
 
-    def get_latest_state(self):
-        return self.states[Version.get_latest_version(self)]
+    #def get_latest_state(self):
+    #    return self.states[Version.get_latest_version(self)]
 
+    def add_value(self, property_name, property_value):
+        #self.get_latest_state(). ...
+        if not property_name in self.values:
+            self.values[property_name] = []
+        self.values[property_name].append(property_value)
+        
 
 class InstanceState(object):
     def __init__(self, version=None):
@@ -81,12 +88,12 @@ class MetaElementInstance(Instance):
         return self.name
 
 class Property(MetaElementInstance):
-    def __init__(self, pool, name):
+    def __init__(self, pool, name, lower_bound = 0, upper_bound = 1):
         super(Property, self).__init__(pool=pool, name=name)
         #TODO: changing an instance of this class will have to automatically result in changing instance that represents it in the pool.
         self.owner = None #ObjectType
-        self.lower_bound = 0
-        self.upper_bound = 1
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
         self.unique = False
         self.read_only = False
         self.domain = None #Classifier
@@ -100,15 +107,35 @@ class Entity(Classifier):
     def __init__(self, pool, name, inherits=None):
         super(Entity, self).__init__(pool=pool, name=name)
         self.__inherits = inherits
-        self.properties = [] #0..* Properties
+        self.__properties = [] #0..* Properties
 
-    def get_inherits(self):
+    def get_parent(self):
+        """
+        Returns the parent class, following the inheritance relation.
+        """
         return self.pool.get(name=self.__inherits)
+
+    def is_a(self, name):
+        """
+        Searches for a MetaElementInstance name by traversing the inheritance relations; going up, from child to parent
+        """
+        child = self
+        while True:
+            if child.name == name:
+                return True
+            if not child.get_parent() is None:
+                child = child.get_parent()
+            else:
+                return False
+        return False
+
+    def add_property(self, property):
+        self.__properties.append(property)
+    
 
 class Package(MetaElementInstance):
     def __init__(self, pool, name):
         super(Package, self).__init__(pool=pool, name=name)
-
 
 class InstancePool(object):
     def __init__(self):
