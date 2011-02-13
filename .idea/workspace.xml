@@ -4,6 +4,7 @@
     <list default="true" id="727108c4-f7b3-4944-a95e-0d8ef2245895" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/AdaptiveArtifacts/core.py" afterPath="$PROJECT_DIR$/AdaptiveArtifacts/core.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/AdaptiveArtifacts/tests/__init__.py" afterPath="$PROJECT_DIR$/AdaptiveArtifacts/tests/__init__.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/AdaptiveArtifacts/tests/core.py" afterPath="$PROJECT_DIR$/AdaptiveArtifacts/tests/core.py" />
     </list>
     <ignored path="AdaptiveArtifactsPlugin.iws" />
@@ -45,19 +46,28 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="core.py" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="core.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/core.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="49" column="48" selection-start="1789" selection-end="1789" vertical-scroll-proportion="0.0">
+            <state line="149" column="34" selection-start="5174" selection-end="5174" vertical-scroll-proportion="0.33215547">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="core.py" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="core.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/tests/core.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="37" column="32" selection-start="1355" selection-end="1355" vertical-scroll-proportion="0.5547703">
+            <state line="76" column="20" selection-start="2633" selection-end="2633" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="__init__.py" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/tests/__init__.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="5" column="8" selection-start="96" selection-end="96" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -67,15 +77,6 @@
         <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/tests/quick_spikes.py">
           <provider selected="true" editor-type-id="text-editor">
             <state line="36" column="25" selection-start="826" selection-end="826" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="__init__.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/tests/__init__.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -114,8 +115,9 @@
         <option value="$PROJECT_DIR$/AdaptiveArtifacts/tests/quick_spikes.py" />
         <option value="$PROJECT_DIR$/AdaptiveArtifacts/tests/testcore_a.py" />
         <option value="$PROJECT_DIR$/AdaptiveArtifacts/meta_model.py" />
-        <option value="$PROJECT_DIR$/AdaptiveArtifacts/core.py" />
+        <option value="$PROJECT_DIR$/AdaptiveArtifacts/tests/__init__.py" />
         <option value="$PROJECT_DIR$/AdaptiveArtifacts/tests/core.py" />
+        <option value="$PROJECT_DIR$/AdaptiveArtifacts/core.py" />
       </list>
     </option>
   </component>
@@ -226,43 +228,7 @@
     <property name="options.searchVisible" value="true" />
     <property name="options.splitter.details.proportions" value="0.2" />
   </component>
-  <component name="RunManager" selected="Python's unittest.Test Properties.test_add_property">
-    <configuration default="false" name="Tests in quick_spikes.py" type="PythonUnitTestConfigurationType" factoryName="Python's unittest" temporary="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/AdaptiveArtifacts/tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <module name="AdaptiveArtifactsPlugin" />
-      <option name="SCRIPT_NAME" value="quick_spikes.py" />
-      <option name="CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="" />
-      <option name="FOLDER_NAME" value="" />
-      <option name="PATTERN" value="" />
-      <option name="TEST_TYPE" value="TEST_SCRIPT" />
-      <RunnerSettings RunnerId="PythonRunner" />
-      <ConfigurationWrapper RunnerId="PythonRunner" />
-      <method />
-    </configuration>
-    <configuration default="false" name="Tests in core.py" type="PythonUnitTestConfigurationType" factoryName="Python's unittest" temporary="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/AdaptiveArtifacts/tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <module name="AdaptiveArtifactsPlugin" />
-      <option name="SCRIPT_NAME" value="core.py" />
-      <option name="CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="" />
-      <option name="FOLDER_NAME" value="" />
-      <option name="PATTERN" value="" />
-      <option name="TEST_TYPE" value="TEST_SCRIPT" />
-      <RunnerSettings RunnerId="PythonRunner" />
-      <ConfigurationWrapper RunnerId="PythonRunner" />
-      <method />
-    </configuration>
+  <component name="RunManager" selected="Python.Run Code Coverage">
     <configuration default="false" name="Test BasicEntityBehaviour.testInheritedEntity" type="PythonUnitTestConfigurationType" factoryName="Python's unittest" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -319,6 +285,42 @@
       <ConfigurationWrapper RunnerId="PythonRunner" />
       <method />
     </configuration>
+    <configuration default="false" name="Test BasicEntityBehaviour.test_inheritance_hierarchy" type="PythonUnitTestConfigurationType" factoryName="Python's unittest" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/AdaptiveArtifacts/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <module name="AdaptiveArtifactsPlugin" />
+      <option name="SCRIPT_NAME" value="core.py" />
+      <option name="CLASS_NAME" value="BasicEntityBehaviour" />
+      <option name="METHOD_NAME" value="test_inheritance_hierarchy" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="PATTERN" value="" />
+      <option name="TEST_TYPE" value="TEST_METHOD" />
+      <RunnerSettings RunnerId="PythonRunner" />
+      <ConfigurationWrapper RunnerId="PythonRunner" />
+      <method />
+    </configuration>
+    <configuration default="false" name="Test PoolOperations.test_inexistent_instance" type="PythonUnitTestConfigurationType" factoryName="Python's unittest" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/AdaptiveArtifacts/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <module name="AdaptiveArtifactsPlugin" />
+      <option name="SCRIPT_NAME" value="core.py" />
+      <option name="CLASS_NAME" value="PoolOperations" />
+      <option name="METHOD_NAME" value="test_inexistent_instance" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="PATTERN" value="" />
+      <option name="TEST_TYPE" value="TEST_METHOD" />
+      <RunnerSettings RunnerId="PythonRunner" />
+      <ConfigurationWrapper RunnerId="PythonRunner" />
+      <method />
+    </configuration>
     <configuration default="true" type="PythonUnitTestConfigurationType" factoryName="Python's unittest">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -333,6 +335,18 @@
       <option name="FOLDER_NAME" value="" />
       <option name="PATTERN" value="" />
       <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <method />
+    </configuration>
+    <configuration default="true" type="Python.AppEngineServer" factoryName="App Engine server">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <module name="AdaptiveArtifactsPlugin" />
+      <option name="browserUrl" value="" />
+      <option name="additionalOptions" value="" />
       <method />
     </configuration>
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
@@ -383,13 +397,47 @@
       <ConfigurationWrapper RunnerId="PythonRunner" />
       <method />
     </configuration>
-    <list size="6">
+    <configuration default="false" name="Run Code Coverage" type="PythonConfigurationType" factoryName="Python">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="/usr/bin/python2.6" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <module name="AdaptiveArtifactsPlugin" />
+      <option name="SCRIPT_NAME" value="/usr/local/bin/coverage" />
+      <option name="PARAMETERS" value="run AdaptiveArtifacts/tests/__init__.py" />
+      <RunnerSettings RunnerId="PythonRunner" />
+      <ConfigurationWrapper RunnerId="PythonRunner" />
+      <method />
+    </configuration>
+    <configuration default="false" name="Show Code Coverage " type="PythonConfigurationType" factoryName="Python">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="/usr/bin/python2.6" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <module name="AdaptiveArtifactsPlugin" />
+      <option name="SCRIPT_NAME" value="/usr/local/bin/coverage" />
+      <option name="PARAMETERS" value="report -m" />
+      <RunnerSettings RunnerId="PythonRunner" />
+      <ConfigurationWrapper RunnerId="PythonRunner" />
+      <method />
+    </configuration>
+    <list size="8">
       <item index="0" class="java.lang.String" itemvalue="Python.tracd" />
-      <item index="1" class="java.lang.String" itemvalue="Python's unittest.Tests in quick_spikes.py" />
-      <item index="2" class="java.lang.String" itemvalue="Python's unittest.Tests in core.py" />
+      <item index="1" class="java.lang.String" itemvalue="Python.Run Code Coverage" />
+      <item index="2" class="java.lang.String" itemvalue="Python.Show Code Coverage " />
       <item index="3" class="java.lang.String" itemvalue="Python's unittest.Test BasicEntityBehaviour.testInheritedEntity" />
       <item index="4" class="java.lang.String" itemvalue="Python's unittest.Test BasicEntityBehaviour.test_inherited_entity_2levels" />
       <item index="5" class="java.lang.String" itemvalue="Python's unittest.Test Properties.test_add_property" />
+      <item index="6" class="java.lang.String" itemvalue="Python's unittest.Test BasicEntityBehaviour.test_inheritance_hierarchy" />
+      <item index="7" class="java.lang.String" itemvalue="Python's unittest.Test PoolOperations.test_inexistent_instance" />
     </list>
   </component>
   <component name="ShelveChangesManager" show_recycled="false" />
@@ -550,11 +598,6 @@
         <state line="14" column="0" selection-start="432" selection-end="432" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/tests/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/meta_model.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="2" column="0" selection-start="165" selection-end="165" vertical-scroll-proportion="0.0">
@@ -572,16 +615,23 @@
         <state line="36" column="25" selection-start="826" selection-end="826" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/core.py">
+    <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/tests/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="49" column="48" selection-start="1789" selection-end="1789" vertical-scroll-proportion="0.0">
+        <state line="5" column="8" selection-start="96" selection-end="96" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/tests/core.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="37" column="32" selection-start="1355" selection-end="1355" vertical-scroll-proportion="0.5547703">
+        <state line="76" column="20" selection-start="2633" selection-end="2633" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/core.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="149" column="34" selection-start="5174" selection-end="5174" vertical-scroll-proportion="0.33215547">
           <folding />
         </state>
       </provider>

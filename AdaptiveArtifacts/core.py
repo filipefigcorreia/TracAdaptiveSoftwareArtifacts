@@ -126,7 +126,7 @@ class Entity(Classifier):
             if not child.get_parent() is None:
                 child = child.get_parent()
             else:
-                return False
+                break
         return False
 
     def add_property(self, property):
@@ -147,6 +147,8 @@ class InstancePool(object):
 
     def get(self, id=None, name=None):
         if not id is None:
+            if not id in self.pool:
+                return None
             return self.pool[id]
         elif not name is None:
             for id, instance in self.pool.items():

@@ -71,5 +71,11 @@ class Properties(unittest.TestCase):
     pass
 """
 
+class PoolOperations(unittest.TestCase):
+    def test_inexistent_instance(self):
+        pool = InstancePool()
+        self.assertTrue(pool.get(id="someid") is None)
+        self.assertTrue(pool.get(name="somename") is None)
+
 if __name__ == "__main__":
     unittest.main()
