@@ -9,47 +9,66 @@ class BasicEntityBehaviour(unittest.TestCase):
         corsa = Entity(pool, "Opel Corsa")
         self.assertEqual(corsa.name, "Opel Corsa")
 
+class EntityInheritance(unittest.TestCase):
+    def setUp(self):
+        self.pool = InstancePool()
+        self.car = Entity(self.pool, "Car")
+        self.corsa = Entity(self.pool, "Opel Corsa", self.car.name)
+        self.enjoy = Entity(self.pool, "Opel Corsa Enjoy", self.corsa.name)
+
     def test_inherited_entity_1level(self):
-        pool = InstancePool()
-        car = Entity(pool, "Car")
-        corsa = Entity(pool, "Opel Corsa", car.name)
-        self.assertEqual(corsa.get_parent().name, 'Car')
+        self.assertEqual(self.corsa.get_parent().name, 'Car')
 
     def test_inherited_entity_2levels(self):
-        pool = InstancePool()
-        car = Entity(pool, "Car")
-        corsa = Entity(pool, "Opel Corsa", car.name)
-        enjoy = Entity(pool, "Opel Corsa Enjoy", corsa.name)
-        self.assertEqual(enjoy.get_parent().get_parent().name, 'Car')
+        self.assertEqual(self.enjoy.get_parent().get_parent().name, 'Car')
 
     def test_inheritance_hierarchy(self):
-        pool = InstancePool()
-        car = Entity(pool, "Car")
-        corsa = Entity(pool, "Opel Corsa", car.name)
-        enjoy = Entity(pool, "Opel Corsa Enjoy", corsa.name)
-        self.assertTrue(enjoy.is_a(car.name))
-        self.assertFalse(car.is_a(enjoy.name))
+        self.assertTrue(self.enjoy.is_a(self.car.name))
+        self.assertFalse(self.car.is_a(self.enjoy.name))
 
 class Properties(unittest.TestCase):
+    def setUp(self):
+        self.pool = InstancePool()
+        self.car = Entity(self.pool, "Car")
+        self.wheels = Property(self.pool, 'Wheels', 4, 4)
+        self.car.add_property(self.wheels)
+
+    def test_access_property(self):
+        self.assertEqual(len(self.car.get_properties()), 1)
+        self.assertEqual(self.car.get_properties()[0].name, 'Wheels')
+
     def test_add_property(self):
-        pool = InstancePool()
-        car = Entity(pool, "Car")
-        wheels = Property(pool, 'Wheels', 4, 4)
-        car.add_property(wheels)
-        lightningMcQueen = Instance(pool, car)
-        lightningMcQueen.add_value('Wheels', 'front left wheel')
-        lightningMcQueen.add_value('Wheels', 'front right wheel')
-        lightningMcQueen.add_value('Wheels', 'rear left wheel')
-        lightningMcQueen.add_value('Wheels', 'front right wheel')
-        self.assertEqual(len(lightningMcQueen.values['Wheels']), 4)
+        self.lightningMcQueen = Instance(self.pool, self.car)
+        self.lightningMcQueen.add_value('Wheels', 'front left wheel')
+        self.lightningMcQueen.add_value('Wheels', 'front right wheel')
+        self.lightningMcQueen.add_value('Wheels', 'rear left wheel')
+        self.lightningMcQueen.add_value('Wheels', 'front right wheel')
+        self.assertEqual(len(self.lightningMcQueen.values['Wheels']), 4)
 
 
-class Instantiation(unittest.TestCase):
+class MetaModelSanityCheck(unittest.TestCase):
     def test_self_meta(self):
         pool = InstancePool()
         self.assertEqual(pool.get(name="Entity").get_meta().name, "Entity")
 
-    def test_other_meta(self):
+class ModelInspection(unittest.TestCase):
+    def setUp(self):
+        self.pool = InstancePool()
+        car = Entity(self.pool, "Car")
+        corsa = Entity(self.pool, "Opel Corsa", car.name)
+        enjoy = Entity(self.pool, "Opel Corsa Enjoy", corsa.name)
+
+    def test_list_model_entities(self):
+        entities = self.pool.get_model_entities()
+        for ent in entities:
+            self.assertEqual(ent.get_meta().name, "Entity")
+        self.assertTrue(len(entities) == 3)
+        self.assertTrue(len([ent.name for ent in entities if ent.name == "Car"])==1)
+        self.assertTrue(len([ent.name for ent in entities if ent.name == "Opel Corsa"])==1)
+        self.assertTrue(len([ent.name for ent in entities if ent.name == "Opel Corsa Enjoy"])==1)
+
+class Instantiation(unittest.TestCase):
+    def test_instance_meta(self):
         pool = InstancePool()
         ent = Entity(pool, "Car")
         inst = Instance(pool, "Car")

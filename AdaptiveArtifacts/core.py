@@ -23,7 +23,7 @@ class Version(object):
 
 class Instance(object):
     """Represents an instance at any model level"""
-    def __init__(self, pool, meta, identifier=None):
+    def __init__(self, pool, meta, identifier=None, meta_level=0):
         """
         pool --- the pool that the instances of this class will belong to
         identifier --- the uuid that uniquely identifies this instance
@@ -38,6 +38,7 @@ class Instance(object):
         else:
             self.identifier = identifier
         self.__meta_name = meta
+        self.meta_level = meta_level
         #self.states = {} # dictionay in which each key,value is of type Version,InstanceState
         self.values = {} # refactor this to self.states
         pool.add(self)
@@ -76,6 +77,7 @@ class MetaElementInstance(Instance):
     """
     def __init__(self, pool, name):
          super(MetaElementInstance, self).__init__(pool=pool, meta=Entity.__name__)
+         self.meta_level = 1 # MetaElementInstances' level is at least 1
          #self.states[self.version].slots['name'] = name
          self.name = name
 
@@ -104,8 +106,9 @@ class Classifier(MetaElementInstance):
         self.package = None #Package
 
 class Entity(Classifier):
-    def __init__(self, pool, name, inherits=None):
+    def __init__(self, pool, name, inherits=None, meta_level=1):
         super(Entity, self).__init__(pool=pool, name=name)
+        self.meta_level = meta_level
         self.__inherits = inherits
         self.__properties = [] #0..* Properties
 
@@ -131,6 +134,9 @@ class Entity(Classifier):
 
     def add_property(self, property):
         self.__properties.append(property)
+
+    def get_properties(self):
+        return self.__properties
     
 
 class Package(MetaElementInstance):
@@ -160,11 +166,14 @@ class InstancePool(object):
             return None
 
     def bootstrap_m2(self):
-        Entity(self, name=Instance.__name__,             inherits=None)
-        Entity(self, name=MetaElementInstance.__name__,  inherits=Instance.__name__)
-        Entity(self, name=Classifier.__name__,           inherits=MetaElementInstance.__name__)
-        Entity(self, name=Package.__name__,              inherits=MetaElementInstance.__name__)
-        Entity(self, name=Property.__name__,             inherits=MetaElementInstance.__name__)
-        Entity(self, name=Entity.__name__,               inherits=Entity.__name__)
+        Entity(self, name=Instance.__name__,             inherits=None, meta_level=2)
+        Entity(self, name=MetaElementInstance.__name__,  inherits=Instance.__name__, meta_level=2)
+        Entity(self, name=Classifier.__name__,           inherits=MetaElementInstance.__name__, meta_level=2)
+        Entity(self, name=Package.__name__,              inherits=MetaElementInstance.__name__, meta_level=2)
+        Entity(self, name=Property.__name__,             inherits=MetaElementInstance.__name__, meta_level=2)
+        Entity(self, name=Entity.__name__,               inherits=Entity.__name__, meta_level=2)
+
+    def get_model_entities(self):
+        return [instance for id, instance in self.pool.items() if instance.meta_level == 1]
 
 
