@@ -3,8 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="727108c4-f7b3-4944-a95e-0d8ef2245895" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/AdaptiveArtifacts/core.py" afterPath="$PROJECT_DIR$/AdaptiveArtifacts/core.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/AdaptiveArtifacts/tests/__init__.py" afterPath="$PROJECT_DIR$/AdaptiveArtifacts/tests/__init__.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/AdaptiveArtifacts/tests/core.py" afterPath="$PROJECT_DIR$/AdaptiveArtifacts/tests/core.py" />
     </list>
     <ignored path="AdaptiveArtifactsPlugin.iws" />
@@ -46,19 +44,19 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="core.py" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="core.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/core.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="173" column="51" selection-start="6401" selection-end="6401" vertical-scroll-proportion="0.64171124">
+            <state line="173" column="51" selection-start="6401" selection-end="6401" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="core.py" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="core.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/tests/core.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="75" column="0" selection-start="3021" selection-end="3021" vertical-scroll-proportion="0.0">
+            <state line="81" column="0" selection-start="3106" selection-end="3106" vertical-scroll-proportion="0.5508021">
               <folding />
             </state>
           </provider>
@@ -116,8 +114,8 @@
         <option value="$PROJECT_DIR$/AdaptiveArtifacts/tests/testcore_a.py" />
         <option value="$PROJECT_DIR$/AdaptiveArtifacts/meta_model.py" />
         <option value="$PROJECT_DIR$/AdaptiveArtifacts/tests/__init__.py" />
-        <option value="$PROJECT_DIR$/AdaptiveArtifacts/tests/core.py" />
         <option value="$PROJECT_DIR$/AdaptiveArtifacts/core.py" />
+        <option value="$PROJECT_DIR$/AdaptiveArtifacts/tests/core.py" />
       </list>
     </option>
   </component>
@@ -147,6 +145,8 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="Favorites" />
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -165,42 +165,8 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="AdaptiveArtifactsPlugin" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="AdaptiveArtifactsPlugin" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="AdaptiveArtifacts" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="AdaptiveArtifactsPlugin" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="AdaptiveArtifactsPlugin" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="AdaptiveArtifacts" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="tests" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
-      <pane id="Favorites" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -218,17 +184,17 @@
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder0" value="0" />
     <property name="last_opened_file_path" value="/usr/local/lib/python2.6/dist-packages/Trac-0.12.2rc1-py2.6.egg/trac/ticket" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth2" value="83" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth3" value="898" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth3" value="903" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth3" value="898" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth2" value="82" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth1" value="78" />
-    <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder2" value="2" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder3" value="3" />
-    <property name="options.searchVisible" value="true" />
     <property name="options.splitter.details.proportions" value="0.2" />
+    <property name="options.searchVisible" value="true" />
   </component>
-  <component name="RunManager" selected="Python's unittest.Tests in core.py">
+  <component name="RunManager" selected="Python.tracd">
     <configuration default="false" name="Test PoolOperations.test_inexistent_instance" type="PythonUnitTestConfigurationType" factoryName="Python's unittest" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -432,14 +398,14 @@
       <method />
     </configuration>
     <list size="8">
-      <item index="0" class="java.lang.String" itemvalue="Python.tracd" />
-      <item index="1" class="java.lang.String" itemvalue="Python.Run Code Coverage" />
-      <item index="2" class="java.lang.String" itemvalue="Python.Show Code Coverage " />
-      <item index="3" class="java.lang.String" itemvalue="Python's unittest.Test PoolOperations.test_inexistent_instance" />
-      <item index="4" class="java.lang.String" itemvalue="Python's unittest.Tests in core.py" />
-      <item index="5" class="java.lang.String" itemvalue="Python's unittest.Test EntityInheritance.test_inheritance_hierarchy" />
-      <item index="6" class="java.lang.String" itemvalue="Python's unittest.Test ModelInspection.test_list_entities" />
-      <item index="7" class="java.lang.String" itemvalue="Python's unittest.Test ModelInspection.test_list_model_entities" />
+      <item index="0" class="java.lang.String" itemvalue="Python's unittest.Test PoolOperations.test_inexistent_instance" />
+      <item index="1" class="java.lang.String" itemvalue="Python's unittest.Tests in core.py" />
+      <item index="2" class="java.lang.String" itemvalue="Python's unittest.Test EntityInheritance.test_inheritance_hierarchy" />
+      <item index="3" class="java.lang.String" itemvalue="Python's unittest.Test ModelInspection.test_list_entities" />
+      <item index="4" class="java.lang.String" itemvalue="Python's unittest.Test ModelInspection.test_list_model_entities" />
+      <item index="5" class="java.lang.String" itemvalue="Python.tracd" />
+      <item index="6" class="java.lang.String" itemvalue="Python.Run Code Coverage" />
+      <item index="7" class="java.lang.String" itemvalue="Python.Show Code Coverage " />
     </list>
   </component>
   <component name="ShelveChangesManager" show_recycled="false" />
@@ -494,16 +460,16 @@
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32954547" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32954547" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3299435" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20591341" sideWeight="0.21704546" order="1" side_tool="true" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.20591341" sideWeight="0.21818182" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20591341" sideWeight="0.4431818" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20591341" sideWeight="0.6693182" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39772728" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.33068183" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32954547" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3299435" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -594,6 +560,11 @@
         <state line="6" column="56" selection-start="215" selection-end="215" vertical-scroll-proportion="0.19081272" />
       </provider>
     </entry>
+    <entry file="file:///usr/lib/python2.6/unittest.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="324" column="0" selection-start="11291" selection-end="11291" vertical-scroll-proportion="0.33333334" />
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/adaptive_artifacts.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="14" column="0" selection-start="432" selection-end="432" vertical-scroll-proportion="0.0" />
@@ -601,14 +572,17 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/meta_model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="2" column="0" selection-start="165" selection-end="165" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="2" column="0" selection-start="165" selection-end="165" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/tests/python_model_spike.py">
+    <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/core.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="20" column="31" selection-start="225" selection-end="225" vertical-scroll-proportion="0.0" />
+        <state line="173" column="51" selection-start="6401" selection-end="6401" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/tests/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="5" column="8" selection-start="96" selection-end="96" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/tests/quick_spikes.py">
@@ -616,30 +590,14 @@
         <state line="36" column="25" selection-start="826" selection-end="826" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/tests/__init__.py">
+    <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/tests/python_model_spike.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="5" column="8" selection-start="96" selection-end="96" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/lib/python2.6/unittest.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="324" column="0" selection-start="11291" selection-end="11291" vertical-scroll-proportion="0.33333334">
-          <folding />
-        </state>
+        <state line="20" column="31" selection-start="225" selection-end="225" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/tests/core.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="75" column="0" selection-start="3021" selection-end="3021" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/core.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="173" column="51" selection-start="6401" selection-end="6401" vertical-scroll-proportion="0.64171124">
+        <state line="81" column="0" selection-start="3106" selection-end="3106" vertical-scroll-proportion="0.5508021">
           <folding />
         </state>
       </provider>

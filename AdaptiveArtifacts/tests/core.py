@@ -76,18 +76,8 @@ class Instantiation(unittest.TestCase):
 
 
 """
-    def testStuff2(self):
-        self.assertRaises(roman.InvalidRomanNumeralError, roman.fromRoman, s)
-
 class Inheritance(unittest.TestCase):
-    def testStuff1(self):
-        self.assertRaises(roman.OutOfRangeError, roman.toRoman, 4000)
-
-    def testStuff2(self):
-        self.assertRaises(roman.InvalidRomanNumeralError, roman.fromRoman, s)
-
 class Properties(unittest.TestCase):
-    pass
 """
 
 class PoolOperations(unittest.TestCase):
