@@ -7,24 +7,24 @@ class BasicEntityBehaviour(unittest.TestCase):
     def test_named_entity(self):
         pool = InstancePool()
         corsa = Entity(pool, "Opel Corsa")
-        self.assertEqual(corsa.name, "Opel Corsa")
+        self.assertEqual(corsa.get_name(), "Opel Corsa")
 
 class EntityInheritance(unittest.TestCase):
     def setUp(self):
         self.pool = InstancePool()
         self.car = Entity(self.pool, "Car")
-        self.corsa = Entity(self.pool, "Opel Corsa", self.car.name)
-        self.enjoy = Entity(self.pool, "Opel Corsa Enjoy", self.corsa.name)
+        self.corsa = Entity(self.pool, "Opel Corsa", self.car.get_name())
+        self.enjoy = Entity(self.pool, "Opel Corsa Enjoy", self.corsa.get_name())
 
     def test_inherited_entity_1level(self):
-        self.assertEqual(self.corsa.get_parent().name, 'Car')
+        self.assertEqual(self.corsa.get_parent().get_name(), 'Car')
 
     def test_inherited_entity_2levels(self):
-        self.assertEqual(self.enjoy.get_parent().get_parent().name, 'Car')
+        self.assertEqual(self.enjoy.get_parent().get_parent().get_name(), 'Car')
 
     def test_inheritance_hierarchy(self):
-        self.assertTrue(self.enjoy.is_a(self.car.name))
-        self.assertFalse(self.car.is_a(self.enjoy.name))
+        self.assertTrue(self.enjoy.is_a(self.car.get_name()))
+        self.assertFalse(self.car.is_a(self.enjoy.get_name()))
 
 class Properties(unittest.TestCase):
     def setUp(self):
@@ -35,7 +35,7 @@ class Properties(unittest.TestCase):
 
     def test_access_property(self):
         self.assertEqual(len(self.car.get_properties()), 1)
-        self.assertEqual(self.car.get_properties()[0].name, 'Wheels')
+        self.assertEqual(self.car.get_properties()[0].get_name(), 'Wheels')
 
     def test_add_property(self):
         self.lightningMcQueen = Instance(self.pool, self.car)
@@ -43,36 +43,36 @@ class Properties(unittest.TestCase):
         self.lightningMcQueen.add_value('Wheels', 'front right wheel')
         self.lightningMcQueen.add_value('Wheels', 'rear left wheel')
         self.lightningMcQueen.add_value('Wheels', 'front right wheel')
-        self.assertEqual(len(self.lightningMcQueen.values['Wheels']), 4)
+        self.assertEqual(len(self.lightningMcQueen.get_values('Wheels')), 4)
 
 
 class MetaModelSanityCheck(unittest.TestCase):
     def test_self_meta(self):
         pool = InstancePool()
-        self.assertEqual(pool.get(name="Entity").get_meta().name, "Entity")
+        self.assertEqual(pool.get(name="Entity").get_name_meta(), "Entity")
 
 class ModelInspection(unittest.TestCase):
     def setUp(self):
         self.pool = InstancePool()
         car = Entity(self.pool, "Car")
-        corsa = Entity(self.pool, "Opel Corsa", car.name)
-        enjoy = Entity(self.pool, "Opel Corsa Enjoy", corsa.name)
+        corsa = Entity(self.pool, "Opel Corsa", car.get_name())
+        enjoy = Entity(self.pool, "Opel Corsa Enjoy", corsa.get_name())
 
     def test_list_model_entities(self):
         entities = self.pool.get_model_entities()
-        for ent in entities:
-            self.assertEqual(ent.get_meta().name, "Entity")
         self.assertTrue(len(entities) == 3)
-        self.assertTrue(len([ent.name for ent in entities if ent.name == "Car"])==1)
-        self.assertTrue(len([ent.name for ent in entities if ent.name == "Opel Corsa"])==1)
-        self.assertTrue(len([ent.name for ent in entities if ent.name == "Opel Corsa Enjoy"])==1)
+        for ent in entities:
+            self.assertEqual(ent.get_name_meta(), "Entity")
+        self.assertTrue(len([ent for ent in entities if ent.get_name() == "Car"])==1)
+        self.assertTrue(len([ent for ent in entities if ent.get_name() == "Opel Corsa"])==1)
+        self.assertTrue(len([ent for ent in entities if ent.get_name() == "Opel Corsa Enjoy"])==1)
 
 class Instantiation(unittest.TestCase):
     def test_instance_meta(self):
         pool = InstancePool()
         ent = Entity(pool, "Car")
         inst = Instance(pool, "Car")
-        self.assertEqual(ent.name, inst.get_meta().name)
+        self.assertEqual(ent.get_name(), inst.get_name_meta())
 
 
 """

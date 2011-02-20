@@ -23,39 +23,68 @@ class Version(object):
 
 class Instance(object):
     """Represents an instance at any model level"""
-    def __init__(self, pool, meta, identifier=None, meta_level=0):
+    def __init__(self, pool, name_meta, identifier=None, meta_level='0'):
         """
         pool --- the pool that the instances of this class will belong to
         identifier --- the uuid that uniquely identifies this instance
         meta -- the Entity to which this instance complies. For M2 and M3 instances it will always be 'Entity'
         """
-        if meta != 'Entity' and self.__class__.__name__ != 'Instance':
+        if name_meta != 'Entity' and self.__class__.__name__ != 'Instance':
             raise Exception("All M0s should be naturally born instances.")
+        #TODO: it should be validated that the meta is always an Entity! should it not?
 
-        #TODO: it should be validated that the meta is always an Entity!
+        self.state = InstanceState() # TODO: refactor this to a self.states dictionay in which each key,value is of type Version,InstanceState
         if identifier is None:
-            self.identifier = str(uuid.uuid4())
+            self.__identifier = str(uuid.uuid4())
         else:
-            self.identifier = identifier
-        self.__meta_name = meta
-        self.meta_level = meta_level
-        #self.states = {} # dictionay in which each key,value is of type Version,InstanceState
-        self.values = {} # refactor this to self.states
+            self.__identifier = identifier
+        self.add_value('__name_meta', name_meta)
+        self.add_value('__meta_level', meta_level)
         pool.add(self)
         self.pool = pool
 
-    def get_meta(self):
-        return self.pool.get(name=self.__meta_name)
+    def get_identifier(self):
+        return self.__identifier
+
+    def get_name_meta(self):
+        return self.get_value('__name_meta')
+
+    def get_meta_level(self):
+        return self.get_value('__meta_level')
 
     #def get_latest_state(self):
     #    return self.states[Version.get_latest_version(self)]
 
     def add_value(self, property_name, property_value):
-        #self.get_latest_state(). ...
-        if not property_name in self.values:
-            self.values[property_name] = []
-        self.values[property_name].append(property_value)
-        
+        if not property_name in self.state.slots:
+            self.state.slots[property_name] = []
+        elif property_name in self.state.slots and not isinstance(self.state.slots[property_name], list):
+            val = self.state.slots[property_name]
+            self.state.slots[property_name] = [val]
+        self.state.slots[property_name].append(property_value)
+
+    def set_value(self, property_name, property_value):
+        """Overrite the value, no matter what"""
+        self.state.slots[property_name] = property_value
+
+    def get_value(self, property_name):
+        if property_name in self.state.slots:
+            val = self.state.slots[property_name]
+            if isinstance(val, list):
+                if len(val) > 0:
+                    return val[0]
+            else:
+                return val
+        return None
+
+    def get_values(self, property_name):
+        if property_name in self.state.slots:
+            return self.state.slots[property_name]
+        else:
+            return []
+
+#    def get_property_names(self, property_name):
+#        return [property_name for property_name in self.state.slots if not property_name.startswith('__')]
 
 class InstanceState(object):
     def __init__(self, version=None):
@@ -73,50 +102,49 @@ class InstanceState(object):
 
 class MetaElementInstance(Instance):
     """
-    An instance that may is described by a name. Usually everything except M0s
+    An instance that may is described by a name. I.e., everything except M0s
     """
     def __init__(self, pool, name):
-         super(MetaElementInstance, self).__init__(pool=pool, meta=Entity.__name__)
-         self.meta_level = 1 # MetaElementInstances' level is at least 1
-         #self.states[self.version].slots['name'] = name
-         self.name = name
+         super(MetaElementInstance, self).__init__(pool=pool, name_meta=Entity.__name__)
+         self.set_value('__meta_level', '1') # MetaElementInstances' level is at least 1
+         self.set_value('__name', name)
 
     def get_name(self):
         """
         Returns the name that was assigned to self.
-        Assumes the name is stored in a string property called "displayname"
+        Assumes the name is stored in a string property called "name"
         """
-        #return self.states[self.version].slots['name']
-        return self.name
+        return self.get_value('__name')
 
 class Property(MetaElementInstance):
     def __init__(self, pool, name, lower_bound = 0, upper_bound = 1):
         super(Property, self).__init__(pool=pool, name=name)
         #TODO: changing an instance of this class will have to automatically result in changing instance that represents it in the pool.
-        self.owner = None #ObjectType
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-        self.unique = False
-        self.read_only = False
-        self.domain = None #Classifier
+        self.set_value('__owner', None) #ObjectType
+        self.set_value('__lower_bound', lower_bound)
+        self.set_value('__upper_bound', upper_bound)
+        self.set_value('__unique', False)
+        self.set_value('__read_only', False)
+        self.set_value('__domain', None) #Classifier
 
 class Classifier(MetaElementInstance):
     def __init__(self, pool, name):
         super(Classifier, self).__init__(pool=pool, name=name)
-        self.package = None #Package
+        self.set_value('__package', None) #Package
 
 class Entity(Classifier):
-    def __init__(self, pool, name, inherits=None, meta_level=1):
+    def __init__(self, pool, name, inherits=None, meta_level='1'):
         super(Entity, self).__init__(pool=pool, name=name)
-        self.meta_level = meta_level
-        self.__inherits = inherits
-        self.__properties = [] #0..* Properties
+        self.set_value('__meta_level', meta_level)
+        self.set_value('__inherits', inherits)
+        # There will also be 0..* Properties, each stored in its own key
+        # TODO: handle properties with cardinality > 1
 
     def get_parent(self):
         """
         Returns the parent class, following the inheritance relation.
         """
-        return self.pool.get(name=self.__inherits)
+        return self.pool.get(name=self.get_value('__inherits'))
 
     def is_a(self, name):
         """
@@ -124,7 +152,7 @@ class Entity(Classifier):
         """
         child = self
         while True:
-            if child.name == name:
+            if child.get_name() == name:
                 return True
             if not child.get_parent() is None:
                 child = child.get_parent()
@@ -133,11 +161,13 @@ class Entity(Classifier):
         return False
 
     def add_property(self, property):
-        self.__properties.append(property)
+        #meta = self.pool.get(name=self.get_value('__meta'))
+        self.add_value('__properties', property)
 
     def get_properties(self):
-        return self.__properties
-    
+        #self = self.pool.get(name=self.get_value('__meta'))
+        return self.get_values('__properties')
+
 
 class Package(MetaElementInstance):
     def __init__(self, pool, name):
@@ -149,7 +179,7 @@ class InstancePool(object):
         self.bootstrap_m2()
 
     def add(self, instance):
-        self.pool[instance.identifier] = instance
+        self.pool[instance.get_identifier()] = instance
 
     def get(self, id=None, name=None):
         if not id is None:
@@ -174,6 +204,6 @@ class InstancePool(object):
         Entity(self, name=Entity.__name__,               inherits=Entity.__name__, meta_level=2)
 
     def get_model_entities(self):
-        return [instance for id, instance in self.pool.items() if instance.meta_level == 1]
+        return [instance for id, instance in self.pool.items() if instance.get_meta_level() == '1']
 
 
