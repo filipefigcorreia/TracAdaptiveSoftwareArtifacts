@@ -1,7 +1,15 @@
-"""Unit tests for AdaptiveArtifacts.core (core.py)"""
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2011 Filipe Correia
+# All rights reserved.
+#
+# This software is licensed as described in the file license.txt, which
+# you should have received as part of this distribution.
+#
 
+"""Unit tests for AdaptiveArtifacts.core (core.py)"""
 import unittest
-from AdaptiveArtifacts.core import *
+from AdaptiveArtifacts.meta_model import *
 
 class BasicEntityBehaviour(unittest.TestCase):
     def test_named_entity(self):
