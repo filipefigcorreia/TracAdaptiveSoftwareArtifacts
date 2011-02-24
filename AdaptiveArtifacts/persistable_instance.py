@@ -6,10 +6,9 @@
 # This software is licensed as described in the file license.txt, which
 # you should have received as part of this distribution.
 
-from trac.core import *
 from trac.resource import Resource
 from trac.util.datefmt import from_utimestamp, to_utimestamp, utc
-from AdaptiveArtifacts.meta_model import InstancePool, Instance
+from AdaptiveArtifacts.model import InstancePool, Instance
 
 class PersistableInstance(object):
     """

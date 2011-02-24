@@ -15,7 +15,7 @@ from trac.util import escape, Markup, datefmt
 from trac.env import IEnvironmentSetupParticipant
 from AdaptiveArtifacts.environment_maintainer import ASAEnvironmentMaintainer
 from AdaptiveArtifacts.query import Query
-from AdaptiveArtifacts.meta_model import InstancePool, Instance
+from AdaptiveArtifacts.model import InstancePool, Instance
 
 class Core(Component):
     """Core module of the plugin. Provides the Adaptive-Artifacts themselves."""

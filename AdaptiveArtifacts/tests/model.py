@@ -9,7 +9,7 @@
 
 """Unit tests for AdaptiveArtifacts.core (core.py)"""
 import unittest
-from AdaptiveArtifacts.meta_model import *
+from AdaptiveArtifacts.model import *
 
 class BasicEntityBehaviour(unittest.TestCase):
     def test_named_entity(self):
