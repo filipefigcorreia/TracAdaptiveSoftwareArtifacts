@@ -13,23 +13,24 @@ class ASAEnvironmentMaintainer(object):
     """Modifies environments according to the needs of the ASA plugin"""
     def __init__(self, env):
         from distutils import version
-        self.db_key = 'asa_plugin_version'
-        self.schema_version = version.StrictVersion(get_system_value(self, self.db_key) or '0')
-        self.running_version = version.StrictVersion('0.1')
+        self.db_key = 'asa_plugin_database_version'
+        self.default_version = '0.0'
+        self.schema_version = version.StrictVersion(get_system_value(env, self.db_key) or self.default_version)
+        self.running_version = version.StrictVersion('0.1') # TODO: get this value from setup.py
         self.env = env
 
     def install_asa_support(self):
         self.env.log.debug("Adding support for the ASA plugin.")
-        db = self.env.get_db_cnx()
-        cursor = db.cursor()
-        cursor.execute("INSERT INTO system (name, value) VALUES ('%s', '%s')", \
+        cnx = self.env.get_db_cnx()
+        cursor = cnx.cursor()
+        cursor.execute("INSERT INTO system (name, value) VALUES ('%s', '%s')" %
                        (self.db_key, str(self.running_version)))
         for table in schema.schema:
-            connector, _ = DatabaseManager(self.env, db, table)._get_connector()
+            connector, _ = DatabaseManager(self.env)._get_connector()
             for stmt in connector.to_sql(table):
                 self.env.log.debug("Running query: \n %s" % stmt)
                 cursor.execute(stmt)
-        db.commit()
+        cnx.commit()
 
         self.schema_version = self.running_version
 
@@ -42,7 +43,7 @@ class ASAEnvironmentMaintainer(object):
     def upgrade(self):
         self.env.log.debug("The ASA plugin is upgrading the existing environment.")
 
-        if self.schema_version == '0':
+        if self.schema_version == self.default_version:
            self.install_asa_support()
 #        elif self.schema_version == 'XXXX':
 #            cursor = db.cursor()
@@ -64,7 +65,7 @@ def get_scalar_value(env, query, col=0, *params):
         return None
 
 def get_first_row(env, query, *params):
-    cursor = env.get_read_db().cursor()
+    cursor = env.get_db_cnx().cursor()
     data = None
     try:
         cursor.execute(query, params)

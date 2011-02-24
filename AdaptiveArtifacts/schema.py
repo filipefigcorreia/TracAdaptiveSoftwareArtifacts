@@ -12,26 +12,16 @@ schema_version = 1
 schema = [
     Table('asa_instance', key='id')[
         Column('id'),
-        Index(['id'], unique=True),
-    ],
-    Table('asa_version', key='id')[
-        Column('id'),
+        Column('name_meta'),
+        Column('name'), # only filled if meta_level >= 1
+        Column('version', type='int64'),
         Column('time', type='int64'),
         Column('author'),
         Column('ipnr'),
-        Column('comment'),
-        Index(['id'], unique=True),
-    ],
-    Table('asa_operation', key='id')[
-        Column('id'),
-        Column('version_id'),
-        Column('name'),
-        Index(['id'], unique=True),
-    ],
-    Table('asa_state')[
-        Column('instance_id'),
-        Column('contents'), # contains pickled instances
+        Column('contents'), # contains pickled properties dictionary
         Column('op_type'), # 'C','U','D'
-    ]
+        Column('comment'),
+        Index(['id', 'version'], unique=True),
+    ],
 ]
 

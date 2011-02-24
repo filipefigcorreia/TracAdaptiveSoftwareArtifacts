@@ -89,6 +89,23 @@ class Instance(object):
             return self.state.slots[property_name]
         else:
             return []
+        
+    def load_from_properties(self, pool, identifier, properties):
+        if not self.__identifier is None:
+            raise Exception("Instances are not allowed to change identity.")
+        self.pool.remove(identifier)
+        self.__identifier = identifier
+        self.state.slots = properties
+        name_meta = properties['__name_meta']
+        if name_meta == Instance.__name__:
+            self.__class__ = Instance
+        elif name_meta == Package.__name__:
+            self.__class__ = Package
+        elif name_meta == Property.__name__:
+            self.__class__ = Property
+        elif name_meta == Entity.__name__:
+            self.__class__ = Entity
+        pool.add(self)
 
 #    def get_property_names(self, property_name):
 #        return [property_name for property_name in self.state.slots if not property_name.startswith('__')]
@@ -188,6 +205,9 @@ class InstancePool(object):
     def add(self, instance):
         self.pool[instance.get_identifier()] = instance
 
+    def remove(self, instance):
+        del self.pool[instance.get_identifier()]
+
     def get(self, id=None, name=None):
         if not id is None:
             if not id in self.pool:
@@ -212,5 +232,6 @@ class InstancePool(object):
 
     def get_model_entities(self):
         return [instance for id, instance in self.pool.items() if instance.get_meta_level() == '1']
+
 
 
