@@ -8,6 +8,10 @@
 
 from trac.resource import Resource
 from trac.util.datefmt import from_utimestamp, to_utimestamp, utc
+try:
+    import cPickle as pickle
+except:
+    import pickle
 from AdaptiveArtifacts.model import InstancePool, Instance
 
 class PersistableInstance(object):
@@ -19,47 +23,60 @@ class PersistableInstance(object):
 
     realm = 'asa'
 
-    def __init__(self, env, identifier=None, version=None, db=None):
+    def __init__(self, env, identifier=None, name=None, version=None, db=None):
+        """
+        Creates a brand new PersistableInstance. I.e., one that does not exist in the database yet.
+        """
         self.env = env
         self.instance = None
+        self.version = 0
         if version:
-            version = int(version) # must be a number or None
+            self.version = int(version) # must be a number or None
         self.resource = Resource('asa', identifier, version)
 
-        if identifier:
-            self._fetch_instance(identifier, version, db)
-        else:
-            self.version = 0
-            self.time = None
-            self.comment = self.author = ''
-            #self.text =
-            #self.readonly = 0
-        #self.old_text = self.text
-        #self.old_readonly = self.readonly
+        self.time = None
+        self.comment = self.author = ''
+        #self.text =
+        #self.readonly = 0
 
-    def _fetch_instance(self, identifier, version=None, db=None):
+
+    @classmethod
+    def load(cls, env, identifier=None, name=None, version=None, db=None):
+        """
+        Loads an existing PersistableInstance from the database
+        """
+        pi = PersistableInstance(env, identifier, name, version, db)
+        pi._fetch_instance(identifier=identifier, name=name, version=version, db=db)
+        return pi
+
+    def _fetch_instance(self, identifier=None, name=None, version=None, db=None):
+        if not identifier and not name:
+            raise Exception("Nothing to fetch. Either identifier or name must be previded")
         if not db:
             db = self.env.get_db_cnx()
         cursor = db.cursor()
-        if version is not None:
-            cursor.execute("SELECT name_meta, name, version, time, author, ipnr, contents, op_type, comment"
-                           "FROM asa_instance "
-                           "WHERE name=%s AND version=%s",
-                           (identifier, int(version)))
+        if not name is None:
+            filter = "name='%s'" %  name
         else:
-            cursor.execute("SELECT name_meta, name, version, time, author, ipnr, contents, op_type, comment"
+            filter = "id=%s" %  identifier
+        if version is not None:
+            cursor.execute("SELECT id, name_meta, name, version, time, author, ipnr, contents, op_type, comment "
                            "FROM asa_instance "
-                           "WHERE id=%s ORDER BY version DESC LIMIT 1",
-                           (identifier,))
+                           "WHERE %s AND version=%s",
+                           (filter, int(version)))
+        else:
+            q = "SELECT id, name_meta, name, version, time, author, ipnr, contents, op_type, comment " + \
+                "FROM asa_instance " + \
+                "WHERE %s ORDER BY version DESC LIMIT 1" % (filter,)
+            cursor.execute(q)
         row = cursor.fetchone()
         if row:
-            name_meta, name, version, time, author, ipnr, contents, op_type, comment = row
-            contents_dict = unpickle(contents)
+            identifier, name_meta, name, version, time, author, ipnr, contents, op_type, comment = row
+            contents_dict = pickle.loads(contents.encode('utf-8'))
             pool = InstancePool()
             self.instance = pool.get(identifier)
             if self.instance is None:
-                self.instance = Instance(pool=None, name_meta=None)
-                self.instance.load_from_properties(pool, identifier, contents_dict)
+                self.instance =  Instance.create_from_properties(pool, identifier, contents_dict)
                 self.version = 1
             self.version = int(version)
             self.time = from_utimestamp(time)
@@ -68,11 +85,7 @@ class PersistableInstance(object):
             #self.text = text
             #self.readonly = readonly and int(readonly) or 0
         else:
-            self.version = 0
-            self.time = None
-            self.comment = self.author = ''
-            #self.text = ''
-            #self.readonly = 0
+            raise Exception("Resource not found")
 
     exists = property(fget=lambda self: self.version > 0)
 
@@ -88,14 +101,14 @@ class PersistableInstance(object):
     def save_instance(self, author, comment, remote_addr, t=None, db=None):
         @self.env.with_transaction(db)
         def do_save(db):
+            data = pickle.dumps(self.instance.state.slots).decode('utf-8')
             cursor = db.cursor()
             cursor.execute("""
                 INSERT INTO asa_instance (id, name_meta, name, version, time, author, ipnr, contents,
                                   op_type, comment)
                 VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                """, (self.identifier, self.get_name(), self.version + 1, to_utimestamp(t),
-                      author, remote_addr, self.instance.state.slots, comment,
-                      self.readonly))
+                """, (self.instance.get_identifier(), self.instance.get_name_meta(), self.instance.get_name(), self.version + 1, to_utimestamp(t),
+                      author, remote_addr, data, 'C', comment))
             self.version += 1
             self.resource = self.resource(version=self.version)
 

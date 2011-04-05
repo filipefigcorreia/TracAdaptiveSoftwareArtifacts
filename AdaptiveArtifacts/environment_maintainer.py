@@ -30,7 +30,6 @@ class ASAEnvironmentMaintainer(object):
             for stmt in connector.to_sql(table):
                 self.env.log.debug("Running query: \n %s" % stmt)
                 cursor.execute(stmt)
-        cnx.commit()
 
         self.schema_version = self.running_version
 
@@ -44,7 +43,9 @@ class ASAEnvironmentMaintainer(object):
         self.env.log.debug("The ASA plugin is upgrading the existing environment.")
 
         if self.schema_version == self.default_version:
-           self.install_asa_support()
+            self.install_asa_support()
+            from model import bootstrap_m2
+            bootstrap_m2(self.env)
 #        elif self.schema_version == 'XXXX':
 #            cursor = db.cursor()
 #            cursor.execute("UPDATE various stuff ...")

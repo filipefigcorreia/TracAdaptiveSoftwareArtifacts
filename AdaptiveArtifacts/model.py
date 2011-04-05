@@ -47,7 +47,8 @@ class Instance(object):
             self.__identifier = identifier
         self.add_value('__name_meta', name_meta)
         self.add_value('__meta_level', meta_level)
-        pool.add(self)
+        if not pool is None:
+            pool.add(self)
         self.pool = pool
 
     def get_identifier(self):
@@ -89,23 +90,24 @@ class Instance(object):
             return self.state.slots[property_name]
         else:
             return []
-        
-    def load_from_properties(self, pool, identifier, properties):
-        if not self.__identifier is None:
-            raise Exception("Instances are not allowed to change identity.")
-        self.pool.remove(identifier)
-        self.__identifier = identifier
-        self.state.slots = properties
-        name_meta = properties['__name_meta']
-        if name_meta == Instance.__name__:
-            self.__class__ = Instance
-        elif name_meta == Package.__name__:
-            self.__class__ = Package
-        elif name_meta == Property.__name__:
-            self.__class__ = Property
-        elif name_meta == Entity.__name__:
-            self.__class__ = Entity
-        pool.add(self)
+
+    @classmethod
+    def create_from_properties(cls, pool, identifier, properties):
+        instance = Instance(pool, 'Instance', identifier)
+        instance.pool.remove(identifier)
+        instance.__identifier = identifier
+        instance.state.slots = properties
+        name_metas = properties['__name_meta']
+        if Instance.__name__ in name_metas:
+            instance.__class__ = Instance
+        elif Package.__name__ in name_metas:
+            instance.__class__ = Package
+        elif Property.__name__ in name_metas:
+            instance.__class__ = Property
+        elif Entity.__name__ in name_metas:
+            instance.__class__ = Entity
+        pool.add(instance)
+        return instance
 
 #    def get_property_names(self, property_name):
 #        return [property_name for property_name in self.state.slots if not property_name.startswith('__')]
@@ -199,22 +201,21 @@ class Package(MetaElementInstance):
 
 class InstancePool(object):
     def __init__(self):
-        self.pool = {}
-        self.bootstrap_m2()
+        self.instances = {}
 
     def add(self, instance):
-        self.pool[instance.get_identifier()] = instance
+        self.instances[instance.get_identifier()] = instance
 
-    def remove(self, instance):
-        del self.pool[instance.get_identifier()]
+    def remove(self, identifier):
+        del self.instances[identifier]
 
     def get(self, id=None, name=None):
         if not id is None:
-            if not id in self.pool:
+            if not id in self.instances:
                 return None
-            return self.pool[id]
+            return self.instances[id]
         elif not name is None:
-            for id, instance in self.pool.items():
+            for id, instance in self.instances.items():
                 if hasattr(instance, 'get_name'):
                     if instance.get_name()==name:
                         return instance
@@ -222,16 +223,27 @@ class InstancePool(object):
         else:
             return None
 
-    def bootstrap_m2(self):
-        Entity(self, name=Instance.__name__,             inherits=None, meta_level=2)
-        Entity(self, name=MetaElementInstance.__name__,  inherits=Instance.__name__, meta_level=2)
-        Entity(self, name=Classifier.__name__,           inherits=MetaElementInstance.__name__, meta_level=2)
-        Entity(self, name=Package.__name__,              inherits=MetaElementInstance.__name__, meta_level=2)
-        Entity(self, name=Property.__name__,             inherits=MetaElementInstance.__name__, meta_level=2)
-        Entity(self, name=Entity.__name__,               inherits=Entity.__name__, meta_level=2)
+    def get_metamodel_instances(self):
+        return [instance for id, instance in self.instances.items() if instance.get_meta_level() == '2']
 
-    def get_model_entities(self):
-        return [instance for id, instance in self.pool.items() if instance.get_meta_level() == '1']
+    def get_model_instances(self):
+        return [instance for id, instance in self.instances.items() if instance.get_meta_level() == '1']
 
 
+def bootstrap_m2(env):
+    pool = InstancePool()
+    #TODO: bootstrap this info from the database instead of bootstrapping it from memory
+    Entity(pool, name=Instance.__name__,             inherits=None, meta_level='2')
+    Entity(pool, name=MetaElementInstance.__name__,  inherits=Instance.__name__, meta_level='2')
+    Entity(pool, name=Classifier.__name__,           inherits=MetaElementInstance.__name__, meta_level='2')
+    Entity(pool, name=Package.__name__,              inherits=MetaElementInstance.__name__, meta_level='2')
+    Entity(pool, name=Property.__name__,             inherits=MetaElementInstance.__name__, meta_level='2')
+    Entity(pool, name=Entity.__name__,               inherits=Entity.__name__, meta_level='2')
+    from persistable_instance import PersistableInstance
+    db = env.get_db_cnx()
+
+    for entity in pool.get_metamodel_instances():
+        pi = PersistableInstance(env, entity.get_identifier(), entity.get_name(), 0, db)
+        pi.instance = entity
+        pi.save_instance("system", "", "")
 

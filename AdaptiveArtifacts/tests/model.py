@@ -67,7 +67,7 @@ class ModelInspection(unittest.TestCase):
         enjoy = Entity(self.pool, "Opel Corsa Enjoy", corsa.get_name())
 
     def test_list_model_entities(self):
-        entities = self.pool.get_model_entities()
+        entities = self.pool.get_model_instances()
         self.assertTrue(len(entities) == 3)
         for ent in entities:
             self.assertEqual(ent.get_name_meta(), "Entity")

@@ -13,9 +13,12 @@ from trac.web.chrome import INavigationContributor, ITemplateProvider #, add_sty
 from trac.web.main import IRequestHandler
 from trac.util import escape, Markup, datefmt
 from trac.env import IEnvironmentSetupParticipant
+from trac.resource import *
+from trac.mimeview.api import Context
 from AdaptiveArtifacts.environment_maintainer import ASAEnvironmentMaintainer
 from AdaptiveArtifacts.query import Query
 from AdaptiveArtifacts.model import InstancePool, Instance
+from AdaptiveArtifacts.persistable_instance import PersistableInstance
 
 class Core(Component):
     """Core module of the plugin. Provides the Adaptive-Artifacts themselves."""
@@ -36,40 +39,28 @@ class Core(Component):
     def match_request(self, req):
         match = re.match(r'/%s(?:/(.+))?$' % self.base_url, req.path_info)
         if match:
-            req.args['asa_resource'] = match.group(1) or ''
+            if match.group(1):
+                req.args['asa_resource'] = match.group(1)
             return True
         else:
             return False
 
     def process_request(self, req):
         action = req.args.get('action', 'view')
-        asa_resource_name = req.args.get('asa_resource', '')
-        #version = req.args.get('version') #TODO: uncomment when we have version ASAs
+        asa_resource_name = req.args.get('asa_resource', 'Entity')
+        version = req.args.get('version')
         #old_version = req.args.get('old_version')
 
         if asa_resource_name.endswith('/'):
             req.redirect(req.href.wiki(asa_resource_name.strip('/')))
+        #FIXME: using req.href.wiki ?!?
 
-        query = Query.from_url_params(asa_resource_name)
-        result = query.execute()
-        if len(result.items) == 0:
-            pass
-        elif len(result.items) == 1:
-            result.items
+        #pool = InstancePool()
+        instance = PersistableInstance.load(self.env, name=asa_resource_name, version=version)
 
-        WikiPage(self.env, resource)
-        versioned_page = WikiPage(self.env, asa_resource_name, version=version)
+        return self._render_view(req, instance)
 
-        req.perm(page.resource).require('WIKI_VIEW')
-        req.perm(versioned_page.resource).require('WIKI_VIEW')
-
-        if version and versioned_page.version != int(version):
-            raise ResourceNotFound(
-                _('No version "%(num)s" for Wiki page "%(name)s"',
-                  num=version, name=page.name))
-
-        add_stylesheet(req, 'common/css/wiki.css')
-
+        """
         if req.method == 'POST':
             if action == 'edit':
                 if 'cancel' in req.args:
@@ -114,17 +105,28 @@ class Core(Component):
                                                   versioned_page.text,
                                                   format, versioned_page.name)
             return self._render_view(req, versioned_page)
+"""
 
-    def process_request_old(self, req):
-        #add_stylesheet(req, 'adaptiveartifacts/css/style.css')
-        return "adaptive_artifacts.cs", "text/html"
-        """response_str = 'Hello world!'
-        req.send_response(200)
-        req.send_header('Content-Type', 'text/plain')
-        req.send_header('Last-Modified', datefmt.http_date(time()))
-        req.send_header('Content-Length', len(response_str))
-        req.end_headers()
-        req.write(response_str)"""
+
+    def _page_data(self, req, instance, action=''):
+        title = get_resource_summary(self.env, instance.resource)
+        if action:
+            title += ' (%s)' % action
+        return {'instance': instance, 'action': action, 'title': title}
+
+
+    def _render_view(self, req, instance):
+        data = self._page_data(req, instance)
+        data.update({
+            'context': Context.from_request(req, instance.resource),
+            'instance': instance.instance,
+            'dir': dir(instance.instance),
+            'type': type(instance.instance),
+            'repr': type(instance.instance),
+            'version': instance.resource.version,
+        })
+        return 'asa_view.html', data, None
+
 
     # ITemplateProvider methods
     def get_templates_dirs(self):
@@ -180,14 +182,15 @@ class Core(Component):
         representations 'realm:id' (in compact mode) or 'Realm id' (in
         default mode) will be used.
         """
-        pool = InstancePool()
-        instance = Instance(self.env, resource.id, resource.version)
-        if context:
-            return tag.a('Blog: '+instance.title, href=context.href.blog(resource.id))
-        else:
-            return 'Blog: '+bp.title
+        pi = PersistableInstance.load(self.env, identifier=resource.id, version=resource.version)
 
-    def resource_exists(resource):
+        #if context:
+        #    return tag.a('Blog: '+instance.title, href=context.href.blog(resource.id))
+        #else:
+        #    return 'Blog: '+bp.title
+        return pi.instance.get_identifier()
+
+    def resource_exists(self, resource):
         """Check whether the given `resource` exists physically.
 
         :rtype: bool
@@ -196,3 +199,5 @@ class Core(Component):
         resource should raise a `ResourceNotFound` exception.
         (''since 0.11.8'')
         """
+        pi = PersistableInstance.load(self.env, identifier=resource.id, version=resource.version)
+        return not pi.instance is None

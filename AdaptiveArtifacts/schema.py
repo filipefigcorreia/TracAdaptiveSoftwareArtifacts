@@ -24,4 +24,3 @@ schema = [
         Index(['id', 'version'], unique=True),
     ],
 ]
-
