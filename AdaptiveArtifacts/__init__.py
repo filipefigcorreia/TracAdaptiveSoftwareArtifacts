@@ -152,7 +152,7 @@ class Core(Component):
 
     # IResourceManager
     def get_resource_realms(self):
-        yield 'asa_resource'
+        yield 'asa'
 
     def get_resource_url(self, resource, href, **kwargs):
         return href.asa_resource(resource.id)
