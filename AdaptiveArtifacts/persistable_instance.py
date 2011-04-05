@@ -47,6 +47,7 @@ class PersistableInstance(object):
         """
         pi = PersistableInstance(env, identifier, name, version, db)
         pi._fetch_instance(identifier=identifier, name=name, version=version, db=db)
+        pi.resource = Resource('asa', pi.instance.get_identifier(), version) # in case we fetched the instance byits name instead of its identifier
         return pi
 
     def _fetch_instance(self, identifier=None, name=None, version=None, db=None):
@@ -58,7 +59,7 @@ class PersistableInstance(object):
         if not name is None:
             filter = "name='%s'" %  name
         else:
-            filter = "id=%s" %  identifier
+            filter = "id='%s'" %  identifier
         if version is not None:
             cursor.execute("SELECT id, name_meta, name, version, time, author, ipnr, contents, op_type, comment "
                            "FROM asa_instance "
