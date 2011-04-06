@@ -60,26 +60,31 @@ class PersistableInstance(object):
         else:
             filter = "id='%s'" %  identifier
 
+        q = None
+        params = None
+        if version is not None:
+            q = """
+                SELECT id, name_meta, name, version, time, author, ipnr, contents, op_type, comment
+                FROM asa_instance
+                WHERE %s AND version=%s"""
+            params = (filter, int(version))
+        else:
+            q = """
+                SELECT id, name_meta, name, version, time, author, ipnr, contents, op_type, comment
+                FROM asa_instance
+                WHERE %s ORDER BY version DESC LIMIT 1"""
+            params = (filter,)
         db = self.env.get_read_db()
         cursor = db.cursor()
         row = None
         try:
-            if version is not None:
-                cursor.execute("""
-                    SELECT id, name_meta, name, version, time, author, ipnr, contents, op_type, comment
-                    FROM asa_instance
-                    WHERE %s AND version=%s""", (filter, int(version)))
-            else:
-                cursor.execute("""
-                    SELECT id, name_meta, name, version, time, author, ipnr, contents, op_type, comment
-                    FROM asa_instance
-                    WHERE %s ORDER BY version DESC LIMIT 1""" % (filter,))
+            cursor.execute(q % params)
             row = cursor.fetchone()
         except Exception, e:
-            print """Could not fetch data instance. Name: '%s'. ID: '%s' """ % (name, identifier)
+            row = None
 
         if not row:
-            raise Exception("Resource not found")
+            raise Exception("""Could not fetch data for instance.\n %s""" % (q % params, ))
 
         identifier, name_meta, name, version, time, author, ipnr, contents, op_type, comment = row
         contents_dict = pickle.loads(contents.encode('utf-8'))

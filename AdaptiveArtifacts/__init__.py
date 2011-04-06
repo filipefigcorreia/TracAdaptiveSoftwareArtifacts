@@ -46,7 +46,7 @@ class Core(Component):
             return False
 
     def process_request(self, req):
-        action = req.args.get('action', 'view') # view, edit, list
+        action = req.args.get('action', 'list') # view, edit, list
         asa_resource_name = req.args.get('asa_resource', 'Entity')
         version = req.args.get('version')
         #old_version = req.args.get('old_version')
@@ -69,7 +69,17 @@ class Core(Component):
         if action == 'view':
             return self._render_view(req, pi.instance, pi.resource)
         elif action == 'list':
-            return self._render_list(req, pi.instance, pi.resource)
+            instances = []
+            #FIXME: missing: where id_meta=pi.instance.get_id_meta()
+            db = self.env.get_read_db()
+            cursor = db.cursor()
+            rows = cursor.execute("""
+                                SELECT id, name, max(version) version
+                                FROM asa_instance
+                                GROUP BY id""")
+            for id, name, version in rows.fetchall():
+                instances.append(PersistableInstance.load(self.env, id, name, version, ppool).instance)
+            return self._render_list(req, instances, pi.resource)
 
 
         """
@@ -131,14 +141,7 @@ class Core(Component):
         }
         return 'asa_view.html', data, None
 
-    def _render_list(self, req, instance, resource):
-        instances = []
-        #FIXME: missing: where id_meta=pi.instance.get_id_meta()
-        for id, name, version in self.env.db_query("""
-                                        SELECT id, name, max(version) version
-                                        FROM asa_instance
-                                        GROUP BY id"""):
-            instances.append(PersistableInstance(self.env, id, name, version).instance)
+    def _render_list(self, req, instances, resource):
         data = {
             'context': Context.from_request(req, resource),
             'action': 'list',
