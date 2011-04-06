@@ -19,7 +19,6 @@ class PersistableInstance(object):
     This class provides behavior required by Trac's plugin architecture. Namely, behavior to deal with loading
     and saving instances from the database.
     """
-
     realm = 'asa'
 
     def __init__(self, env, identifier=None, name=None, version=None):
@@ -64,13 +63,13 @@ class PersistableInstance(object):
         params = None
         if version is not None:
             q = """
-                SELECT id, name_meta, name, version, time, author, ipnr, contents, op_type, comment
+                SELECT id, id_meta, name, version, time, author, ipnr, contents, op_type, comment
                 FROM asa_instance
                 WHERE %s AND version=%s"""
             params = (filter, int(version))
         else:
             q = """
-                SELECT id, name_meta, name, version, time, author, ipnr, contents, op_type, comment
+                SELECT id, id_meta, name, version, time, author, ipnr, contents, op_type, comment
                 FROM asa_instance
                 WHERE %s ORDER BY version DESC LIMIT 1"""
             params = (filter,)
@@ -119,10 +118,10 @@ class PersistableInstance(object):
             data = pickle.dumps(self.instance.state.slots).decode('utf-8')
             cursor = db.cursor()
             cursor.execute("""
-                INSERT INTO asa_instance (id, name_meta, name, version, time, author, ipnr, contents,
+                INSERT INTO asa_instance (id, id_meta, name, version, time, author, ipnr, contents,
                                   op_type, comment)
                 VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                """, (self.instance.get_identifier(), self.instance.get_name_meta(), self.instance.get_name(), self.version + 1, to_utimestamp(t),
+                """, (self.instance.get_identifier(), self.instance.get_id_meta(), self.instance.get_name(), self.version + 1, to_utimestamp(t),
                       author, remote_addr, data, 'C', comment))
             self.version += 1
             self.resource = self.resource(version=self.version)
@@ -150,8 +149,11 @@ class PersistablePool(object):
         from AdaptiveArtifacts.model import Instance, MetaElementInstance, Classifier, Package, Property, Entity, InstancePool
         ppool = PersistablePool(InstancePool())
         # load m2 from database
-        for m2_class in (Instance, MetaElementInstance, Classifier, Package, Property, Entity):
-            m2_class.id = PersistableInstance.load(env, name=m2_class.__name__, ppool=ppool).instance.get_identifier()
+        for m2_class in (Entity, Instance, MetaElementInstance, Classifier, Package, Property):
+            pi = PersistableInstance.load(env, name=m2_class.__name__, ppool=ppool)
+            m2_class.id = pi.instance.get_identifier()
+            pi.instance.set_value('__id_meta', Entity.id) # the meta of all M2 instances is Entity
+            pi.instance.__class__ = Entity
         return ppool
 
     def get_instance(self, env, identifier=None, name=None, version=None):

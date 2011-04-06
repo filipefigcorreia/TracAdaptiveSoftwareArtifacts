@@ -12,7 +12,7 @@ schema_version = 1
 schema = [
     Table('asa_instance', key='id')[
         Column('id'),
-        Column('name_meta'),
+        Column('id_meta'),
         Column('name'), # only filled if meta_level >= 1
         Column('version', type='int64'),
         Column('time', type='int64'),

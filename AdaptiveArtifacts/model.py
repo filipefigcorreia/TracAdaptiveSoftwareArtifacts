@@ -11,6 +11,8 @@ from persistable_instance import PersistableInstance, PersistablePool
 #from meta_model import meta_model
 
 class Version(object):
+    id = None
+
     @classmethod
     def get_all_version(cls, instance=None):
         """
@@ -30,23 +32,25 @@ class Version(object):
 
 
 class Instance(object):
+    id = None
+
     """Represents an instance at any model level"""
-    def __init__(self, pool, name_meta, identifier=None, meta_level='0'):
+    def __init__(self, pool, id_meta, identifier=None, meta_level='0'):
         """
         pool --- the pool that the instances of this class will belong to
         identifier --- the uuid that uniquely identifies this instance
         meta -- the Entity to which this instance complies. For M2 and M3 instances it will always be 'Entity'
         """
-        if name_meta != 'Entity' and self.__class__.__name__ != 'Instance':
-            raise Exception("All M0s should be naturally born instances.")
-        #TODO: it should be validated that the meta is always an Entity! should it not?
+        #if name_meta != 'Entity' and self.__class__.__name__ != 'Instance':
+        #    raise Exception("All M0s should be naturally born instances.")
+        ##TODO: it should be validated that the meta is always an Entity! should it not?
 
         self.state = InstanceState() # TODO: refactor this to a self.states dictionay in which each key,value is of type Version,InstanceState
         if identifier is None:
             self.__identifier = str(uuid.uuid4())
         else:
             self.__identifier = identifier
-        self.add_value('__name_meta', name_meta)
+        self.add_value('__id_meta', id_meta)
         self.add_value('__meta_level', meta_level)
         if not pool is None:
             pool.add(self)
@@ -55,8 +59,8 @@ class Instance(object):
     def get_identifier(self):
         return self.__identifier
 
-    def get_name_meta(self):
-        return self.get_value('__name_meta')
+    def get_id_meta(self):
+        return self.get_value('__id_meta')
 
     def get_meta_level(self):
         return self.get_value('__meta_level')
@@ -98,14 +102,15 @@ class Instance(object):
         instance.pool.remove(identifier)
         instance.__identifier = identifier
         instance.state.slots = properties
-        name_metas = properties['__name_meta']
-        if Instance.__name__ in name_metas:
+
+        id_meta = properties['__id_meta']
+        if not Instance.id is None and Instance.id == id_meta:
             instance.__class__ = Instance
-        elif Package.__name__ in name_metas:
+        elif not Package.id is None and Package.id == id_meta:
             instance.__class__ = Package
-        elif Property.__name__ in name_metas:
+        elif not Property.id is None and Property.id == id_meta:
             instance.__class__ = Property
-        elif Entity.__name__ in name_metas:
+        elif not Entity.id is None and Entity.id == id_meta:
             instance.__class__ = Entity
         pool.add(instance)
         return instance
@@ -114,6 +119,8 @@ class Instance(object):
 #        return [property_name for property_name in self.state.slots if not property_name.startswith('__')]
 
 class InstanceState(object):
+    id = None
+
     def __init__(self, version=None):
         self.slots = {} # dictionay in which each key,value is of type unicodestring,arbitraryvalue
         #self.version = version # version in which this state was created
@@ -131,8 +138,10 @@ class MetaElementInstance(Instance):
     """
     An instance that may is described by a name. I.e., everything except M0s
     """
+    id = None
+
     def __init__(self, pool, name):
-         super(MetaElementInstance, self).__init__(pool=pool, name_meta=Entity.__name__)
+         super(MetaElementInstance, self).__init__(pool=pool, id_meta=Entity.id)
          self.set_value('__meta_level', '1') # MetaElementInstances' level is at least 1
          self.set_value('__name', name)
 
@@ -144,6 +153,8 @@ class MetaElementInstance(Instance):
         return self.get_value('__name')
 
 class Property(MetaElementInstance):
+    id = None
+
     def __init__(self, pool, name, lower_bound = 0, upper_bound = 1):
         super(Property, self).__init__(pool=pool, name=name)
         #TODO: changing an instance of this class will have to automatically result in changing instance that represents it in the pool.
@@ -155,11 +166,15 @@ class Property(MetaElementInstance):
         self.set_value('__domain', None) #Classifier
 
 class Classifier(MetaElementInstance):
+    id = None
+
     def __init__(self, pool, name):
         super(Classifier, self).__init__(pool=pool, name=name)
         self.set_value('__package', None) #Package
 
 class Entity(Classifier):
+    id = None
+
     def __init__(self, pool, name, inherits=None, meta_level='1'):
         super(Entity, self).__init__(pool=pool, name=name)
         self.set_value('__meta_level', meta_level)
@@ -197,6 +212,8 @@ class Entity(Classifier):
 
 
 class Package(MetaElementInstance):
+    id = None
+
     def __init__(self, pool, name):
         super(Package, self).__init__(pool=pool, name=name)
 
@@ -230,19 +247,29 @@ class InstancePool(object):
     def get_model_instances(self):
         return [instance for id, instance in self.instances.items() if instance.get_meta_level() == '1']
 
+_identifier_metas_map = {}
+
 def bootstrap_m2(env):
     pool = InstancePool()
-    # Create all M2 instances to the database
+    # Create all M2 instances and save to the database
+    Entity(pool, name=Entity.__name__,               inherits=Entity.__name__, meta_level='2')
     Entity(pool, name=Instance.__name__,             inherits=None, meta_level='2')
     Entity(pool, name=MetaElementInstance.__name__,  inherits=Instance.__name__, meta_level='2')
     Entity(pool, name=Classifier.__name__,           inherits=MetaElementInstance.__name__, meta_level='2')
     Entity(pool, name=Package.__name__,              inherits=MetaElementInstance.__name__, meta_level='2')
     Entity(pool, name=Property.__name__,             inherits=MetaElementInstance.__name__, meta_level='2')
-    Entity(pool, name=Entity.__name__,               inherits=Entity.__name__, meta_level='2')
 
-    db = env.get_db_cnx()
+    # copy identifiers from the data-meta-model to the hardcoded-meta-model
+    import sys
     for entity in pool.get_metamodel_instances():
-        pi = PersistableInstance(env, entity.get_identifier(), entity.get_name(), 0, db)
+        getattr(sys.modules[__name__], entity.get_name()).id = entity.get_identifier()
+
+    for entity in pool.get_metamodel_instances():
+        entity.set_value('__id_meta', Entity.id) # the meta of all M2 instances is Entity
+        pi = PersistableInstance(env, entity.get_identifier(), entity.get_name(), 0)
         pi.instance = entity
         pi.save_instance("system", "", "")
 
+def get_identifier_meta(meta):
+
+    return
