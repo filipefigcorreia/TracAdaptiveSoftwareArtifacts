@@ -7,8 +7,9 @@
 # you should have received as part of this distribution.
 
 import re
+import string
 from trac.core import *
-from trac.resource import IResourceManager
+from trac.resource import IResourceManager, ResourceNotFound
 from trac.web.chrome import INavigationContributor, ITemplateProvider #, add_stylesheet
 from trac.web.main import IRequestHandler
 from trac.util import escape, Markup, datefmt
@@ -16,9 +17,8 @@ from trac.env import IEnvironmentSetupParticipant
 from trac.resource import *
 from trac.mimeview.api import Context
 from AdaptiveArtifacts.environment_maintainer import ASAEnvironmentMaintainer
-from AdaptiveArtifacts.query import Query
-from AdaptiveArtifacts.model import InstancePool, Instance
-from AdaptiveArtifacts.persistable_instance import PersistableInstance
+#from AdaptiveArtifacts.query import Query
+from AdaptiveArtifacts.persistable_instance import PersistableInstance, PersistablePool
 
 class Core(Component):
     """Core module of the plugin. Provides the Adaptive-Artifacts themselves."""
@@ -46,7 +46,7 @@ class Core(Component):
             return False
 
     def process_request(self, req):
-        action = req.args.get('action', 'view')
+        action = req.args.get('action', 'view') # view, edit, list
         asa_resource_name = req.args.get('asa_resource', 'Entity')
         version = req.args.get('version')
         #old_version = req.args.get('old_version')
@@ -55,10 +55,22 @@ class Core(Component):
             req.redirect(req.href.wiki(asa_resource_name.strip('/')))
         #FIXME: using req.href.wiki ?!?
 
-        #pool = InstancePool()
-        instance = PersistableInstance.load(self.env, name=asa_resource_name, version=version)
+        ppool = PersistablePool.load(self.env)
+        pi = None
+        if string.find(asa_resource_name, '-') != -1:
+            pi = ppool.get_instance(self.env, identifier=asa_resource_name, version=version)
+            if pi is None:
+                raise ResourceNotFound("No resource found with identifier '%s'" % asa_resource_name)
+        else:
+            pi = ppool.get_instance(self.env, name=asa_resource_name, version=version)
+            if pi is None:
+                raise ResourceNotFound("No resource goes by the name of '%s'" % asa_resource_name)
 
-        return self._render_view(req, instance)
+        if action == 'view':
+            return self._render_view(req, pi.instance, pi.resource)
+        elif action == 'list':
+            return self._render_list(req, pi.instance, pi.resource)
+
 
         """
         if req.method == 'POST':
@@ -107,25 +119,32 @@ class Core(Component):
             return self._render_view(req, versioned_page)
 """
 
-
-    def _page_data(self, req, instance, action=''):
-        title = get_resource_summary(self.env, instance.resource)
-        if action:
-            title += ' (%s)' % action
-        return {'instance': instance, 'action': action, 'title': title}
-
-
-    def _render_view(self, req, instance):
-        data = self._page_data(req, instance)
-        data.update({
-            'context': Context.from_request(req, instance.resource),
-            'instance': instance.instance,
-            'dir': dir(instance.instance),
-            'type': type(instance.instance),
-            'repr': type(instance.instance),
-            'version': instance.resource.version,
-        })
+    def _render_view(self, req, instance, resource):
+        data = {
+            'context': Context.from_request(req, resource),
+            'action': 'view',
+            'instance': instance,
+            'dir': dir(instance),
+            'type': type(instance),
+            'repr': type(instance),
+            'version': resource.version,
+        }
         return 'asa_view.html', data, None
+
+    def _render_list(self, req, instance, resource):
+        instances = []
+        #FIXME: missing: where id_meta=pi.instance.get_id_meta()
+        for id, name, version in self.env.db_query("""
+                                        SELECT id, name, max(version) version
+                                        FROM asa_instance
+                                        GROUP BY id"""):
+            instances.append(PersistableInstance(self.env, id, name, version).instance)
+        data = {
+            'context': Context.from_request(req, resource),
+            'action': 'list',
+            'instances': instances,
+        }
+        return 'asa_list.html', data, None
 
 
     # ITemplateProvider methods
@@ -188,7 +207,7 @@ class Core(Component):
         #    return tag.a('Blog: '+instance.title, href=context.href.blog(resource.id))
         #else:
         #    return 'Blog: '+bp.title
-        return pi.instance.get_identifier()
+        return "ASA: '" + pi.instance.get_identifier() + "'"
 
     def resource_exists(self, resource):
         """Check whether the given `resource` exists physically.

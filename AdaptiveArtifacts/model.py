@@ -7,6 +7,7 @@
 # you should have received as part of this distribution.
 
 import uuid
+from persistable_instance import PersistableInstance, PersistablePool
 #from meta_model import meta_model
 
 class Version(object):
@@ -229,19 +230,17 @@ class InstancePool(object):
     def get_model_instances(self):
         return [instance for id, instance in self.instances.items() if instance.get_meta_level() == '1']
 
-
 def bootstrap_m2(env):
     pool = InstancePool()
-    #TODO: bootstrap this info from the database instead of bootstrapping it from memory
+    # Create all M2 instances to the database
     Entity(pool, name=Instance.__name__,             inherits=None, meta_level='2')
     Entity(pool, name=MetaElementInstance.__name__,  inherits=Instance.__name__, meta_level='2')
     Entity(pool, name=Classifier.__name__,           inherits=MetaElementInstance.__name__, meta_level='2')
     Entity(pool, name=Package.__name__,              inherits=MetaElementInstance.__name__, meta_level='2')
     Entity(pool, name=Property.__name__,             inherits=MetaElementInstance.__name__, meta_level='2')
     Entity(pool, name=Entity.__name__,               inherits=Entity.__name__, meta_level='2')
-    from persistable_instance import PersistableInstance
-    db = env.get_db_cnx()
 
+    db = env.get_db_cnx()
     for entity in pool.get_metamodel_instances():
         pi = PersistableInstance(env, entity.get_identifier(), entity.get_name(), 0, db)
         pi.instance = entity
