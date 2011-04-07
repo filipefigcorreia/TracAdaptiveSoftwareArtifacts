@@ -11,7 +11,7 @@
   </head>
   <body>
     <ul>
-        <li py:for="instance in instances">${instance.get_identifier()}</li>
+        <li py:for="instance in instances">${instance.get_identifier()} - ${instance.get_name()}</li>
     </ul>
   </body>
 </html>

@@ -70,13 +70,13 @@ class Core(Component):
             return self._render_view(req, pi.instance, pi.resource)
         elif action == 'list':
             instances = []
-            #FIXME: missing: where id_meta=pi.instance.get_id_meta()
             db = self.env.get_read_db()
             cursor = db.cursor()
             rows = cursor.execute("""
                                 SELECT id, name, max(version) version
                                 FROM asa_instance
-                                GROUP BY id""")
+                                WHERE id_meta='%s'
+                                GROUP BY id""" % pi.instance.get_id_meta())
             for id, name, version in rows.fetchall():
                 instances.append(PersistableInstance.load(self.env, id, name, version, ppool).instance)
             return self._render_list(req, instances, pi.resource)
