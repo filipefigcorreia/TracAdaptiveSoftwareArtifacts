@@ -68,13 +68,16 @@ class Instance(object):
     #def get_latest_state(self):
     #    return self.states[Version.get_latest_version(self)]
 
-    def add_value(self, property_name, property_value):
-        if not property_name in self.state.slots:
-            self.state.slots[property_name] = []
-        elif property_name in self.state.slots and not isinstance(self.state.slots[property_name], list):
-            val = self.state.slots[property_name]
-            self.state.slots[property_name] = [val]
-        self.state.slots[property_name].append(property_value)
+    def add_value(self, property_ref, property_value):
+        """
+        property_ref: can be either a private system reference, like '__meta_level', or a uuid identifier, if a reference to a Property
+        """
+        if not property_ref in self.state.slots:
+            self.state.slots[property_ref] = []
+        elif property_ref in self.state.slots and not isinstance(self.state.slots[property_ref], list):
+            val = self.state.slots[property_ref]
+            self.state.slots[property_ref] = [val]
+        self.state.slots[property_ref].append(property_value)
 
     def set_value(self, property_name, property_value):
         """Overrite the value, no matter what"""
@@ -96,22 +99,27 @@ class Instance(object):
         else:
             return []
 
+    def add_state(self, state):
+        """
+        Adds a new state to the dictionary and changes the instance's __class__
+        """
+        self.state = state #TODO: this should be a dictionary and not a var
+        id_meta = state.slots['__id_meta']
+        if not Instance.id is None and Instance.id == id_meta:
+            self.__class__ = Instance
+        elif not Package.id is None and Package.id == id_meta:
+            self.__class__ = Package
+        elif not Property.id is None and Property.id == id_meta:
+            self.__class__ = Property
+        elif not Entity.id is None and Entity.id == id_meta:
+            self.__class__ = Entity
+
     @classmethod
-    def create_from_properties(cls, pool, identifier, properties):
+    def create_from_properties(cls, pool, identifier, contents_dict):
         instance = Instance(pool, 'Instance', identifier)
         instance.pool.remove(identifier)
         instance.__identifier = identifier
-        instance.state.slots = properties
-
-        id_meta = properties['__id_meta']
-        if not Instance.id is None and Instance.id == id_meta:
-            instance.__class__ = Instance
-        elif not Package.id is None and Package.id == id_meta:
-            instance.__class__ = Package
-        elif not Property.id is None and Property.id == id_meta:
-            instance.__class__ = Property
-        elif not Entity.id is None and Entity.id == id_meta:
-            instance.__class__ = Entity
+        instance.add_state(InstanceState.create_from_properties(contents_dict))
         pool.add(instance)
         return instance
 
@@ -119,12 +127,12 @@ class Instance(object):
 #        return [property_name for property_name in self.state.slots if not property_name.startswith('__')]
 
 class InstanceState(object):
-    id = None
 
     def __init__(self, version=None):
         self.slots = {} # dictionay in which each key,value is of type unicodestring,arbitraryvalue
         #self.version = version # version in which this state was created
-"""
+
+    """
     def __getattr__(self, name):
         # proxy unknow attributes to the appropriate slot
         return self.slots[name]
@@ -132,7 +140,14 @@ class InstanceState(object):
     def __setattr__(self, name, value):
         # proxy unknow attributes to the appropriate slot 
         self.slots[name] = value
-"""
+    """
+
+    @classmethod
+    def create_from_properties(cls, contents_dict):
+        state = InstanceState()
+        state.slots = contents_dict
+        return state
+
 
 class MetaElementInstance(Instance):
     """
@@ -158,12 +173,12 @@ class Property(MetaElementInstance):
     def __init__(self, pool, name, lower_bound = 0, upper_bound = 1):
         super(Property, self).__init__(pool=pool, name=name)
         #TODO: changing an instance of this class will have to automatically result in changing instance that represents it in the pool.
-        self.set_value('__owner', None) #ObjectType
+        self.set_value('__owner', None) #Entity
         self.set_value('__lower_bound', lower_bound)
         self.set_value('__upper_bound', upper_bound)
         self.set_value('__unique', False)
         self.set_value('__read_only', False)
-        self.set_value('__domain', None) #Classifier
+        self.set_value('__domain', None) #Classifier. will be the id to an other instance, but can also assume the special value "string"
 
 class Classifier(MetaElementInstance):
     id = None
@@ -240,6 +255,18 @@ class InstancePool(object):
             return None # no instance by this name exists in the pool
         else:
             return None
+
+    def get_properties(self, owner_id):
+        """
+        Get Properties of the specified Entity
+        """
+        props = []
+        for id, instance in self.instances.items():
+            if type(instance) == Property:
+                if instance.get_value('__owner') == owner_id:
+                    props[id] = instance
+        return props
+
 
     def get_metamodel_instances(self):
         return [instance for id, instance in self.instances.items() if instance.get_meta_level() == '2']

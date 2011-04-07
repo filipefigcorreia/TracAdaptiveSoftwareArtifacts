@@ -44,62 +44,73 @@ class PersistableInstance(object):
         Loads an existing PersistableInstance from the database
         """
         pi = PersistableInstance(env, identifier, name, version)
-        pi._fetch_instance(identifier=identifier, name=name, version=version, ppool=ppool)
+        pi._fetch_contents(identifier=identifier, name=name, version=version, ppool=ppool)
         pi.resource = Resource('asa', pi.instance.get_identifier(), version) # in case we fetched the instance byits name instead of its identifier
         return pi
 
-    def _fetch_instance(self, identifier=None, name=None, version=None, ppool=None):
-        from AdaptiveArtifacts.model import Instance
-        import AdaptiveArtifacts.model as m
-        
+    def _fetch_contents(self, identifier=None, name=None, version=None, ppool=None):
+        """
+        Retrieves from the database a given state, or a set of states, for the specified instance
+        """
         if not identifier and not name:
             raise Exception("Nothing to fetch. Either identifier or name must be previded")
-        if not name is None:
-            filter = "name='%s'" %  name
-        else:
-            filter = "id='%s'" %  identifier
 
-        q = None
-        params = None
-        if version is not None:
-            q = """
-                SELECT id, id_meta, name, version, time, author, ipnr, contents, op_type, comment
-                FROM asa_instance
-                WHERE %s AND version=%s"""
-            params = (filter, int(version))
+        query = """
+            SELECT id, version, time, author, ipnr, op_type, comment
+            FROM asa_instance i
+            """
+        if not name is None:
+            query += """
+            	INNER JOIN asa_value v ON v.instance_id=i.id
+            WHERE property_instance_id='__name' AND value='%s'""" %  name
         else:
-            q = """
-                SELECT id, id_meta, name, version, time, author, ipnr, contents, op_type, comment
-                FROM asa_instance
-                WHERE %s ORDER BY version DESC LIMIT 1"""
-            params = (filter,)
+            query += " WHERE id='%s'" %  identifier
+
+        if not version is None:
+            query += " AND version=%d" %  int(version)
+        else:
+            query += ' ORDER BY version DESC LIMIT 1'
+
         db = self.env.get_read_db()
         cursor = db.cursor()
         row = None
+        emsg = ''
         try:
-            cursor.execute(q % params)
+            cursor.execute(query)
             row = cursor.fetchone()
         except Exception, e:
             row = None
+            emsg = e.message
 
         if not row:
-            raise Exception("""Could not fetch data for instance.\n %s""" % (q % params, ))
+            raise Exception("""Could not fetch data for instance.\n %s \n %s""" % (emsg, query))
 
-        identifier, name_meta, name, version, time, author, ipnr, contents, op_type, comment = row
-        contents_dict = pickle.loads(contents.encode('utf-8'))
+        identifier, version, time, author, ipnr, op_type, comment = row
+
+        query = """
+                SELECT property_instance_id, value
+                FROM asa_value
+                WHERE instance_id='%s' AND instance_version='%s'
+                """ % (identifier, version)
+        
+        cursor.execute(query)
+        contents_dict = dict(cursor.fetchall())
+        #contents_dict = pickle.loads(contents.encode('utf-8'))
 
         if ppool is None:
             ppool = PersistablePool.load(self.env)
-        self.instance = ppool.pool.get(identifier)
-        if self.instance is None:
-            self.instance =  Instance.create_from_properties(ppool.pool, identifier, contents_dict)
-            self.version = 1
+        #self.instance = ppool.pool.get(identifier) #TODO: we should probably get this directly from PersistablePool?
+        #if self.instance is None:
+        from AdaptiveArtifacts.model import Instance
+        self.instance =  Instance.create_from_properties(ppool.pool, identifier, contents_dict)
+        #    self.version = 1
         self.version = int(version)
         self.time = from_utimestamp(time)
         self.author = author
         self.comment = comment
         #self.text = text
         #self.readonly = readonly and int(readonly) or 0
+
 
     exists = property(fget=lambda self: self.version > 0)
 
@@ -110,20 +121,30 @@ class PersistableInstance(object):
         def do_delete(db):
             cursor = db.cursor()
             cursor.execute("DELETE FROM asa_instance WHERE id=%s", (self.identifier,))
+            cursor.execute("DELETE FROM asa_value WHERE instance_id=%s", (self.identifier,))
             self.env.log.info('Deleted asa_instance %s' % self.identifier)
 
     def save_instance(self, author, comment, remote_addr, t=None, db=None):
         @self.env.with_transaction()
         def do_save(db):
-            data = pickle.dumps(self.instance.state.slots).decode('utf-8')
+            #data = pickle.dumps(self.instance.state.slots).decode('utf-8')
+            new_version = self.version + 1
             cursor = db.cursor()
             cursor.execute("""
-                INSERT INTO asa_instance (id, id_meta, name, version, time, author, ipnr, contents,
-                                  op_type, comment)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                """, (self.instance.get_identifier(), self.instance.get_id_meta(), self.instance.get_name(), self.version + 1, to_utimestamp(t),
-                      author, remote_addr, data, 'C', comment))
-            self.version += 1
+                INSERT INTO asa_instance (id, version, time, author, ipnr, op_type, comment)
+                VALUES (%s,%s,%s,%s,%s,%s,%s)
+                """, (self.instance.get_identifier(), new_version, to_utimestamp(t), author, remote_addr, 'C', comment))
+            for property_ref in self.instance.state.slots:
+                #pool = self.instance.pool
+                #instance_meta = pool.get(id=self.instance.get_value('__id_meta'))
+                #properties_meta = pool.get_properties(instance_meta)
+                #if property_ref in properties_meta:
+                cursor.execute("""
+                    INSERT INTO asa_value (instance_id, instance_version, property_instance_id, value)
+                    VALUES (%s,%s,%s,%s)
+                    """, (self.instance.get_identifier(), new_version, property_ref, self.instance.state.slots[property_ref]))
+                
+            self.version += new_version
             self.resource = self.resource(version=self.version)
 
         self.author = author
@@ -158,3 +179,17 @@ class PersistablePool(object):
 
     def get_instance(self, env, identifier=None, name=None, version=None):
         return PersistableInstance.load(env, identifier=identifier, name=name, version=version, ppool=self)
+
+    def get_instances(self, env, id_meta):
+        instances = []
+        db = env.get_read_db()
+        cursor = db.cursor()
+        rows = cursor.execute("""
+                            SELECT id, max(version) version
+                            FROM asa_instance i
+                            	INNER JOIN asa_value v ON v.instance_id=i.id
+                            WHERE  property_instance_id='__id_meta' AND value='%s'
+                            GROUP BY id""" % id_meta)
+        for id, version in rows.fetchall():
+            instances.append(PersistableInstance.load(env, id, version=version, ppool=self))
+        return instances

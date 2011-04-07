@@ -69,16 +69,8 @@ class Core(Component):
         if action == 'view':
             return self._render_view(req, pi.instance, pi.resource)
         elif action == 'list':
-            instances = []
-            db = self.env.get_read_db()
-            cursor = db.cursor()
-            rows = cursor.execute("""
-                                SELECT id, name, max(version) version
-                                FROM asa_instance
-                                WHERE id_meta='%s'
-                                GROUP BY id""" % pi.instance.get_id_meta())
-            for id, name, version in rows.fetchall():
-                instances.append(PersistableInstance.load(self.env, id, name, version, ppool).instance)
+            ppool = PersistablePool.load(self.env)
+            instances = [pi.instance for pi in ppool.get_instances(self.env, pi.instance.get_id_meta())]
             return self._render_list(req, instances, pi.resource)
 
 

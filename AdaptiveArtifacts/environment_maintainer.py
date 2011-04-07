@@ -53,6 +53,7 @@ class ASAEnvironmentMaintainer(object):
 
 def _bootstrap_m2(env):
     import sys
+    import model
     from model import InstancePool, Entity, Instance, MetaElementInstance, Classifier, Package, Property
     from persistable_instance import PersistableInstance
     pool = InstancePool()
@@ -66,7 +67,7 @@ def _bootstrap_m2(env):
 
     # copy identifiers from the data-meta-model to the hardcoded-meta-model
     for entity in pool.get_metamodel_instances():
-        getattr(sys.modules[__name__], entity.get_name()).id = entity.get_identifier()
+        getattr(model, entity.get_name()).id = entity.get_identifier()
 
     for entity in pool.get_metamodel_instances():
         entity.set_value('__id_meta', Entity.id) # the meta of all M2 instances is Entity
