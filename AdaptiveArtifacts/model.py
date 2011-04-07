@@ -246,30 +246,3 @@ class InstancePool(object):
 
     def get_model_instances(self):
         return [instance for id, instance in self.instances.items() if instance.get_meta_level() == '1']
-
-_identifier_metas_map = {}
-
-def bootstrap_m2(env):
-    pool = InstancePool()
-    # Create all M2 instances and save to the database
-    Entity(pool, name=Entity.__name__,               inherits=Entity.__name__, meta_level='2')
-    Entity(pool, name=Instance.__name__,             inherits=None, meta_level='2')
-    Entity(pool, name=MetaElementInstance.__name__,  inherits=Instance.__name__, meta_level='2')
-    Entity(pool, name=Classifier.__name__,           inherits=MetaElementInstance.__name__, meta_level='2')
-    Entity(pool, name=Package.__name__,              inherits=MetaElementInstance.__name__, meta_level='2')
-    Entity(pool, name=Property.__name__,             inherits=MetaElementInstance.__name__, meta_level='2')
-
-    # copy identifiers from the data-meta-model to the hardcoded-meta-model
-    import sys
-    for entity in pool.get_metamodel_instances():
-        getattr(sys.modules[__name__], entity.get_name()).id = entity.get_identifier()
-
-    for entity in pool.get_metamodel_instances():
-        entity.set_value('__id_meta', Entity.id) # the meta of all M2 instances is Entity
-        pi = PersistableInstance(env, entity.get_identifier(), entity.get_name(), 0)
-        pi.instance = entity
-        pi.save_instance("system", "", "")
-
-def get_identifier_meta(meta):
-
-    return
