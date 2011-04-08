@@ -70,7 +70,7 @@ class Core(Component):
             return self._render_view(req, pi.instance, pi.resource)
         elif action == 'list':
             ppool = PersistablePool.load(self.env)
-            instances = [pi.instance for pi in ppool.get_instances(self.env, pi.instance.get_id_meta())]
+            instances = [pi.instance for pi in ppool.get_instances(self.env, pi.instance.get_identifier())]
             return self._render_list(req, instances, pi.resource)
 
 

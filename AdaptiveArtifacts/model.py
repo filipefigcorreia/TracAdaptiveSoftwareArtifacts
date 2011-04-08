@@ -62,6 +62,9 @@ class Instance(object):
     def get_id_meta(self):
         return self.get_value('__id_meta')
 
+    def get_meta(self):
+        return self.pool.get(self.get_value('__id_meta'))
+
     def get_meta_level(self):
         return self.get_value('__meta_level')
 
@@ -79,13 +82,13 @@ class Instance(object):
             self.state.slots[property_ref] = [val]
         self.state.slots[property_ref].append(property_value)
 
-    def set_value(self, property_name, property_value):
+    def set_value(self, property_ref, property_value):
         """Overrite the value, no matter what"""
-        self.state.slots[property_name] = property_value
+        self.state.slots[property_ref] = property_value
 
-    def get_value(self, property_name):
-        if property_name in self.state.slots:
-            val = self.state.slots[property_name]
+    def get_value(self, property_ref):
+        if property_ref in self.state.slots:
+            val = self.state.slots[property_ref]
             if isinstance(val, list):
                 if len(val) > 0:
                     return val[0]
@@ -93,9 +96,9 @@ class Instance(object):
                 return val
         return None
 
-    def get_values(self, property_name):
-        if property_name in self.state.slots:
-            return self.state.slots[property_name]
+    def get_values(self, property_ref):
+        if property_ref in self.state.slots:
+            return self.state.slots[property_ref]
         else:
             return []
 
@@ -104,15 +107,20 @@ class Instance(object):
         Adds a new state to the dictionary and changes the instance's __class__
         """
         self.state = state #TODO: this should be a dictionary and not a var
-        id_meta = state.slots['__id_meta']
-        if not Instance.id is None and Instance.id == id_meta:
-            self.__class__ = Instance
-        elif not Package.id is None and Package.id == id_meta:
-            self.__class__ = Package
-        elif not Property.id is None and Property.id == id_meta:
-            self.__class__ = Property
-        elif not Entity.id is None and Entity.id == id_meta:
+        if self.get_identifier()==self.get_id_meta(): # special case: closing the meta-* roof
             self.__class__ = Entity
+        else:
+            name_meta = self.get_meta().get_name()
+            if name_meta==Entity.__name__:
+                self.__class__ = Entity
+            elif name_meta==Instance.__name__:
+                self.__class__ = Instance
+            elif name_meta==Package.__name__:
+                self.__class__ = Package
+            elif name_meta==Property.__name__:
+                self.__class__ = Property
+            else:
+                raise Exception("Unknown element meta: %s" % name_meta)
 
     @classmethod
     def create_from_properties(cls, pool, identifier, contents_dict):
@@ -217,13 +225,16 @@ class Entity(Classifier):
                 break
         return False
 
-    def add_property(self, property):
+    def add_property_old(self, property):
         #meta = self.pool.get(name=self.get_value('__meta'))
         self.add_value('__properties', property)
 
-    def get_properties(self):
+    def get_properties_old(self): #TODO: fix this. The '__properties' magic word showld not be used anymore, right?
         #self = self.pool.get(name=self.get_value('__meta'))
         return self.get_values('__properties')
+
+    def get_properties(self):
+        return self.pool.get_properties(self.get_identifier())
 
 
 class Package(MetaElementInstance):

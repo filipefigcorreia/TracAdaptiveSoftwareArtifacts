@@ -39,11 +39,11 @@ class Properties(unittest.TestCase):
         self.pool = InstancePool()
         self.car = Entity(self.pool, "Car")
         self.wheels = Property(self.pool, 'Wheels', 4, 4)
-        self.car.add_property(self.wheels)
+        self.car.add_property_old(self.wheels)
 
     def test_access_property(self):
-        self.assertEqual(len(self.car.get_properties()), 1)
-        self.assertEqual(self.car.get_properties()[0].get_name(), 'Wheels')
+        self.assertEqual(len(self.car.get_properties_old()), 1)
+        self.assertEqual(self.car.get_properties_old()[0].get_name(), 'Wheels')
 
     def test_add_property(self):
         self.lightningMcQueen = Instance(self.pool, self.car)
