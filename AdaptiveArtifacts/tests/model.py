@@ -56,12 +56,12 @@ class Properties(unittest.TestCase):
 
 class MetaModelSanityCheck(unittest.TestCase):
     def test_self_meta(self):
-        pool = InstancePool()
-        self.assertEqual(pool.get(name="Entity").get_name_meta(), "Entity")
+        pool = InstancePool(True)
+        self.assertEqual(pool.get(name="Entity").get_meta().get_name(), "Entity")
 
 class ModelInspection(unittest.TestCase):
     def setUp(self):
-        self.pool = InstancePool()
+        self.pool = InstancePool(True)
         car = Entity(self.pool, "Car")
         corsa = Entity(self.pool, "Opel Corsa", car.get_name())
         enjoy = Entity(self.pool, "Opel Corsa Enjoy", corsa.get_name())
@@ -70,17 +70,17 @@ class ModelInspection(unittest.TestCase):
         entities = self.pool.get_model_instances()
         self.assertTrue(len(entities) == 3)
         for ent in entities:
-            self.assertEqual(ent.get_name_meta(), "Entity")
+            self.assertEqual(ent.get_meta().get_name(), "Entity")
         self.assertTrue(len([ent for ent in entities if ent.get_name() == "Car"])==1)
         self.assertTrue(len([ent for ent in entities if ent.get_name() == "Opel Corsa"])==1)
         self.assertTrue(len([ent for ent in entities if ent.get_name() == "Opel Corsa Enjoy"])==1)
 
 class Instantiation(unittest.TestCase):
     def test_instance_meta(self):
-        pool = InstancePool()
+        pool = InstancePool(True)
         ent = Entity(pool, "Car")
-        inst = Instance(pool, "Car")
-        self.assertEqual(ent.get_name(), inst.get_name_meta())
+        inst = Instance(pool, ent.get_identifier())
+        self.assertEqual(ent.get_name(), inst.get_meta().get_name())
 
 
 """

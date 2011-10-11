@@ -244,8 +244,30 @@ class Package(MetaElementInstance):
         super(Package, self).__init__(pool=pool, name=name)
 
 class InstancePool(object):
-    def __init__(self):
+    def __init__(self, bootstrap_with_m2=False):
         self.instances = {}
+        
+        if bootstrap_with_m2:
+            import sys
+            model = sys.modules[__name__]
+
+            pool = self
+            # Create all M2 instances and save to the database
+            Entity(pool, name=Entity.__name__, inherits=Entity.__name__, meta_level='2')
+            Entity(pool, name=Instance.__name__, inherits=None, meta_level='2')
+            Entity(pool, name=MetaElementInstance.__name__, inherits=Instance.__name__, meta_level='2')
+            Entity(pool, name=Classifier.__name__, inherits=MetaElementInstance.__name__, meta_level='2')
+            Entity(pool, name=Package.__name__, inherits=MetaElementInstance.__name__, meta_level='2')
+            Entity(pool, name=Property.__name__, inherits=MetaElementInstance.__name__, meta_level='2')
+
+            # copy identifiers from the data-meta-model to the hardcoded-meta-model, for convenience
+            for entity in pool.get_metamodel_instances():
+                getattr(model, entity.get_name()).id = entity.get_identifier()
+
+            # the meta of all M2 instances is Entity
+            for entity in pool.get_metamodel_instances():
+                entity.set_value('__id_meta', Entity.id)
+
 
     def add(self, instance):
         self.instances[instance.get_identifier()] = instance

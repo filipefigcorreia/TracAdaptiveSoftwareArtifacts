@@ -44,33 +44,20 @@ class ASAEnvironmentMaintainer(object):
 
         if self.schema_version == self.default_version:
             self.install_asa_support()
-            _bootstrap_m2(self.env)
+            _save_m2_bootstraped_pool(self.env)
 #        elif self.schema_version == 'XXXX':
 #            cursor = db.cursor()
 #            cursor.execute("UPDATE various stuff ...")
 #            cursor.execute("UPDATE system SET value=%s WHERE name='%s'" % (self.db_key, self.running_version))
 #            self.log.info('Upgraded ASA tables from version %s to %s' % (self.db_key, self.running_version))
 
-def _bootstrap_m2(env):
-    import sys
-    import model
-    from model import InstancePool, Entity, Instance, MetaElementInstance, Classifier, Package, Property
+def _save_m2_bootstraped_pool(env):
     from persistable_instance import PersistableInstance
-    pool = InstancePool()
-    # Create all M2 instances and save to the database
-    Entity(pool, name=Entity.__name__,               inherits=Entity.__name__, meta_level='2')
-    Entity(pool, name=Instance.__name__,             inherits=None, meta_level='2')
-    Entity(pool, name=MetaElementInstance.__name__,  inherits=Instance.__name__, meta_level='2')
-    Entity(pool, name=Classifier.__name__,           inherits=MetaElementInstance.__name__, meta_level='2')
-    Entity(pool, name=Package.__name__,              inherits=MetaElementInstance.__name__, meta_level='2')
-    Entity(pool, name=Property.__name__,             inherits=MetaElementInstance.__name__, meta_level='2')
+    from model import InstancePool
 
-    # copy identifiers from the data-meta-model to the hardcoded-meta-model
-    for entity in pool.get_metamodel_instances():
-        getattr(model, entity.get_name()).id = entity.get_identifier()
+    pool = InstancePool(True)
 
     for entity in pool.get_metamodel_instances():
-        entity.set_value('__id_meta', Entity.id) # the meta of all M2 instances is Entity
         pi = PersistableInstance(env, entity.get_identifier(), entity.get_name(), 0)
         pi.instance = entity
         pi.save_instance("system", "", "")
