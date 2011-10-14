@@ -46,14 +46,13 @@ class Core(Component):
             return False
 
     def process_request(self, req):
-        action = req.args.get('action', 'list') # view, edit, list
+        action = req.args.get('action', 'list') # view, edit, list, instantiate
         asa_resource_name = req.args.get('asa_resource', 'Entity')
         version = req.args.get('version')
         #old_version = req.args.get('old_version')
 
         if asa_resource_name.endswith('/'):
-            req.redirect(req.href.wiki(asa_resource_name.strip('/')))
-        #FIXME: using req.href.wiki ?!?
+            req.redirect(req.href.adaptiveartifacts(asa_resource_name.strip('/')))
 
         ppool = PersistablePool.load(self.env)
         pi = None
@@ -70,9 +69,14 @@ class Core(Component):
             return self._render_view(req, pi.instance, pi.resource)
         elif action == 'list':
             ppool = PersistablePool.load(self.env)
-            instances = [pi.instance for pi in ppool.get_instances(self.env, pi.instance.get_identifier())]
-            return self._render_list(req, instances, pi.resource)
-
+            entities = [pi.instance for pi in ppool.get_instances(self.env, pi.instance.get_identifier(), [1])]
+            instances = [pi.instance for pi in ppool.get_instances(self.env, pi.instance.get_identifier(), [0])]
+            return self._render_list(req, entities, pi.instance, instances, pi.resource)
+        elif action == 'instantiate':
+            ppool = PersistablePool.load(self.env)
+            from model import Instance
+            shallow_instance = Instance(ppool.pool, pi.instance.get_identifier())
+            return self._render_instantiate(req, pi.instance, shallow_instance, pi.resource)
 
         """
         if req.method == 'POST':
@@ -133,13 +137,28 @@ class Core(Component):
         }
         return 'asa_view.html', data, None
 
-    def _render_list(self, req, instances, resource):
+    def _render_list(self, req, entities, context_instance, instances, resource):
         data = {
             'context': Context.from_request(req, resource),
             'action': 'list',
+            'resource': resource,
+            'context_instance': context_instance,
+            'entities': entities,
             'instances': instances,
         }
         return 'asa_list.html', data, None
+
+    def _render_instantiate(self, req, instance_meta, shallow_instance, resource):
+        data = {
+            'context': Context.from_request(req, resource),
+            'action': 'list',
+            'resource': resource,
+            'instance_meta': instance_meta,
+            'instance': shallow_instance,
+        }
+        return 'asa_edit.html', data, None
+
+
 
 
     # ITemplateProvider methods

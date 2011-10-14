@@ -180,16 +180,19 @@ class PersistablePool(object):
     def get_instance(self, env, identifier=None, name=None, version=None):
         return PersistableInstance.load(env, identifier=identifier, name=name, version=version, ppool=self)
 
-    def get_instances(self, env, id_meta):
+    def get_instances(self, env, id_meta, levels=[0,1]):
         instances = []
         db = env.get_read_db()
         cursor = db.cursor()
         rows = cursor.execute("""
                             SELECT id, max(version) version
                             FROM asa_instance i
-                            	INNER JOIN asa_value v ON v.instance_id=i.id
-                            WHERE  property_instance_id='__id_meta' AND value='%s'
-                            GROUP BY id""" % id_meta)
+                            	INNER JOIN asa_value v_idm ON v_idm.instance_id=i.id
+                            	INNER JOIN asa_value v_lvm ON v_lvm.instance_id=i.id
+                            WHERE
+                                v_idm.property_instance_id='__id_meta' AND v_idm.value='%s' AND
+                                v_lvm.property_instance_id='__meta_level' AND v_lvm.value in (%s)
+                            GROUP BY id""" % (id_meta, ",".join(["%s" % lvl for lvl in levels])))
         for id, version in rows.fetchall():
             instances.append(PersistableInstance.load(env, id, version=version, ppool=self))
         return instances

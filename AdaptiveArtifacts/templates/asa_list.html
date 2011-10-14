@@ -10,8 +10,20 @@
     <title></title>
   </head>
   <body>
-    <ul>
-        <li py:for="instance in instances">${instance.get_identifier()} - ${instance.get_name()}</li>
-    </ul>
+      Entities:
+      <ul>
+          <li py:for="instance in instances">${instance.get_identifier()} - ${instance.get_name()}</li>
+      </ul>
+
+
+      <hr/>
+      <form method="get" action="${href.adaptiveartifacts(context_instance.id)}" id="modifypage">
+          <input type="hidden" name="action" value="instantiate" />
+          <input type="submit" value="Create new instance" />
+      </form>
+      Instances:
+      <ul>
+          <li py:for="instance in instances">${instance.get_identifier()} - ${instance.get_name()}</li>
+      </ul>
   </body>
 </html>

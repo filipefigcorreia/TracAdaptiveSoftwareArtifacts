@@ -1,0 +1,31 @@
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:i18n="http://genshi.edgewall.org/i18n"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include href="layout.html" />
+  <head>
+    <title></title>
+  </head>
+  <body>
+      Create new ${href.adaptiveartifacts(instance_meta.get_name())}
+      <form method="post" action="${href.adaptiveartifacts(instance_meta.id)}">
+          <input type="hidden" name="id" value="${href.adaptiveartifacts(instance.id)}" />
+          <!-- FIXME: Name and Inherits are just regular properties! The DB must be bootstrapped with Properties for the Entity at the M2 level!!! -->
+          Name: <input type="text" name="name" value="${href.adaptiveartifacts(instance.get_name())}" />
+          Inherits: <input type="text" name="inherits" value="${href.adaptiveartifacts(instance.get_parent().get_name())}" />
+          Properties:
+          <ul>
+              <li py:for="property in instance_meta.get_properties()">Name: <input type="text" name="${property.get_identifier()}" value="${property.get_name()}" /> Domain: <input type="text" name="" value="" /></li>
+          </ul>
+          Add new property:
+          <br/>
+          Name: <input type="text" name="new-property-1" value="" /> Domain: <input type="text" name="" value="" />
+
+          <input type="hidden" name="action" value="instantiate" />
+          <input type="submit" value="Create" />
+      </form>
+  </body>
+</html>
