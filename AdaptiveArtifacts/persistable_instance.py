@@ -139,6 +139,7 @@ class PersistableInstance(object):
                 #instance_meta = pool.get(id=self.instance.get_value('__id_meta'))
                 #properties_meta = pool.get_properties(instance_meta)
                 #if property_ref in properties_meta:
+                #self.env.log.error((self.instance.get_identifier(), new_version, property_ref, self.instance.state.slots[property_ref]))
                 cursor.execute("""
                     INSERT INTO asa_value (instance_id, instance_version, property_instance_id, value)
                     VALUES (%s,%s,%s,%s)

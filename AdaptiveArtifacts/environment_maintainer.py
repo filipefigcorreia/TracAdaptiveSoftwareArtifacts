@@ -8,6 +8,7 @@
 
 from trac.db import DatabaseManager
 from AdaptiveArtifacts import schema
+import traceback
 
 class ASAEnvironmentMaintainer(object):
     """Modifies environments according to the needs of the ASA plugin"""
@@ -42,14 +43,19 @@ class ASAEnvironmentMaintainer(object):
     def upgrade(self):
         self.env.log.debug("The ASA plugin is upgrading the existing environment.")
 
-        if self.schema_version == self.default_version:
-            self.install_asa_support()
-            _save_m2_bootstraped_pool(self.env)
-#        elif self.schema_version == 'XXXX':
-#            cursor = db.cursor()
-#            cursor.execute("UPDATE various stuff ...")
-#            cursor.execute("UPDATE system SET value=%s WHERE name='%s'" % (self.db_key, self.running_version))
-#            self.log.info('Upgraded ASA tables from version %s to %s' % (self.db_key, self.running_version))
+        try:
+            if self.schema_version == self.default_version:
+                self.install_asa_support()
+                _save_m2_bootstraped_pool(self.env)
+#           elif self.schema_version == 'XXXX':
+#                cursor = db.cursor()
+#                cursor.execute("UPDATE various stuff ...")
+#                cursor.execute("UPDATE system SET value=%s WHERE name='%s'" % (self.db_key, self.running_version))
+#               self.log.info('Upgraded ASA tables from version %s to %s' % (self.db_key, self.running_version))
+        finally:
+            pass
+            #self.env.log.error(traceback.format_exc())
+
 
 def _save_m2_bootstraped_pool(env):
     from persistable_instance import PersistableInstance
