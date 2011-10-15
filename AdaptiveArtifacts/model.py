@@ -50,8 +50,8 @@ class Instance(object):
             self.__identifier = str(uuid.uuid4())
         else:
             self.__identifier = identifier
-        self.add_value('__id_meta', id_meta)
-        self.add_value('__meta_level', meta_level)
+        self.set_value('__id_meta', id_meta)
+        self.set_value('__meta_level', meta_level)
         if not pool is None:
             pool.add(self)
         self.pool = pool
@@ -159,14 +159,15 @@ class InstanceState(object):
 
 class MetaElementInstance(Instance):
     """
-    An instance that may is described by a name. I.e., everything except M0s
+    An instance of a meta-level. I.e., everything except M0s
     """
     id = None
 
-    def __init__(self, pool, name):
-         super(MetaElementInstance, self).__init__(pool=pool, id_meta=Entity.id)
-         self.set_value('__meta_level', '1') # MetaElementInstances' level is at least 1
-         self.set_value('__name', name)
+    def __init__(self, pool, name, meta_level='1'):
+        if meta_level < '1':
+            raise Exception("MetaElementInstances' level must be at least 1")
+        super(MetaElementInstance, self).__init__(pool=pool, id_meta=Entity.id, meta_level=meta_level)
+        self.set_value('__name', name)
 
     def get_name(self):
         """
@@ -178,29 +179,29 @@ class MetaElementInstance(Instance):
 class Property(MetaElementInstance):
     id = None
 
-    def __init__(self, pool, name, lower_bound = 0, upper_bound = 1):
-        super(Property, self).__init__(pool=pool, name=name)
-        #TODO: changing an instance of this class will have to automatically result in changing instance that represents it in the pool.
-        self.set_value('__owner', None) #Entity
+    def __init__(self, pool, name, owner, domain = "string", lower_bound = 0, upper_bound = 1, meta_level='1'):
+        super(Property, self).__init__(pool=pool, name=name, meta_level=meta_level)
+        #TODO: mindtwist: changing an instance of this class will have to automatically result in changing instance that represents it in the pool.
+        self.set_value('__meta_level', meta_level)
+        self.set_value('__owner', owner) #Entity
+        self.set_value('__domain', domain) #Classifier. will be the id to an other instance, but can also assume the special value "string"
         self.set_value('__lower_bound', lower_bound)
         self.set_value('__upper_bound', upper_bound)
-        self.set_value('__unique', False)
-        self.set_value('__read_only', False)
-        self.set_value('__domain', None) #Classifier. will be the id to an other instance, but can also assume the special value "string"
+        #self.set_value('__unique', False)
+        #self.set_value('__read_only', False)
 
 class Classifier(MetaElementInstance):
     id = None
 
-    def __init__(self, pool, name):
-        super(Classifier, self).__init__(pool=pool, name=name)
+    def __init__(self, pool, name, meta_level='1'):
+        super(Classifier, self).__init__(pool=pool, name=name, meta_level=meta_level)
         self.set_value('__package', None) #Package
 
 class Entity(Classifier):
     id = None
 
     def __init__(self, pool, name, inherits=None, meta_level='1'):
-        super(Entity, self).__init__(pool=pool, name=name)
-        self.set_value('__meta_level', meta_level)
+        super(Entity, self).__init__(pool=pool, name=name, meta_level=meta_level)
         self.set_value('__inherits', inherits)
         # There will also be 0..* Properties, each stored in its own key
         # TODO: handle properties with cardinality > 1
@@ -252,19 +253,35 @@ class InstancePool(object):
             model = sys.modules[__name__]
 
             pool = self
-            # Create all M2 instances and save to the database
-            Entity(pool, name=Entity.__name__, inherits=Entity.__name__, meta_level='2')
-            Entity(pool, name=Instance.__name__, inherits=None, meta_level='2')
-            Entity(pool, name=MetaElementInstance.__name__, inherits=Instance.__name__, meta_level='2')
-            Entity(pool, name=Classifier.__name__, inherits=MetaElementInstance.__name__, meta_level='2')
-            Entity(pool, name=Package.__name__, inherits=MetaElementInstance.__name__, meta_level='2')
-            Entity(pool, name=Property.__name__, inherits=MetaElementInstance.__name__, meta_level='2')
+            # Create all M2 instances
+            instance_ent = Entity(pool, name=Instance.__name__, inherits=None, meta_level='2')
+            metaelement_ent = Entity(pool, name=MetaElementInstance.__name__, inherits=Instance.__name__, meta_level='2')
+            property_ent = Entity(pool, name=Property.__name__, inherits=MetaElementInstance.__name__, meta_level='2')
+            classifier_ent = Entity(pool, name=Classifier.__name__, inherits=MetaElementInstance.__name__, meta_level='2')
+            package_ent = Entity(pool, name=Package.__name__, inherits=MetaElementInstance.__name__, meta_level='2')
+            entity_ent = Entity(pool, name=Entity.__name__, inherits=Entity.__name__, meta_level='2')
 
-            # copy identifiers from the data-meta-model to the hardcoded-meta-model, for convenience
-            for entity in pool.get_metamodel_instances():
-                getattr(model, entity.get_name()).id = entity.get_identifier()
+            # Copy identifiers from the data-meta-model to the hardcoded-meta-model, for convenience
+            Instance.id = instance_ent.get_identifier()
+            MetaElementInstance.id = metaelement_ent.get_identifier()
+            Property.id = property_ent.get_identifier()
+            Classifier.id = classifier_ent.get_identifier()
+            Package.id = package_ent.get_identifier()
+            Entity.id = entity_ent.get_identifier()
 
-            # the meta of all M2 instances is Entity
+            #entity
+            Property(pool, "__meta", entity_ent.id, entity_ent.id, 1, 1, "2")
+            Property(pool, "__name", entity_ent.id, "string", 1, 1, "2")
+            Property(pool, "__inherits", entity_ent.id, entity_ent.id, 1, 1, "2")
+            #property
+            Property(pool, "__meta", property_ent.id, entity_ent.id, 1, 1, "2")
+            Property(pool, "__name", property_ent.id, "string", 1, 1, "2")
+            Property(pool, "__domain", property_ent.id, "string", 0, 1, "2")
+            Property(pool, "__owner", property_ent.id, entity_ent.id, 1, 1, "2")
+            #instance
+            Property(pool, "__meta", instance_ent.id, entity_ent.id, 1, 1, "2")
+
+            # The meta of all M2 instances is Entity. This is what finally ClosesTheRoof
             for entity in pool.get_metamodel_instances():
                 entity.set_value('__id_meta', Entity.id)
 
