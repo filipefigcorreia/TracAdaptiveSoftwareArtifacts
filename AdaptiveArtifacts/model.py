@@ -50,7 +50,7 @@ class Instance(object):
             self.__identifier = str(uuid.uuid4())
         else:
             self.__identifier = identifier
-        self.set_value('__id_meta', id_meta)
+        self.set_value('__meta', id_meta)
         self.set_value('__meta_level', meta_level)
         if not pool is None:
             pool.add(self)
@@ -60,10 +60,10 @@ class Instance(object):
         return self.__identifier
 
     def get_id_meta(self):
-        return self.get_value('__id_meta')
+        return self.get_value('__meta')
 
     def get_meta(self):
-        return self.pool.get(self.get_value('__id_meta'))
+        return self.pool.get(self.get_value('__meta'))
 
     def get_meta_level(self):
         return self.get_value('__meta_level')
@@ -163,10 +163,10 @@ class MetaElementInstance(Instance):
     """
     id = None
 
-    def __init__(self, pool, name, meta_level='1'):
+    def __init__(self, pool, name, id_meta, meta_level='1'):
         if meta_level < '1':
             raise Exception("MetaElementInstances' level must be at least 1")
-        super(MetaElementInstance, self).__init__(pool=pool, id_meta=Entity.id, meta_level=meta_level)
+        super(MetaElementInstance, self).__init__(pool=pool, id_meta=id_meta, meta_level=meta_level)
         self.set_value('__name', name)
 
     def get_name(self):
@@ -180,7 +180,7 @@ class Property(MetaElementInstance):
     id = None
 
     def __init__(self, pool, name, owner, domain = "string", lower_bound = 0, upper_bound = 1, meta_level='1'):
-        super(Property, self).__init__(pool=pool, name=name, meta_level=meta_level)
+        super(Property, self).__init__(pool=pool, name=name, id_meta=Property.id, meta_level=meta_level)
         #TODO: mindtwist: changing an instance of this class will have to automatically result in changing instance that represents it in the pool.
         self.set_value('__meta_level', meta_level)
         self.set_value('__owner', owner) #Entity
@@ -193,15 +193,15 @@ class Property(MetaElementInstance):
 class Classifier(MetaElementInstance):
     id = None
 
-    def __init__(self, pool, name, meta_level='1'):
-        super(Classifier, self).__init__(pool=pool, name=name, meta_level=meta_level)
+    def __init__(self, pool, name, id_meta, meta_level='1'):
+        super(Classifier, self).__init__(pool=pool, name=name, id_meta=id_meta, meta_level=meta_level)
         self.set_value('__package', None) #Package
 
 class Entity(Classifier):
     id = None
 
     def __init__(self, pool, name, inherits=None, meta_level='1'):
-        super(Entity, self).__init__(pool=pool, name=name, meta_level=meta_level)
+        super(Entity, self).__init__(pool=pool, name=name, id_meta=Entity.id, meta_level=meta_level)
         self.set_value('__inherits', inherits)
         # There will also be 0..* Properties, each stored in its own key
         # TODO: handle properties with cardinality > 1
@@ -241,19 +241,19 @@ class Entity(Classifier):
 class Package(MetaElementInstance):
     id = None
 
-    def __init__(self, pool, name):
-        super(Package, self).__init__(pool=pool, name=name)
+    def __init__(self, pool, name, id_meta):
+        super(Package, self).__init__(pool=pool, name=name, id_meta=id_meta)
 
 class InstancePool(object):
-    def __init__(self, bootstrap_with_m2=False):
+    def __init__(self, bootstrap_with_new_m2=False):
         self.instances = {}
         
-        if bootstrap_with_m2:
+        if bootstrap_with_new_m2:
             import sys
             model = sys.modules[__name__]
 
             pool = self
-            # Create all M2 instances
+            # Create new M2 instances
             instance_ent = Entity(pool, name=Instance.__name__, inherits=None, meta_level='2')
             metaelement_ent = Entity(pool, name=MetaElementInstance.__name__, inherits=Instance.__name__, meta_level='2')
             property_ent = Entity(pool, name=Property.__name__, inherits=MetaElementInstance.__name__, meta_level='2')
@@ -269,22 +269,29 @@ class InstancePool(object):
             Package.id = package_ent.get_identifier()
             Entity.id = entity_ent.get_identifier()
 
-            #entity
-            Property(pool, "__meta", entity_ent.id, entity_ent.id, 1, 1, "2")
-            Property(pool, "__name", entity_ent.id, "string", 1, 1, "2")
-            Property(pool, "__inherits", entity_ent.id, entity_ent.id, 1, 1, "2")
-            #property
-            Property(pool, "__meta", property_ent.id, entity_ent.id, 1, 1, "2")
-            Property(pool, "__name", property_ent.id, "string", 1, 1, "2")
-            Property(pool, "__domain", property_ent.id, "string", 0, 1, "2")
-            Property(pool, "__owner", property_ent.id, entity_ent.id, 1, 1, "2")
-            #instance
-            Property(pool, "__meta", instance_ent.id, entity_ent.id, 1, 1, "2")
+            # Properties of Entity
+            Property(pool, "__meta", Entity.id, Entity.id, 1, 1, "2")
+            Property(pool, "__name", Entity.id, "string", 1, 1, "2")
+            Property(pool, "__inherits", Entity.id, Entity.id, 1, 1, "2")
+            # Properties of Property
+            Property(pool, "__meta", Property.id, Entity.id, 1, 1, "2")
+            Property(pool, "__name", Property.id, "string", 1, 1, "2")
+            Property(pool, "__domain", Property.id, "string", 0, 1, "2")
+            Property(pool, "__owner", Property.id, Entity.id, 1, 1, "2")
+            # Properties of Instance
+            Property(pool, "__meta", Instance.id, Entity.id, 1, 1, "2")
 
             # The meta of all M2 instances is Entity. This is what finally ClosesTheRoof
-            for entity in pool.get_metamodel_instances():
-                entity.set_value('__id_meta', Entity.id)
+            #for entity in pool.get_metamodel_instances():
+            #    entity.set_value('__meta', Entity.id)
 
+            instance_ent.set_value('__meta', Entity.id)
+            metaelement_ent.set_value('__meta', Entity.id)
+            property_ent.set_value('__meta', Entity.id)
+            classifier_ent.set_value('__meta', Entity.id)
+            package_ent.set_value('__meta', Entity.id)
+            entity_ent.set_value('__meta', Entity.id)
+            
 
     def add(self, instance):
         self.instances[instance.get_identifier()] = instance
@@ -314,7 +321,7 @@ class InstancePool(object):
         for id, instance in self.instances.items():
             if type(instance) == Property:
                 if instance.get_value('__owner') == owner_id:
-                    props[id] = instance
+                    props.append(instance)
         return props
 
 

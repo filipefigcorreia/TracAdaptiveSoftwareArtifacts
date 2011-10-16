@@ -136,7 +136,7 @@ class PersistableInstance(object):
                 """, (self.instance.get_identifier(), new_version, to_utimestamp(t), author, remote_addr, 'C', comment))
             for property_ref in self.instance.state.slots:
                 #pool = self.instance.pool
-                #instance_meta = pool.get(id=self.instance.get_value('__id_meta'))
+                #instance_meta = pool.get(id=self.instance.get_value('__meta'))
                 #properties_meta = pool.get_properties(instance_meta)
                 #if property_ref in properties_meta:
                 #self.env.log.error((self.instance.get_identifier(), new_version, property_ref, self.instance.state.slots[property_ref]))
@@ -167,22 +167,51 @@ class PersistablePool(object):
         self.pool = pool
 
     @classmethod
-    def load(cls, env):
+    def load_old(cls, env):
+        # Loads the entire M2 level from the database
         from AdaptiveArtifacts.model import Instance, MetaElementInstance, Classifier, Package, Property, Entity, InstancePool
         ppool = PersistablePool(InstancePool())
         # load m2 from database
+        # FIXME: either I must expand this (currently very naive) list of M2 entities, or make it more dynamic. I probably want to just load everything marked as lvl 2 that exists in the database
         for m2_class in (Entity, Instance, MetaElementInstance, Classifier, Package, Property):
             pi = PersistableInstance.load(env, name=m2_class.__name__, ppool=ppool)
             m2_class.id = pi.instance.get_identifier()
-            pi.instance.set_value('__id_meta', Entity.id) # the meta of all M2 instances is Entity
+            pi.instance.set_value('__meta', Entity.id) # the meta of all M2 instances is Entity
             pi.instance.__class__ = Entity
+        return ppool
+
+    @classmethod
+    def load(cls, env):
+        # Loads the entire M2 level from the database
+        from model import InstancePool
+        ppool = PersistablePool(InstancePool())
+        ppool.get_metamodel_instances(env)
         return ppool
 
     def get_instance(self, env, identifier=None, name=None, version=None):
         return PersistableInstance.load(env, identifier=identifier, name=name, version=version, ppool=self)
 
-    def get_instances(self, env, id_meta, levels=[0,1]):
-        instances = []
+    def get_metamodel_instances(self, env):
+        p_instances = []
+        db = env.get_read_db()
+        cursor = db.cursor()
+        # Note the exquisite acrobatics to ensure that "Entity" is the first result. It must be, because of call to meta
+        rows = cursor.execute("""
+                            SELECT id, max(version) version, v_name.value != 'Entity' is_not_entity
+                            FROM asa_instance i
+                            	INNER JOIN asa_value v_level ON v_level.instance_id=i.id
+                            	INNER JOIN asa_value v_name ON v_name.instance_id=i.id
+                            WHERE
+                                v_level.property_instance_id='__meta_level' AND v_level.value = '2' AND
+                                v_name.property_instance_id='__name'
+                            GROUP BY id, v_name.value
+                            ORDER BY is_not_entity, v_name.value""")
+        for id, version, dummy in rows.fetchall():
+            p_instances.append(PersistableInstance.load(env, id, version=version, ppool=self))
+        return p_instances
+
+    def get_instances_of(self, env, id_meta, levels=[0,1]):
+        p_instances = []
         db = env.get_read_db()
         cursor = db.cursor()
         rows = cursor.execute("""
@@ -191,9 +220,9 @@ class PersistablePool(object):
                             	INNER JOIN asa_value v_idm ON v_idm.instance_id=i.id
                             	INNER JOIN asa_value v_lvm ON v_lvm.instance_id=i.id
                             WHERE
-                                v_idm.property_instance_id='__id_meta' AND v_idm.value='%s' AND
+                                v_idm.property_instance_id='__meta' AND v_idm.value='%s' AND
                                 v_lvm.property_instance_id='__meta_level' AND v_lvm.value in (%s)
                             GROUP BY id""" % (id_meta, ",".join(["%s" % lvl for lvl in levels])))
         for id, version in rows.fetchall():
-            instances.append(PersistableInstance.load(env, id, version=version, ppool=self))
-        return instances
+            p_instances.append(PersistableInstance.load(env, id, version=version, ppool=self))
+        return p_instances

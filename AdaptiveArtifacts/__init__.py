@@ -68,12 +68,10 @@ class Core(Component):
         if action == 'view':
             return self._render_view(req, pi.instance, pi.resource)
         elif action == 'list':
-            ppool = PersistablePool.load(self.env)
-            entities = [pi.instance for pi in ppool.get_instances(self.env, pi.instance.get_identifier(), [1])]
-            instances = [pi.instance for pi in ppool.get_instances(self.env, pi.instance.get_identifier(), [0])]
+            entities = [pi.instance for pi in ppool.get_instances_of(self.env, pi.instance.get_identifier(), [1])]
+            instances = [pi.instance for pi in ppool.get_instances_of(self.env, pi.instance.get_identifier(), [0])]
             return self._render_list(req, entities, pi.instance, instances, pi.resource)
         elif action == 'instantiate':
-            ppool = PersistablePool.load(self.env)
             from model import Instance
             shallow_instance = Instance(ppool.pool, pi.instance.get_identifier())
             return self._render_instantiate(req, pi.instance, shallow_instance, pi.resource)

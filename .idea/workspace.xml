@@ -28,10 +28,10 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="model.py" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="model.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="325" column="0" selection-start="12794" selection-end="12794" vertical-scroll-proportion="0.0">
+            <state line="315" column="23" selection-start="12451" selection-end="12466" vertical-scroll-proportion="0.58156025">
               <folding />
             </state>
           </provider>
@@ -55,10 +55,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="asa_edit.html" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="asa_edit.html" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/templates/asa_edit.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="14" column="76" selection-start="668" selection-end="668" vertical-scroll-proportion="0.53488374">
+            <state line="14" column="76" selection-start="668" selection-end="668" vertical-scroll-proportion="-5.75">
               <folding />
             </state>
           </provider>
@@ -782,16 +782,16 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/model.py">
+    <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/templates/asa_edit.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="325" column="0" selection-start="12794" selection-end="12794" vertical-scroll-proportion="0.0">
+        <state line="14" column="76" selection-start="668" selection-end="668" vertical-scroll-proportion="-5.75">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/templates/asa_edit.html">
+    <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="14" column="76" selection-start="668" selection-end="668" vertical-scroll-proportion="0.53488374">
+        <state line="315" column="23" selection-start="12451" selection-end="12466" vertical-scroll-proportion="0.58156025">
           <folding />
         </state>
       </provider>

@@ -10,15 +10,12 @@
     <title></title>
   </head>
   <body>
-      Create new ${href.adaptiveartifacts(instance_meta.get_name())}
+      <h1>Create new ${instance_meta.get_name()} <small>(inherits ${instance_meta.get_parent().get_name()})</small></h1>
       <form method="post" action="${href.adaptiveartifacts(instance_meta.id)}">
-          <input type="hidden" name="id" value="${href.adaptiveartifacts(instance.id)}" />
-          <!-- FIXME: Name and Inherits are just regular properties! The DB must be bootstrapped with Properties for the Entity at the M2 level!!! -->
-          Name: <input type="text" name="name" value="${href.adaptiveartifacts(instance.get_name())}" />
-          Inherits: <input type="text" name="inherits" value="${href.adaptiveartifacts(instance.get_parent().get_name())}" />
-          Properties:
+          <input type="hidden" name="meta_id" value="${instance_meta.id}" />
+          <h2>Properties</h2>
           <ul>
-              <li py:for="property in instance_meta.get_properties()">Name: <input type="text" name="${property.get_identifier()}" value="${property.get_name()}" /> Domain: <input type="text" name="" value="" /></li>
+              <li py:for="property in instance_meta.get_properties()">${property.get_name()}: <input type="text" name="${property.get_identifier()}" value="" /> Domain: <input type="text" name="" value="" /></li>
           </ul>
           Add new property:
           <br/>
