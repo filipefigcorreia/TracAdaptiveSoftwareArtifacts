@@ -197,7 +197,7 @@ class PersistablePool(object):
         cursor = db.cursor()
         # Note the exquisite acrobatics to ensure that "Entity" is the first result. It must be, because of call to meta
         rows = cursor.execute("""
-                            SELECT id, max(version) version, v_name.value != 'Entity' is_not_entity
+                            SELECT id, max(version) version, CASE WHEN v_name.value = 'Entity' THEN 0 WHEN v_name.value in ('Property', 'Classifier', 'Instance', 'MetaElementInstance', 'Package') THEN 1 ELSE 2 END AS is_not_entity
                             FROM asa_instance i
                             	INNER JOIN asa_value v_level ON v_level.instance_id=i.id
                             	INNER JOIN asa_value v_name ON v_name.instance_id=i.id

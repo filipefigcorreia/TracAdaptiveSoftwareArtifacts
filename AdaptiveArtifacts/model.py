@@ -84,9 +84,12 @@ class Instance(object):
 
     def set_value(self, property_ref, property_value):
         """Overrite the value, no matter what"""
-        self.state.slots[property_ref] = property_value
+        if property_value is None and property_ref in self.state.slots:
+            del self.state.slots[property_ref]
+        else:
+            self.state.slots[property_ref] = property_value
 
-    def get_value(self, property_ref):
+    def get_value(self, property_ref): #QUANDO APARECE AQUI UM IDENTIFIER, KAPUT
         if property_ref in self.state.slots:
             val = self.state.slots[property_ref]
             if isinstance(val, list):
@@ -190,6 +193,12 @@ class Property(MetaElementInstance):
         #self.set_value('__unique', False)
         #self.set_value('__read_only', False)
 
+    def get_domain(self):
+        """
+        Returns the domain of the property.
+        """
+        return self.get_value('__domain')
+
 class Classifier(MetaElementInstance):
     id = None
 
@@ -270,28 +279,35 @@ class InstancePool(object):
             Entity.id = entity_ent.get_identifier()
 
             # Properties of Entity
-            Property(pool, "__meta", Entity.id, Entity.id, 1, 1, "2")
-            Property(pool, "__name", Entity.id, "string", 1, 1, "2")
-            Property(pool, "__inherits", Entity.id, Entity.id, 1, 1, "2")
+            a = Property(pool, "Meta", Entity.id, Entity.id, 1, 1, "2")
+            b = Property(pool, "Name", Entity.id, "string", 1, 1, "2")
+            c = Property(pool, "Inherits", Entity.id, Entity.id, 1, 1, "2")
             # Properties of Property
-            Property(pool, "__meta", Property.id, Entity.id, 1, 1, "2")
-            Property(pool, "__name", Property.id, "string", 1, 1, "2")
-            Property(pool, "__domain", Property.id, "string", 0, 1, "2")
-            Property(pool, "__owner", Property.id, Entity.id, 1, 1, "2")
+            d = Property(pool, "Meta", Property.id, Entity.id, 1, 1, "2")
+            e = Property(pool, "Name", Property.id, "string", 1, 1, "2")
+            f = Property(pool, "Domain", Property.id, "string", 0, 1, "2")
+            g = Property(pool, "Owner", Property.id, Entity.id, 1, 1, "2")
             # Properties of Instance
-            Property(pool, "__meta", Instance.id, Entity.id, 1, 1, "2")
+            h = Property(pool, "Meta", Instance.id, Entity.id, 1, 1, "2")
 
             # The meta of all M2 instances is Entity. This is what finally ClosesTheRoof
-            #for entity in pool.get_metamodel_instances():
-            #    entity.set_value('__meta', Entity.id)
+            for entity in (instance_ent, metaelement_ent, property_ent, classifier_ent, package_ent, entity_ent):
+                entity.set_value("Meta", Entity.id)
 
-            instance_ent.set_value('__meta', Entity.id)
-            metaelement_ent.set_value('__meta', Entity.id)
-            property_ent.set_value('__meta', Entity.id)
-            classifier_ent.set_value('__meta', Entity.id)
-            package_ent.set_value('__meta', Entity.id)
-            entity_ent.set_value('__meta', Entity.id)
-            
+            # Now that we have real uuids, we replace all magic words by the respective identifiers
+            for property in (a,b,c,d,e,f,g,h):
+                property.move_value("__meta", d.get_identifier())
+                property.move_value("__name", e.get_identifier())
+                property.move_value("__domain", f.get_identifier())
+                property.move_value("__owner", g.get_identifier())
+
+            for entity in (instance_ent, metaelement_ent, property_ent, classifier_ent, package_ent, entity_ent):
+                entity.move_value("__meta", a.get_identifier())
+                entity.move_value("__name", b.get_identifier())
+                entity.move_value("__inherits", c.get_identifier())
+
+
+
 
     def add(self, instance):
         self.instances[instance.get_identifier()] = instance
