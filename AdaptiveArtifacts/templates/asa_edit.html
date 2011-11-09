@@ -15,7 +15,7 @@
           <input type="hidden" name="meta_id" value="${instance_meta.id}" />
           <h2>Properties</h2>
           <ul>
-              <li py:for="property in instance_meta.get_properties()">${property.get_name()}: <input type="text" name="${property.get_identifier()}" value="${instance.get_value(property.get_identifier())}" /> Domain: <input type="text" name="" value="" /></li>
+              <li py:for="property in instance_meta.get_properties()">${property.get_name()}: <input type="text" name="${property.get_identifier()}" value="${instance.get_value(property.get_identifier())}" /> Domain: <input type="text" name="" value="${property.get_domain()}" /></li>
           </ul>
           <!-- TODO: also show all the propeties. When we implement composition relations we no longer have to hardcode this, instead of showing the "properties", we will show whatever has composition relations -->
           Add new property:
