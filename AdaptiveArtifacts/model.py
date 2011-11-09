@@ -89,15 +89,49 @@ class Instance(object):
         else:
             self.state.slots[property_ref] = property_value
 
-    def get_value(self, property_ref): #QUANDO APARECE AQUI UM IDENTIFIER, KAPUT
+    def get_value(self, property_ref):
+        # try it first as it comes. if it doesn't work check if it's in the internal_name form or the uuid form, and try with the other one
+        val = self._get_value_from_slots(property_ref)
+        if val is None:
+            uuid_ref = None
+            try:
+                uuid.UUID(property_ref)
+                uuid_ref = property_ref
+            except ValueError, e:
+                pass
+            if not uuid_ref is None:
+                iname_ref = self.uuid_ref_to_iname_ref(uuid_ref)
+                val = self._get_value_from_slots(iname_ref)
+            else:
+                uuid_ref = self.iname_ref_to_uuid_ref(property_ref)
+                val = self._get_value_from_slots(uuid_ref)
+
+        if val is None:
+            return None
+
+        if isinstance(val, list):
+            if len(val) > 0:
+                return val[0]
+        else:
+            return val
+
+    def iname_ref_to_uuid_ref(self, iname_ref):
+        for metaprop in self.get_meta().get_properties():
+            if metaprop.get_internal_name() == iname_ref:
+                return metaprop.get_identifier()
+
+    def uuid_ref_to_iname_ref(self, uuid_ref):
+        for metaprop in self.get_meta().get_properties():
+            if metaprop.get_identifier() == uuid_ref:
+                return metaprop.get_internal_name()
+
+
+    def _get_value_from_slots(self, property_ref):
+        val = None
         if property_ref in self.state.slots:
             val = self.state.slots[property_ref]
-            if isinstance(val, list):
-                if len(val) > 0:
-                    return val[0]
-            else:
-                return val
-        return None
+        return val
+
 
     def get_values(self, property_ref):
         if property_ref in self.state.slots:
@@ -182,7 +216,7 @@ class MetaElementInstance(Instance):
 class Property(MetaElementInstance):
     id = None
 
-    def __init__(self, pool, name, owner, domain = "string", lower_bound = 0, upper_bound = 1, meta_level='1'):
+    def __init__(self, pool, name, owner, domain = "string", lower_bound = 0, upper_bound = 1, iname=None, meta_level='1'):
         super(Property, self).__init__(pool=pool, name=name, id_meta=Property.id, meta_level=meta_level)
         #TODO: mindtwist: changing an instance of this class will have to automatically result in changing instance that represents it in the pool.
         self.set_value('__meta_level', meta_level)
@@ -190,6 +224,7 @@ class Property(MetaElementInstance):
         self.set_value('__domain', domain) #Classifier. will be the id to an other instance, but can also assume the special value "string"
         self.set_value('__lower_bound', lower_bound)
         self.set_value('__upper_bound', upper_bound)
+        self.set_value('__internal_name', iname)
         #self.set_value('__unique', False)
         #self.set_value('__read_only', False)
 
@@ -198,6 +233,12 @@ class Property(MetaElementInstance):
         Returns the domain of the property.
         """
         return self.get_value('__domain')
+
+    def get_internal_name(self):
+        """
+        Returns the internal name of the property.
+        """
+        return self.get_value('__internal_name')
 
 class Classifier(MetaElementInstance):
     id = None
@@ -279,33 +320,20 @@ class InstancePool(object):
             Entity.id = entity_ent.get_identifier()
 
             # Properties of Entity
-            a = Property(pool, "Meta", Entity.id, Entity.id, 1, 1, "2")
-            b = Property(pool, "Name", Entity.id, "string", 1, 1, "2")
-            c = Property(pool, "Inherits", Entity.id, Entity.id, 1, 1, "2")
+            a = Property(pool, "Meta", Entity.id, Entity.id, 1, 1, "__meta", "2")
+            b = Property(pool, "Name", Entity.id, "string", 1, 1, "__name", "2")
+            c = Property(pool, "Inherits", Entity.id, Entity.id, 1, 1, "__inherits", "2")
             # Properties of Property
-            d = Property(pool, "Meta", Property.id, Entity.id, 1, 1, "2")
-            e = Property(pool, "Name", Property.id, "string", 1, 1, "2")
-            f = Property(pool, "Domain", Property.id, "string", 0, 1, "2")
-            g = Property(pool, "Owner", Property.id, Entity.id, 1, 1, "2")
+            d = Property(pool, "Meta", Property.id, Entity.id, 1, 1, "__meta", "2")
+            e = Property(pool, "Name", Property.id, "string", 1, 1, "__name", "2")
+            f = Property(pool, "Domain", Property.id, "string", 0, 1, "__domain", "2")
+            g = Property(pool, "Owner", Property.id, Entity.id, 1, 1, "__owner", "2")
             # Properties of Instance
-            h = Property(pool, "Meta", Instance.id, Entity.id, 1, 1, "2")
+            h = Property(pool, "Meta", Instance.id, Entity.id, 1, 1, "__meta", "2")
 
             # The meta of all M2 instances is Entity. This is what finally ClosesTheRoof
             for entity in (instance_ent, metaelement_ent, property_ent, classifier_ent, package_ent, entity_ent):
-                entity.set_value("Meta", Entity.id)
-
-            # Now that we have real uuids, we replace all magic words by the respective identifiers
-            for property in (a,b,c,d,e,f,g,h):
-                property.move_value("__meta", d.get_identifier())
-                property.move_value("__name", e.get_identifier())
-                property.move_value("__domain", f.get_identifier())
-                property.move_value("__owner", g.get_identifier())
-
-            for entity in (instance_ent, metaelement_ent, property_ent, classifier_ent, package_ent, entity_ent):
-                entity.move_value("__meta", a.get_identifier())
-                entity.move_value("__name", b.get_identifier())
-                entity.move_value("__inherits", c.get_identifier())
-
+                entity.set_value("__meta", Entity.id)
 
 
 
