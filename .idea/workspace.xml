@@ -2,10 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="727108c4-f7b3-4944-a95e-0d8ef2245895" name="Default" comment="Commited">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/AdaptiveArtifacts/__init__.py" afterPath="$PROJECT_DIR$/AdaptiveArtifacts/__init__.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/AdaptiveArtifacts/model.py" afterPath="$PROJECT_DIR$/AdaptiveArtifacts/model.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/AdaptiveArtifacts/persistable_instance.py" afterPath="$PROJECT_DIR$/AdaptiveArtifacts/persistable_instance.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/AdaptiveArtifacts/templates/asa_edit.html" afterPath="$PROJECT_DIR$/AdaptiveArtifacts/templates/asa_edit.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/asap-core.vpp" afterPath="$PROJECT_DIR$/docs/asap-core.vpp" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="AdaptiveArtifactsPlugin.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -31,7 +29,7 @@
       <file leaf-file-name="model.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="315" column="23" selection-start="12451" selection-end="12466" vertical-scroll-proportion="0.58156025">
+            <state line="91" column="38" selection-start="3356" selection-end="3356" vertical-scroll-proportion="0.5209424">
               <folding />
             </state>
           </provider>
@@ -40,7 +38,7 @@
       <file leaf-file-name="model.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/tests/model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="97" column="19" selection-start="3729" selection-end="3729" vertical-scroll-proportion="0.0">
+            <state line="80" column="33" selection-start="3249" selection-end="3249" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -49,7 +47,7 @@
       <file leaf-file-name="__init__.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/__init__.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="76" column="0" selection-start="3320" selection-end="3320" vertical-scroll-proportion="0.0">
+            <state line="82" column="44" selection-start="3577" selection-end="3577" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -58,7 +56,7 @@
       <file leaf-file-name="asa_edit.html" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/templates/asa_edit.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="14" column="76" selection-start="668" selection-end="668" vertical-scroll-proportion="-5.75">
+            <state line="17" column="272" selection-start="986" selection-end="986" vertical-scroll-proportion="-4.2916665">
               <folding />
             </state>
           </provider>
@@ -67,7 +65,7 @@
       <file leaf-file-name="persistable_instance.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/persistable_instance.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="210" column="0" selection-start="9104" selection-end="9104" vertical-scroll-proportion="0.0">
+            <state line="104" column="53" selection-start="3771" selection-end="3771" vertical-scroll-proportion="-7.5">
               <folding />
             </state>
           </provider>
@@ -76,7 +74,7 @@
       <file leaf-file-name="asa_list.html" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/templates/asa_list.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="22" column="0" selection-start="646" selection-end="776" vertical-scroll-proportion="-13.125">
+            <state line="22" column="0" selection-start="646" selection-end="776" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -85,7 +83,7 @@
       <file leaf-file-name="environment_maintainer.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/environment_maintainer.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="51" column="18" selection-start="2022" selection-end="2022" vertical-scroll-proportion="0.0">
+            <state line="66" column="0" selection-start="2595" selection-end="2595" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -124,12 +122,12 @@
         <option value="$PROJECT_DIR$/AdaptiveArtifacts/tests/model.py" />
         <option value="$PROJECT_DIR$/AdaptiveArtifacts/templates/asa_list.html" />
         <option value="$PROJECT_DIR$/AdaptiveArtifacts/templates/asa_instantiate.html" />
-        <option value="$PROJECT_DIR$/AdaptiveArtifacts/schema.py" />
         <option value="$PROJECT_DIR$/AdaptiveArtifacts/environment_maintainer.py" />
-        <option value="$PROJECT_DIR$/AdaptiveArtifacts/__init__.py" />
+        <option value="$PROJECT_DIR$/AdaptiveArtifacts/schema.py" />
         <option value="$PROJECT_DIR$/AdaptiveArtifacts/persistable_instance.py" />
-        <option value="$PROJECT_DIR$/AdaptiveArtifacts/model.py" />
         <option value="$PROJECT_DIR$/AdaptiveArtifacts/templates/asa_edit.html" />
+        <option value="$PROJECT_DIR$/AdaptiveArtifacts/__init__.py" />
+        <option value="$PROJECT_DIR$/AdaptiveArtifacts/model.py" />
       </list>
     </option>
   </component>
@@ -178,6 +176,8 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="Favorites" />
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -262,8 +262,6 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
-      <pane id="Favorites" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -281,16 +279,16 @@
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder0" value="0" />
     <property name="last_opened_file_path" value="/usr/local/lib/python2.6/dist-packages/Trac-0.12.2rc1-py2.6.egg/trac/ticket" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth2" value="83" />
-    <property name="DefaultHtmlFileTemplate" value="Html" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth3" value="903" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth3" value="898" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth3" value="903" />
+    <property name="DefaultHtmlFileTemplate" value="Html" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth2" value="82" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth1" value="78" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder2" value="2" />
     <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder2" value="2" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder3" value="3" />
-    <property name="options.splitter.details.proportions" value="0.2" />
     <property name="options.searchVisible" value="true" />
+    <property name="options.splitter.details.proportions" value="0.2" />
   </component>
   <component name="RunManager" selected="Python.tracd">
     <configuration default="false" name="Unittests in model.py" type="PythonUnitTestConfigurationType" factoryName="Python's unittest" temporary="true">
@@ -582,17 +580,17 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="1" y="22" width="1093" height="714" extended-state="0" />
-    <editor active="true" />
+    <frame x="1" y="22" width="1081" height="716" extended-state="0" />
+    <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32885906" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32954547" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32885906" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20735785" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.28624883" sideWeight="0.23825504" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.28624883" sideWeight="0.5771812" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.42281878" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.35402685" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2573321" sideWeight="0.7424749" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2575251" sideWeight="0.999068" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.319398" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32954547" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -645,66 +643,72 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/AdaptiveArtifacts/tests/model.py</url>
+          <line>82</line>
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/AdaptiveArtifacts/model.py</url>
+          <line>314</line>
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/AdaptiveArtifacts/environment_maintainer.py</url>
           <line>68</line>
         </line-breakpoint>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/AdaptiveArtifacts/persistable_instance.py</url>
-          <line>142</line>
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="python-line">
-          <url>file://$PROJECT_DIR$/AdaptiveArtifacts/persistable_instance.py</url>
-          <line>132</line>
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="python-line">
-          <url>file://$PROJECT_DIR$/AdaptiveArtifacts/environment_maintainer.py</url>
-          <line>65</line>
+          <line>136</line>
         </line-breakpoint>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/AdaptiveArtifacts/model.py</url>
-          <line>258</line>
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="python-line">
-          <url>file://$PROJECT_DIR$/AdaptiveArtifacts/environment_maintainer.py</url>
-          <line>61</line>
+          <line>209</line>
         </line-breakpoint>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/AdaptiveArtifacts/model.py</url>
-          <line>319</line>
+          <line>125</line>
         </line-breakpoint>
         <line-breakpoint enabled="true" type="python-line">
-          <url>file://$PROJECT_DIR$/AdaptiveArtifacts/persistable_instance.py</url>
-          <line>213</line>
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="python-line">
-          <url>file://$PROJECT_DIR$/AdaptiveArtifacts/__init__.py</url>
-          <line>76</line>
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="python-line">
-          <url>file://$PROJECT_DIR$/AdaptiveArtifacts/tests/model.py</url>
-          <line>82</line>
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="python-line">
-          <url>file://$PROJECT_DIR$/AdaptiveArtifacts/persistable_instance.py</url>
-          <line>210</line>
+          <url>file://$PROJECT_DIR$/AdaptiveArtifacts/model.py</url>
+          <line>323</line>
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$USER_HOME$/Library/Caches/PyCharm10/python_stubs/-1474568582/_sqlite3.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="244" column="8" selection-start="7210" selection-end="7210" vertical-scroll-proportion="0.3313783" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/schema.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="24" column="47" selection-start="834" selection-end="834" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../trac/trac/db/api.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="86" column="0" selection-start="2998" selection-end="2998" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Library/Caches/PyCharm10/python_stubs/-1474568582/__builtin__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="2372" column="8" selection-start="79414" selection-end="79414" vertical-scroll-proportion="2.1400778" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../trac/trac/web/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="477" column="0" selection-start="19669" selection-end="19706" vertical-scroll-proportion="0.3323077" />
+      </provider>
+    </entry>
+    <entry file="file:///System/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/SocketServer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="614" column="0" selection-start="19852" selection-end="19852" vertical-scroll-proportion="0.3323077" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../trac/trac/web/chrome.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="1021" column="0" selection-start="41058" selection-end="41058" vertical-scroll-proportion="0.3323077" />
+      </provider>
+    </entry>
+    <entry file="file:///System/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/unittest.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="349" column="0" selection-start="12326" selection-end="12326" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/templates/asa_list.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="22" column="0" selection-start="646" selection-end="776" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/setup.py">
@@ -712,86 +716,58 @@
         <state line="13" column="57" selection-start="460" selection-end="460" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/templates/asa_list.html">
+    <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/tests/model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="22" column="0" selection-start="646" selection-end="776" vertical-scroll-proportion="-13.125">
+        <state line="80" column="33" selection-start="3249" selection-end="3249" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/Library/Caches/PyCharm10/python_stubs/-1474568582/__builtin__.py">
+    <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/schema.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="2372" column="8" selection-start="79414" selection-end="79414" vertical-scroll-proportion="2.1400778">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../trac/trac/web/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="477" column="0" selection-start="19669" selection-end="19706" vertical-scroll-proportion="0.3323077">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///System/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/SocketServer.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="614" column="0" selection-start="19852" selection-end="19852" vertical-scroll-proportion="0.3323077">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../trac/trac/web/chrome.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="1021" column="0" selection-start="41058" selection-end="41058" vertical-scroll-proportion="0.3323077">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///System/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/unittest.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="349" column="0" selection-start="12326" selection-end="12326" vertical-scroll-proportion="0.0">
+        <state line="26" column="0" selection-start="837" selection-end="877" vertical-scroll-proportion="0.46969697">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/environment_maintainer.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="51" column="18" selection-start="2022" selection-end="2022" vertical-scroll-proportion="0.0">
+        <state line="66" column="0" selection-start="2595" selection-end="2595" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/tests/model.py">
+    <entry file="file:///System/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/uuid.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="97" column="19" selection-start="3729" selection-end="3729" vertical-scroll-proportion="0.0">
+        <state line="132" column="30" selection-start="5977" selection-end="5977" vertical-scroll-proportion="0.6185286">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/persistable_instance.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="210" column="0" selection-start="9104" selection-end="9104" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="76" column="0" selection-start="3320" selection-end="3320" vertical-scroll-proportion="0.0">
+        <state line="104" column="53" selection-start="3771" selection-end="3771" vertical-scroll-proportion="-7.5">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/templates/asa_edit.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="14" column="76" selection-start="668" selection-end="668" vertical-scroll-proportion="-5.75">
+        <state line="17" column="272" selection-start="986" selection-end="986" vertical-scroll-proportion="-4.2916665">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="82" column="44" selection-start="3577" selection-end="3577" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/AdaptiveArtifacts/model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="315" column="23" selection-start="12451" selection-end="12466" vertical-scroll-proportion="0.58156025">
+        <state line="91" column="38" selection-start="3356" selection-end="3356" vertical-scroll-proportion="0.5209424">
           <folding />
         </state>
       </provider>
