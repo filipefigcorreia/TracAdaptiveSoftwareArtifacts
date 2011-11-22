@@ -7,8 +7,6 @@
 # you should have received as part of this distribution.
 
 import uuid
-from persistable_instance import PersistableInstance, PersistablePool
-#from meta_model import meta_model
 
 class Version(object):
     id = None
@@ -37,12 +35,15 @@ class Instance(object):
     """Represents an instance at any model level"""
     def __init__(self, pool, id_meta, identifier=None, meta_level='0'):
         """
-        pool --- the pool that the instances of this class will belong to
-        identifier --- the uuid that uniquely identifies this instance
+        Arguments:
+        pool -- the pool that the instances of this class will belong to
         id_meta -- the Entity to which this instance complies. For M2 and M3 instances it will always be 'Entity'
+        identifier -- the uuid that uniquely identifies this instance
+        meta_level -- the model level that the instance belongs to: '0', '1' or '2'
         """
-        #if name_meta != 'Entity' and self.__class__.__name__ != 'Instance':
-        #    raise Exception("All M0s should be naturally born instances."
+
+        if meta_level == '0' and self.__class__.__name__ != 'Instance':
+            raise Exception("All M0s should be naturally born instances.")
 
         self.state = InstanceState() # TODO: refactor this to a self.states dictionay in which each key,value is of type Version,InstanceState
         if identifier is None:
@@ -77,9 +78,6 @@ class Instance(object):
 
     def get_meta_level(self):
         return self.get_value_by_iname('__meta_level')
-
-    #def get_latest_state(self):
-    #    return self.states[Version.get_latest_version(self)]
 
     def add_value(self, property_ref, property_value):
         """
@@ -180,8 +178,6 @@ class Instance(object):
         pool.add(instance)
         return instance
 
-#    def get_property_names(self, property_name):
-#        return [property_name for property_name in self.state.slots if not property_name.startswith('__')]
 
 class InstanceState(object):
 
@@ -189,16 +185,6 @@ class InstanceState(object):
         self.slots = {} # dict in which each key,value is of type unicodestring,arbitraryvalue
         self.inames = {} # translation of uuids to internal names
         #self.version = version # version in which this state was created
-
-    """
-    def __getattr__(self, name):
-        # proxy unknow attributes to the appropriate slot
-        return self.slots[name]
-
-    def __setattr__(self, name, value):
-        # proxy unknow attributes to the appropriate slot 
-        self.slots[name] = value
-    """
 
     @classmethod
     def create_from_properties(cls, contents_dict, inames_dict):
@@ -267,6 +253,14 @@ class Entity(Classifier):
     id = None
 
     def __init__(self, pool, name, inherits=None, hard_class=None, meta_level='1'):
+        """
+        Arguments:
+        pool -- the pool that the instances of this class will belong to
+        name -- the name attribute of the entity
+        inherits -- the uuid of the Entity from which this Entity derives from
+        hard_class --
+        meta_level -- the model level that the instance belongs to: '0', '1' or '2'. Usually '1'.
+        """
         super(Entity, self).__init__(pool=pool, name=name, id_meta=Entity.id, meta_level=meta_level)
         self.set_value_by_iname('__inherits', inherits)
         # There will also be 0..* Properties, each stored in its own key
@@ -276,7 +270,6 @@ class Entity(Classifier):
         if not hard_class is None:
             # Copy identifiers from the data-meta-model to the hardcoded-meta-model, for convenience
             hard_class.id = self.get_identifier()
-
 
     def get_parent(self):
         """
@@ -298,14 +291,6 @@ class Entity(Classifier):
                 break
         return False
 
-    def add_property_old(self, property):
-        #meta = self.pool.get(name=self.get_value('__meta'))
-        self.add_value('__properties', property)
-
-    def get_properties_old(self): #TODO: fix this. The '__properties' magic word showld not be used anymore, right?
-        #self = self.pool.get(name=self.get_value('__meta'))
-        return self.get_values('__properties')
-
     def get_properties(self):
         return self.pool.get_properties(self.get_identifier())
 
@@ -321,9 +306,6 @@ class InstancePool(object):
         self.instances = {}
         
         if bootstrap_with_new_m2:
-            import sys
-            #model = sys.modules[__name__]
-
             pool = self
             # Create new M2 instances
             instance_ent = Entity(pool, name=Instance.__name__, inherits=None, hard_class=Instance, meta_level='2')

@@ -15,7 +15,7 @@ except:
 
 class PersistableInstance(object):
     """
-    Proxy to an AdaptiveArtifacts.meta_model.Instance instance (new or existing).
+    Proxy to an instance of AdaptiveArtifacts.model.Instance (new or existing).
     This class provides behavior required by Trac's plugin architecture. Namely, behavior to deal with loading
     and saving instances from the database.
     """
@@ -95,7 +95,6 @@ class PersistableInstance(object):
         
         cursor.execute(query)
         contents_dict = dict(cursor.fetchall())
-        #contents_dict = pickle.loads(contents.encode('utf-8'))
 
         query = """
                 SELECT property_instance_id, property_instance_iname
@@ -108,18 +107,14 @@ class PersistableInstance(object):
 
         if ppool is None:
             ppool = PersistablePool.load(self.env)
-        #self.instance = ppool.pool.get(identifier) #TODO: we should probably get this directly from PersistablePool?
-        #if self.instance is None:
         from AdaptiveArtifacts.model import Instance
+        #TODO: maybe we should probably get this directly from PersistablePool?
         self.instance =  Instance.create_from_properties(ppool.pool, identifier, contents_dict, inames_dict)
         #    self.version = 1
         self.version = int(version)
         self.time = from_utimestamp(time)
         self.author = author
         self.comment = comment
-        #self.text = text
-        #self.readonly = readonly and int(readonly) or 0
-
 
     exists = property(fget=lambda self: self.version > 0)
 
@@ -136,7 +131,6 @@ class PersistableInstance(object):
     def save_instance(self, author, comment, remote_addr, t=None, db=None):
         @self.env.with_transaction()
         def do_save(db):
-            #data = pickle.dumps(self.instance.state.slots).decode('utf-8')
             new_version = self.version + 1
             cursor = db.cursor()
             cursor.execute("""
@@ -180,8 +174,7 @@ class PersistablePool(object):
         # Loads the entire M2 level from the database
         from AdaptiveArtifacts.model import Instance, MetaElementInstance, Classifier, Package, Property, Entity, InstancePool
         ppool = PersistablePool(InstancePool())
-        # load m2 from database
-        # FIXME: either I must expand this (currently very naive) list of M2 entities, or make it more dynamic. I probably want to just load everything marked as lvl 2 that exists in the database
+        # TODO: FIXME: either I must expand this (currently very naive) list of M2 entities, or make it more dynamic. I probably want to just load everything marked as lvl 2 that exists in the database
         for m2_class in (Entity, Instance, MetaElementInstance, Classifier, Package, Property):
             pi = PersistableInstance.load(env, name=m2_class.__name__, ppool=ppool)
             m2_class.id = pi.instance.get_identifier()
