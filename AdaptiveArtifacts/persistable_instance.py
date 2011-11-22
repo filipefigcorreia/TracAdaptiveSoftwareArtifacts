@@ -62,7 +62,7 @@ class PersistableInstance(object):
         if not name is None:
             query += """
             	INNER JOIN asa_value v ON v.instance_id=i.id
-            WHERE property_instance_id='__name' AND value='%s'""" %  name
+            WHERE property_instance_iname='__name' AND value='%s'""" %  name
         else:
             query += " WHERE id='%s'" %  identifier
 
@@ -97,12 +97,21 @@ class PersistableInstance(object):
         contents_dict = dict(cursor.fetchall())
         #contents_dict = pickle.loads(contents.encode('utf-8'))
 
+        query = """
+                SELECT property_instance_id, property_instance_iname
+                FROM asa_value
+                WHERE instance_id='%s' AND instance_version='%s'
+                """ % (identifier, version)
+
+        cursor.execute(query)
+        inames_dict = dict(cursor.fetchall())
+
         if ppool is None:
             ppool = PersistablePool.load(self.env)
         #self.instance = ppool.pool.get(identifier) #TODO: we should probably get this directly from PersistablePool?
         #if self.instance is None:
         from AdaptiveArtifacts.model import Instance
-        self.instance =  Instance.create_from_properties(ppool.pool, identifier, contents_dict)
+        self.instance =  Instance.create_from_properties(ppool.pool, identifier, contents_dict, inames_dict)
         #    self.version = 1
         self.version = int(version)
         self.time = from_utimestamp(time)
@@ -134,16 +143,16 @@ class PersistableInstance(object):
                 INSERT INTO asa_instance (id, version, time, author, ipnr, op_type, comment)
                 VALUES (%s,%s,%s,%s,%s,%s,%s)
                 """, (self.instance.get_identifier(), new_version, to_utimestamp(t), author, remote_addr, 'C', comment))
-            for property_ref in self.instance.state.slots:
+            for property_ref in self.instance.state.slots: #TODO: state shouldn't be accessed directly
                 #pool = self.instance.pool
                 #instance_meta = pool.get(id=self.instance.get_value('__meta'))
                 #properties_meta = pool.get_properties(instance_meta)
                 #if property_ref in properties_meta:
                 #self.env.log.error((self.instance.get_identifier(), new_version, property_ref, self.instance.state.slots[property_ref]))
                 cursor.execute("""
-                    INSERT INTO asa_value (instance_id, instance_version, property_instance_id, value)
-                    VALUES (%s,%s,%s,%s)
-                    """, (self.instance.get_identifier(), new_version, property_ref, self.instance.state.slots[property_ref]))
+                    INSERT INTO asa_value (instance_id, instance_version, property_instance_id, property_instance_iname, value)
+                    VALUES (%s,%s,%s,%s,%s)
+                    """, (self.instance.get_identifier(), new_version, property_ref, self.instance.get_property_iname(property_ref), self.instance.get_slot_value(property_ref)))
                 
             self.version += new_version
             self.resource = self.resource(version=self.version)
@@ -176,7 +185,7 @@ class PersistablePool(object):
         for m2_class in (Entity, Instance, MetaElementInstance, Classifier, Package, Property):
             pi = PersistableInstance.load(env, name=m2_class.__name__, ppool=ppool)
             m2_class.id = pi.instance.get_identifier()
-            pi.instance.set_value('__meta', Entity.id) # the meta of all M2 instances is Entity
+            pi.instance.set_value_by_iname('__meta', Entity.id) # the meta of all M2 instances is Entity
             pi.instance.__class__ = Entity
         return ppool
 
@@ -202,8 +211,8 @@ class PersistablePool(object):
                             	INNER JOIN asa_value v_level ON v_level.instance_id=i.id
                             	INNER JOIN asa_value v_name ON v_name.instance_id=i.id
                             WHERE
-                                v_level.property_instance_id='__meta_level' AND v_level.value = '2' AND
-                                v_name.property_instance_id='__name'
+                                v_level.property_instance_iname='__meta_level' AND v_level.value = '2' AND
+                                v_name.property_instance_iname='__name'
                             GROUP BY id, v_name.value
                             ORDER BY is_not_entity, v_name.value""")
         for id, version, dummy in rows.fetchall():
@@ -220,8 +229,8 @@ class PersistablePool(object):
                             	INNER JOIN asa_value v_idm ON v_idm.instance_id=i.id
                             	INNER JOIN asa_value v_lvm ON v_lvm.instance_id=i.id
                             WHERE
-                                v_idm.property_instance_id='__meta' AND v_idm.value='%s' AND
-                                v_lvm.property_instance_id='__meta_level' AND v_lvm.value in (%s)
+                                v_idm.property_instance_iname='__meta' AND v_idm.value='%s' AND
+                                v_lvm.property_instance_iname='__meta_level' AND v_lvm.value in (%s)
                             GROUP BY id""" % (id_meta, ",".join(["%s" % lvl for lvl in levels])))
         for id, version in rows.fetchall():
             p_instances.append(PersistableInstance.load(env, id, version=version, ppool=self))

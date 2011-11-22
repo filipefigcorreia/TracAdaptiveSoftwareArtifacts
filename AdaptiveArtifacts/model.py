@@ -39,34 +39,44 @@ class Instance(object):
         """
         pool --- the pool that the instances of this class will belong to
         identifier --- the uuid that uniquely identifies this instance
-        meta -- the Entity to which this instance complies. For M2 and M3 instances it will always be 'Entity'
+        id_meta -- the Entity to which this instance complies. For M2 and M3 instances it will always be 'Entity'
         """
         #if name_meta != 'Entity' and self.__class__.__name__ != 'Instance':
-        #    raise Exception("All M0s should be naturally born instances.")
-        ##TODO: it should be validated that the meta is always an Entity! should it not?
+        #    raise Exception("All M0s should be naturally born instances."
 
         self.state = InstanceState() # TODO: refactor this to a self.states dictionay in which each key,value is of type Version,InstanceState
         if identifier is None:
             self.__identifier = str(uuid.uuid4())
         else:
             self.__identifier = identifier
-        self.set_value('__meta', id_meta)
-        self.set_value('__meta_level', meta_level)
+        self.set_value_by_iname('__meta', id_meta)
+        self.set_value_by_iname('__meta_level', meta_level)
         if not pool is None:
             pool.add(self)
         self.pool = pool
+
+    def set_properties_definite_id(self):
+        """
+        Replace all magic words used in the slots by the respective uuids. Magic words are used only while bootstrapping the M2.
+        """
+        for key in self.state.slots.keys():
+            if key != '__meta_level' and not self.get_property_from_meta(key) is None: # , '__lower_bound', '__upper_bound' # it's a iname. replace by a proper uuid!
+                self.set_property_ref(key, self.get_property_from_meta(key).get_identifier())
 
     def get_identifier(self):
         return self.__identifier
 
     def get_id_meta(self):
-        return self.get_value('__meta')
+        return self.get_value_by_iname('__meta')
 
     def get_meta(self):
-        return self.pool.get(self.get_value('__meta'))
+        return self.pool.get(self.get_value_by_iname('__meta'))
+
+    def get_property_from_meta(self, iname):
+        return self.pool.get_property(self.__class__.id, iname=iname)
 
     def get_meta_level(self):
-        return self.get_value('__meta_level')
+        return self.get_value_by_iname('__meta_level')
 
     #def get_latest_state(self):
     #    return self.states[Version.get_latest_version(self)]
@@ -82,59 +92,61 @@ class Instance(object):
             self.state.slots[property_ref] = [val]
         self.state.slots[property_ref].append(property_value)
 
-    def set_value(self, property_ref, property_value):
-        """Overrite the value, no matter what"""
-        if property_value is None and property_ref in self.state.slots:
-            del self.state.slots[property_ref]
+    def set_property_ref(self, iname, property_ref):
+        """
+        Sets the property_ref for a given iname.
+        """
+        value = self.get_value_by_iname(iname)
+        if not value is None:
+            self.set_value(iname, None)
+            self.set_value(property_ref, value)
+            if iname in self.state.inames.keys():
+                del self.state.inames[iname]
+            self.state.inames[property_ref] = iname
+
+    def set_value(self, property_ref, value):
+        """Overwrite the value for the specified property."""
+        if value is None:
+            if property_ref in self.state.slots:
+                del self.state.slots[property_ref]
         else:
-            self.state.slots[property_ref] = property_value
+            self.state.slots[property_ref] = value
+
+    def set_value_by_iname(self, iname, value):
+        property_ref = self.get_property_ref_if_known(iname)
+        self.set_value(property_ref, value)
+        self.state.inames[property_ref] = iname
 
     def get_value(self, property_ref):
-        # try it first as it comes. if it doesn't work check if it's in the internal_name form or the uuid form, and try with the other one
-        val = self._get_value_from_slots(property_ref)
-        if val is None:
-            uuid_ref = None
-            try:
-                uuid.UUID(property_ref)
-                uuid_ref = property_ref
-            except ValueError, e:
-                pass
-            if not uuid_ref is None:
-                iname_ref = self.uuid_ref_to_iname_ref(uuid_ref)
-                val = self._get_value_from_slots(iname_ref)
-            else:
-                uuid_ref = self.iname_ref_to_uuid_ref(property_ref)
-                val = self._get_value_from_slots(uuid_ref)
+        return self.get_slot_value(property_ref)
 
-        if val is None:
-            return None
+    def get_value_by_iname(self, iname):
+        value = self.get_slot_value(iname)
+        if value is None:
+            value = self.get_slot_value(self.get_property_ref_if_known(iname))
+        return value
 
-        if isinstance(val, list):
-            if len(val) > 0:
-                return val[0]
-        else:
-            return val
+    def get_property_iname(self, property_ref):
+        if property_ref in self.state.inames:
+            return self.state.inames[property_ref]
+        return None
 
-    def iname_ref_to_uuid_ref(self, iname_ref):
-        for metaprop in self.get_meta().get_properties():
-            if metaprop.get_internal_name() == iname_ref:
-                return metaprop.get_identifier()
+    def get_property_ref_if_known(self, iname):
+        """
+        If property_ref is not know, returns the iname provided as input.
+        """
+        for property_ref_key, iname_value in self.state.inames.items():
+            if iname_value == iname:
+                return property_ref_key
+        return iname
 
-    def uuid_ref_to_iname_ref(self, uuid_ref):
-        for metaprop in self.get_meta().get_properties():
-            if metaprop.get_identifier() == uuid_ref:
-                return metaprop.get_internal_name()
-
-
-    def _get_value_from_slots(self, property_ref):
-        val = None
-        if property_ref in self.state.slots:
-            val = self.state.slots[property_ref]
-        return val
-
+    def get_slot_value(self, property_ref):
+        if not property_ref is None and property_ref in self.state.slots:
+            return self.state.slots[property_ref]
+        return None
 
     def get_values(self, property_ref):
-        if property_ref in self.state.slots:
+        if not property_ref is None and property_ref in self.state.slots:
             return self.state.slots[property_ref]
         else:
             return []
@@ -160,11 +172,11 @@ class Instance(object):
                 raise Exception("Unknown element meta: %s" % name_meta)
 
     @classmethod
-    def create_from_properties(cls, pool, identifier, contents_dict):
+    def create_from_properties(cls, pool, identifier, contents_dict, inames_dict):
         instance = Instance(pool, 'Instance', identifier)
         instance.pool.remove(identifier)
         instance.__identifier = identifier
-        instance.add_state(InstanceState.create_from_properties(contents_dict))
+        instance.add_state(InstanceState.create_from_properties(contents_dict, inames_dict))
         pool.add(instance)
         return instance
 
@@ -174,7 +186,8 @@ class Instance(object):
 class InstanceState(object):
 
     def __init__(self, version=None):
-        self.slots = {} # dictionay in which each key,value is of type unicodestring,arbitraryvalue
+        self.slots = {} # dict in which each key,value is of type unicodestring,arbitraryvalue
+        self.inames = {} # translation of uuids to internal names
         #self.version = version # version in which this state was created
 
     """
@@ -188,9 +201,10 @@ class InstanceState(object):
     """
 
     @classmethod
-    def create_from_properties(cls, contents_dict):
+    def create_from_properties(cls, contents_dict, inames_dict):
         state = InstanceState()
         state.slots = contents_dict
+        state.inames = inames_dict
         return state
 
 
@@ -204,14 +218,14 @@ class MetaElementInstance(Instance):
         if meta_level < '1':
             raise Exception("MetaElementInstances' level must be at least 1")
         super(MetaElementInstance, self).__init__(pool=pool, id_meta=id_meta, meta_level=meta_level)
-        self.set_value('__name', name)
+        self.set_value_by_iname('__name', name)
 
     def get_name(self):
         """
         Returns the name that was assigned to self.
         Assumes the name is stored in a string property called "name"
         """
-        return self.get_value('__name')
+        return self.get_value_by_iname('__name')
 
 class Property(MetaElementInstance):
     id = None
@@ -219,48 +233,56 @@ class Property(MetaElementInstance):
     def __init__(self, pool, name, owner, domain = "string", lower_bound = 0, upper_bound = 1, iname=None, meta_level='1'):
         super(Property, self).__init__(pool=pool, name=name, id_meta=Property.id, meta_level=meta_level)
         #TODO: mindtwist: changing an instance of this class will have to automatically result in changing instance that represents it in the pool.
-        self.set_value('__meta_level', meta_level)
-        self.set_value('__owner', owner) #Entity
-        self.set_value('__domain', domain) #Classifier. will be the id to an other instance, but can also assume the special value "string"
-        self.set_value('__lower_bound', lower_bound)
-        self.set_value('__upper_bound', upper_bound)
-        self.set_value('__internal_name', iname)
-        #self.set_value('__unique', False)
-        #self.set_value('__read_only', False)
+        self.set_value_by_iname('__meta_level', meta_level)
+        self.set_value_by_iname('__owner', owner) #Entity
+        self.set_value_by_iname('__domain', domain) #Classifier. will be the id to an other instance, but can also assume the special value "string"
+        self.set_value_by_iname('__lower_bound', lower_bound)
+        self.set_value_by_iname('__upper_bound', upper_bound)
+        #self.set_value_by_iname('__unique', False)
+        #self.set_value_by_iname('__read_only', False)
+
+        #TODO: iname is set here but is also set in the state's inames dict. it should be done in a single place if possible
+        self.iname = iname
 
     def get_domain(self):
         """
         Returns the domain of the property.
         """
-        return self.get_value('__domain')
+        return self.get_value_by_iname("__domain")
 
-    def get_internal_name(self):
-        """
-        Returns the internal name of the property.
-        """
-        return self.get_value('__internal_name')
+    def get_iname(self):
+        return self.iname
+
+    def get_owner_id(self):
+        return self.get_value_by_iname("__owner")
 
 class Classifier(MetaElementInstance):
     id = None
 
     def __init__(self, pool, name, id_meta, meta_level='1'):
         super(Classifier, self).__init__(pool=pool, name=name, id_meta=id_meta, meta_level=meta_level)
-        self.set_value('__package', None) #Package
+        self.set_value_by_iname('__package', None) #Package
 
 class Entity(Classifier):
     id = None
 
-    def __init__(self, pool, name, inherits=None, meta_level='1'):
+    def __init__(self, pool, name, inherits=None, hard_class=None, meta_level='1'):
         super(Entity, self).__init__(pool=pool, name=name, id_meta=Entity.id, meta_level=meta_level)
-        self.set_value('__inherits', inherits)
+        self.set_value_by_iname('__inherits', inherits)
         # There will also be 0..* Properties, each stored in its own key
         # TODO: handle properties with cardinality > 1
+
+        # Only happens for M2 entities
+        if not hard_class is None:
+            # Copy identifiers from the data-meta-model to the hardcoded-meta-model, for convenience
+            hard_class.id = self.get_identifier()
+
 
     def get_parent(self):
         """
         Returns the parent class, following the inheritance relation.
         """
-        return self.pool.get(name=self.get_value('__inherits'))
+        return self.pool.get(id=self.get_value_by_iname('__inherits'))
 
     def is_a(self, name):
         """
@@ -300,42 +322,39 @@ class InstancePool(object):
         
         if bootstrap_with_new_m2:
             import sys
-            model = sys.modules[__name__]
+            #model = sys.modules[__name__]
 
             pool = self
             # Create new M2 instances
-            instance_ent = Entity(pool, name=Instance.__name__, inherits=None, meta_level='2')
-            metaelement_ent = Entity(pool, name=MetaElementInstance.__name__, inherits=Instance.__name__, meta_level='2')
-            property_ent = Entity(pool, name=Property.__name__, inherits=MetaElementInstance.__name__, meta_level='2')
-            classifier_ent = Entity(pool, name=Classifier.__name__, inherits=MetaElementInstance.__name__, meta_level='2')
-            package_ent = Entity(pool, name=Package.__name__, inherits=MetaElementInstance.__name__, meta_level='2')
-            entity_ent = Entity(pool, name=Entity.__name__, inherits=Entity.__name__, meta_level='2')
-
-            # Copy identifiers from the data-meta-model to the hardcoded-meta-model, for convenience
-            Instance.id = instance_ent.get_identifier()
-            MetaElementInstance.id = metaelement_ent.get_identifier()
-            Property.id = property_ent.get_identifier()
-            Classifier.id = classifier_ent.get_identifier()
-            Package.id = package_ent.get_identifier()
-            Entity.id = entity_ent.get_identifier()
+            instance_ent = Entity(pool, name=Instance.__name__, inherits=None, hard_class=Instance, meta_level='2')
+            metaelement_ent = Entity(pool, name=MetaElementInstance.__name__, inherits=Instance.id, hard_class=MetaElementInstance, meta_level='2')
+            property_ent = Entity(pool, name=Property.__name__, inherits=MetaElementInstance.id, hard_class=Property, meta_level='2')
+            classifier_ent = Entity(pool, name=Classifier.__name__, inherits=MetaElementInstance.id, hard_class=Classifier, meta_level='2')
+            package_ent = Entity(pool, name=Package.__name__, inherits=MetaElementInstance.id, hard_class=Package, meta_level='2')
+            entity_ent = Entity(pool, name=Entity.__name__, inherits=Classifier.id, hard_class=Entity, meta_level='2')
 
             # Properties of Entity
-            a = Property(pool, "Meta", Entity.id, Entity.id, 1, 1, "__meta", "2")
-            b = Property(pool, "Name", Entity.id, "string", 1, 1, "__name", "2")
-            c = Property(pool, "Inherits", Entity.id, Entity.id, 1, 1, "__inherits", "2")
+            #Property(pool, "Meta", Entity.id, Entity.id, 1, 1, "__meta", "2")
+            Property(pool, "Name", MetaElementInstance.id, "string", 1, 1, "__name", "2")
+            Property(pool, "Inherits", Entity.id, Entity.id, 1, 1, "__inherits", "2")
             # Properties of Property
-            d = Property(pool, "Meta", Property.id, Entity.id, 1, 1, "__meta", "2")
-            e = Property(pool, "Name", Property.id, "string", 1, 1, "__name", "2")
-            f = Property(pool, "Domain", Property.id, "string", 0, 1, "__domain", "2")
-            g = Property(pool, "Owner", Property.id, Entity.id, 1, 1, "__owner", "2")
+            Property(pool, "Meta", Property.id, Entity.id, 1, 1, "__meta", "2")
+            Property(pool, "Name", Property.id, "string", 1, 1, "__name", "2")
+            Property(pool, "Domain", Property.id, "string", 0, 1, "__domain", "2")
+            Property(pool, "Owner", Property.id, Entity.id, 1, 1, "__owner", "2")
+            Property(pool, "Lower Bound", Property.id, "string", 1, 1, "__lower_bound", "2")
+            Property(pool, "Upper Bound", Property.id, "string", 1, 1, "__upper_bound", "2")
             # Properties of Instance
-            h = Property(pool, "Meta", Instance.id, Entity.id, 1, 1, "__meta", "2")
+            Property(pool, "Meta", Instance.id, Entity.id, 1, 1, "__meta", "2")
 
-            # The meta of all M2 instances is Entity. This is what finally ClosesTheRoof
+            # The meta of all M2 instances is Entity. This is what finally ClosesTheRoof.
             for entity in (instance_ent, metaelement_ent, property_ent, classifier_ent, package_ent, entity_ent):
-                entity.set_value("__meta", Entity.id)
+                entity.set_value_by_iname("__meta", Entity.id)
 
-
+            # Close the roof also at the properties level, ovewriting all their ids with the proper uuids
+            # TODO: check if this can, someway, be done from within the properties
+            for instance in pool.get_metamodel_instances(Property.id):
+                instance.set_properties_definite_id()
 
     def add(self, instance):
         self.instances[instance.get_identifier()] = instance
@@ -344,6 +363,9 @@ class InstancePool(object):
         del self.instances[identifier]
 
     def get(self, id=None, name=None):
+        """
+        The name parameter is deprecated!
+        """
         if not id is None:
             if not id in self.instances:
                 return None
@@ -364,13 +386,30 @@ class InstancePool(object):
         props = []
         for id, instance in self.instances.items():
             if type(instance) == Property:
-                if instance.get_value('__owner') == owner_id:
+                if instance.get_value_by_iname('__owner') == owner_id:
                     props.append(instance)
+
+        parent = self.get(owner_id).get_parent()
+        if not parent is None:
+            props.extend(self.get_properties(parent.get_identifier()))
+
         return props
 
+    def get_property(self, owner_id, iname=None, property_ref=None):
+        if iname is None and property_ref is None:
+            raise ValueError("Neither the name and property_ref params were provided.")
+        for property in self.get_properties(owner_id):
+            if not iname is None and property.get_iname() == iname or \
+               not property_ref is None and property.get_identifier() == property_ref:
+                return property
 
-    def get_metamodel_instances(self):
-        return [instance for id, instance in self.instances.items() if instance.get_meta_level() == '2']
+        return None
+
+    def get_metamodel_instances(self, meta_id = None):
+        all_m2_instances = [instance for id, instance in self.instances.items() if instance.get_meta_level() == '2']
+        if not meta_id is None:
+            all_m2_instances = [instance for instance in all_m2_instances if instance.get_value_by_iname('__meta') == meta_id]
+        return all_m2_instances
 
     def get_model_instances(self):
         return [instance for id, instance in self.instances.items() if instance.get_meta_level() == '1']

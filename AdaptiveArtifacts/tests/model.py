@@ -21,8 +21,8 @@ class EntityInheritance(unittest.TestCase):
     def setUp(self):
         self.pool = InstancePool()
         self.car = Entity(self.pool, "Car")
-        self.corsa = Entity(self.pool, "Opel Corsa", self.car.get_name())
-        self.enjoy = Entity(self.pool, "Opel Corsa Enjoy", self.corsa.get_name())
+        self.corsa = Entity(self.pool, "Opel Corsa", self.car.get_identifier())
+        self.enjoy = Entity(self.pool, "Opel Corsa Enjoy", self.corsa.get_identifier())
 
     def test_inherited_entity_1level(self):
         self.assertEqual(self.corsa.get_parent().get_name(), 'Car')
@@ -58,6 +58,18 @@ class MetaModelSanityCheck(unittest.TestCase):
     def test_self_meta(self):
         pool = InstancePool(True)
         self.assertEqual(pool.get(name="Entity").get_meta().get_name(), "Entity")
+
+    def test_expected_slots(self):
+        """
+         for prop in props:
+            inames = prop.state.slots.keys()
+            name = prop.get_value('__name')
+            expected = ['__meta_level', '__owner', '__domain', '__lower_bound', '__upper_bound', '__name']
+            for e in expected:
+                if not e in inames:
+                    raise Exception("Haven't found %s in %s" % (e, name))
+        """
+        pass
 
 class ModelInspection(unittest.TestCase):
     def setUp(self):
