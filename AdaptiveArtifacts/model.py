@@ -247,7 +247,7 @@ class Classifier(MetaElementInstance):
 
     def __init__(self, pool, name, id_meta, meta_level='1'):
         super(Classifier, self).__init__(pool=pool, name=name, id_meta=id_meta, meta_level=meta_level)
-        self.set_value_by_iname('__package', None) #Package
+        self.set_value_by_iname('__package', 'default') #Package
 
 class Entity(Classifier):
     id = None
@@ -318,10 +318,11 @@ class InstancePool(object):
             # Properties of Entity
             #Property(pool, "Meta", Entity.id, Entity.id, 1, 1, "__meta", "2")
             Property(pool, "Name", MetaElementInstance.id, "string", 1, 1, "__name", "2")
+            Property(pool, "PackageOf", Classifier.id, Package.id, 1, 1, "__package", "2")
             Property(pool, "Inherits", Entity.id, Entity.id, 1, 1, "__inherits", "2")
             # Properties of Property
-            Property(pool, "Meta", Property.id, Entity.id, 1, 1, "__meta", "2")
-            Property(pool, "Name", Property.id, "string", 1, 1, "__name", "2")
+            #Property(pool, "Meta", Property.id, Entity.id, 1, 1, "__meta", "2")
+            #Property(pool, "Name", Property.id, "string", 1, 1, "__name", "2")
             Property(pool, "Domain", Property.id, "string", 0, 1, "__domain", "2")
             Property(pool, "Owner", Property.id, Entity.id, 1, 1, "__owner", "2")
             Property(pool, "Lower Bound", Property.id, "string", 1, 1, "__lower_bound", "2")

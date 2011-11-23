@@ -54,21 +54,105 @@ class Properties(unittest.TestCase):
 
 
 class MetaModelSanityCheck(unittest.TestCase):
-    def test_self_meta(self):
-        pool = InstancePool(True)
-        self.assertEqual(pool.get(name="Entity").get_meta().get_name(), "Entity")
+    def setUp(self):
+        self.pool = InstancePool(True)
 
-    def test_expected_slots(self):
+    def test_self_meta(self):
+        self.assertEqual(self.pool.get(name="Entity").get_meta().get_name(), "Entity")
+
+    def test_instance_properties(self):
+        instance_iname = "Instance"
+        expected_prop_inames = ['__package','__name', '__meta']
+        self.assert_properties(instance_iname, expected_prop_inames, number_filled_slots=3)
+
+    def test_metaelement_properties(self):
+        instance_iname = "MetaElementInstance"
+        expected_prop_inames = ['__inherits', '__package','__name', '__meta']
+        self.assert_properties(instance_iname, expected_prop_inames)
+
+    def test_property_properties(self):
+        instance_iname = "Property"
+        expected_prop_inames = ['__inherits', '__package','__name', '__meta']
+        self.assert_properties(instance_iname, expected_prop_inames)
+
+    def test_classifier_properties(self):
+        instance_iname = "Classifier"
+        expected_prop_inames = ['__inherits', '__package', '__name', '__meta']
+        self.assert_properties(instance_iname, expected_prop_inames)
+
+    def test_package_properties(self):
+        instance_iname = "Package"
+        expected_prop_inames = ['__inherits', '__package', '__name', '__meta']
+        self.assert_properties(instance_iname, expected_prop_inames)
+
+    def test_entity_properties(self):
+        instance_iname = "Entity"
+        expected_prop_inames = ['__inherits', '__package', '__name', '__meta']
+        self.assert_properties(instance_iname, expected_prop_inames)
+
+    def test_name_properties(self):
+        instance_iname = "__name"
+        expected_prop_inames = ['__owner', '__domain', '__lower_bound', '__upper_bound', '__name']
+        self.assert_properties(instance_iname, expected_prop_inames)
+
+    def test_packageof_properties(self):
+        instance_iname = "__package"
+        expected_prop_inames = ['__owner', '__domain', '__lower_bound', '__upper_bound', '__name']
+        self.assert_properties(instance_iname, expected_prop_inames)
+
+    def test_inherits_properties(self):
+        instance_iname = "__inherits"
+        expected_prop_inames = ['__owner', '__domain', '__lower_bound', '__upper_bound', '__name']
+        self.assert_properties(instance_iname, expected_prop_inames)
+
+    def test_domain_properties(self):
+        instance_iname = "__domain"
+        expected_prop_inames = ['__owner', '__domain', '__lower_bound', '__upper_bound', '__name']
+        self.assert_properties(instance_iname, expected_prop_inames)
+
+    def test_owner_properties(self):
+        instance_iname = "__owner"
+        expected_prop_inames = ['__owner', '__domain', '__lower_bound', '__upper_bound', '__name']
+        self.assert_properties(instance_iname, expected_prop_inames)
+
+    def test_lowerbound_properties(self):
+        instance_iname = "__lower_bound"
+        expected_prop_inames = ['__owner', '__domain', '__lower_bound', '__upper_bound', '__name']
+        self.assert_properties(instance_iname, expected_prop_inames)
+
+    def test_upperbound_properties(self):
+        instance_iname = "__upper_bound"
+        expected_prop_inames = ['__owner', '__domain', '__lower_bound', '__upper_bound', '__name']
+        self.assert_properties(instance_iname, expected_prop_inames)
+
+    def test_meta_properties(self):
+        instance_iname = "__meta"
+        expected_prop_inames = ['__owner', '__domain', '__lower_bound', '__upper_bound', '__name']
+        self.assert_properties(instance_iname, expected_prop_inames)
+
+    def assert_properties(self, instance_iname, expected_prop_inames, number_filled_slots=None):
         """
-         for prop in props:
-            inames = prop.state.slots.keys()
-            name = prop.get_value('__name')
-            expected = ['__meta_level', '__owner', '__domain', '__lower_bound', '__upper_bound', '__name']
-            for e in expected:
-                if not e in inames:
-                    raise Exception("Haven't found %s in %s" % (e, name))
+        number_filled_slots -- should be provided if different from the number of properties defined at the meta-level
         """
-        pass
+        instance = self.pool.get(name=instance_iname) #TODO: refactor. Add inames to entities and get rid of queries by name
+        entity = instance.get_meta()
+        slot_inames = instance.state.inames.values()
+        prop_inames = [prop.iname for prop in entity.get_properties()]
+
+        for iname in expected_prop_inames:
+            # expected inames exist in the instance
+            self.assertTrue(iname in slot_inames, "The iname '%s' was not found in the slots of '%s'" % (iname, instance.get_name()))
+            # expected inames are defined by the instance's meta
+            self.assertTrue(iname in prop_inames, "The iname '%s' was not found in the properties that '%s' defines for '%s'" % (iname, entity.get_name(), instance.get_name()))
+            # the get_value_by_iname(...) function works as expected
+            self.assertTrue(not instance.get_value_by_iname(iname) is None, "The iname '%s' was not found in '%s' using get_value_by_iname(...)" % (iname, instance.get_name()))
+
+        # no more than the expected inames exist in the instance
+        if number_filled_slots is None:
+            number_filled_slots = len(prop_inames)
+        #TODO: uncomment the following line after getting rid of __meta_level from the slots
+        #self.assertEqual(len(expected_prop_inames), len(slot_inames), "Instance '%s' contains unexpected inames. Expected %s. Found: %s." % (instance_iname, expected_prop_inames, slot_inames))
+        self.assertEqual(len(expected_prop_inames), number_filled_slots, "Instance '%s' contains unexpected inames. Expected %s. Found: %s." % (instance_iname, expected_prop_inames, prop_inames))
 
 class ModelInspection(unittest.TestCase):
     def setUp(self):
