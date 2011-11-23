@@ -17,7 +17,6 @@ from trac.env import IEnvironmentSetupParticipant
 from trac.resource import *
 from trac.mimeview.api import Context
 from AdaptiveArtifacts.environment_maintainer import ASAEnvironmentMaintainer
-#from AdaptiveArtifacts.query import Query
 from AdaptiveArtifacts.persistable_instance import PersistableInstance, PersistablePool
 
 class Core(Component):
@@ -157,8 +156,6 @@ class Core(Component):
         return 'asa_edit.html', data, None
 
 
-
-
     # ITemplateProvider methods
     def get_templates_dirs(self):
         from pkg_resources import resource_filename
@@ -178,7 +175,6 @@ class Core(Component):
 
     def upgrade_environment(self, db):
         ASAEnvironmentMaintainer(self.env).upgrade()
-
 
 
     # IResourceManager
