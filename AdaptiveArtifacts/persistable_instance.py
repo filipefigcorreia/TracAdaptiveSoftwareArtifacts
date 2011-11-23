@@ -39,30 +39,28 @@ class PersistableInstance(object):
 
 
     @classmethod
-    def load(cls, env, identifier=None, name=None, version=None, ppool=None):
+    def load(cls, env, identifier=None, iname=None, version=None, ppool=None):
         """
         Loads an existing PersistableInstance from the database
         """
-        pi = PersistableInstance(env, identifier, name, version)
-        pi._fetch_contents(identifier=identifier, name=name, version=version, ppool=ppool)
+        pi = PersistableInstance(env, identifier, version)
+        pi._fetch_contents(identifier=identifier, iname=iname, version=version, ppool=ppool)
         pi.resource = Resource('asa', pi.instance.get_identifier(), version) # in case we fetched the instance byits name instead of its identifier
         return pi
 
-    def _fetch_contents(self, identifier=None, name=None, version=None, ppool=None):
+    def _fetch_contents(self, identifier=None, iname=None, version=None, ppool=None):
         """
         Retrieves from the database a given state, or a set of states, for the specified instance
         """
-        if not identifier and not name:
+        if not identifier and not iname:
             raise Exception("Nothing to fetch. Either identifier or name must be previded")
 
         query = """
-            SELECT id, version, time, author, ipnr, op_type, comment
+            SELECT id, iname, version, time, author, ipnr, op_type, comment
             FROM asa_instance i
             """
-        if not name is None:
-            query += """
-            	INNER JOIN asa_value v ON v.instance_id=i.id
-            WHERE property_instance_iname='__name' AND value='%s'""" %  name
+        if not iname is None:
+            query += " WHERE iname='%s'" %  iname
         else:
             query += " WHERE id='%s'" %  identifier
 
@@ -85,7 +83,7 @@ class PersistableInstance(object):
         if not row:
             raise Exception("""Could not fetch data for instance.\n %s \n %s""" % (emsg, query))
 
-        identifier, version, time, author, ipnr, op_type, comment = row
+        identifier, iname, version, time, author, ipnr, op_type, comment = row
 
         query = """
                 SELECT property_instance_id, value
@@ -103,13 +101,13 @@ class PersistableInstance(object):
                 """ % (identifier, version)
 
         cursor.execute(query)
-        inames_dict = dict(cursor.fetchall())
+        property_inames_dict = dict(cursor.fetchall())
 
         if ppool is None:
             ppool = PersistablePool.load(self.env)
         from AdaptiveArtifacts.model import Instance
         #TODO: maybe we should probably get this directly from PersistablePool?
-        self.instance =  Instance.create_from_properties(ppool.pool, identifier, contents_dict, inames_dict)
+        self.instance =  Instance.create_from_properties(ppool.pool, identifier, iname, contents_dict, property_inames_dict)
         #    self.version = 1
         self.version = int(version)
         self.time = from_utimestamp(time)
@@ -134,9 +132,9 @@ class PersistableInstance(object):
             new_version = self.version + 1
             cursor = db.cursor()
             cursor.execute("""
-                INSERT INTO asa_instance (id, version, time, author, ipnr, op_type, comment)
-                VALUES (%s,%s,%s,%s,%s,%s,%s)
-                """, (self.instance.get_identifier(), new_version, to_utimestamp(t), author, remote_addr, 'C', comment))
+                INSERT INTO asa_instance (id, iname, version, time, author, ipnr, op_type, comment)
+                VALUES (%s,%s, %s,%s,%s,%s,%s,%s)
+                """, (self.instance.get_identifier(), self.instance.get_iname(), new_version, to_utimestamp(t), author, remote_addr, 'C', comment))
             for property_ref in self.instance.state.slots: #TODO: state shouldn't be accessed directly
                 #pool = self.instance.pool
                 #instance_meta = pool.get(id=self.instance.get_value('__meta'))
@@ -190,8 +188,8 @@ class PersistablePool(object):
         ppool.get_metamodel_instances(env)
         return ppool
 
-    def get_instance(self, env, identifier=None, name=None, version=None):
-        return PersistableInstance.load(env, identifier=identifier, name=name, version=version, ppool=self)
+    def get_instance(self, env, identifier=None, iname=None, version=None):
+        return PersistableInstance.load(env, identifier=identifier, iname=iname, version=version, ppool=self)
 
     def get_metamodel_instances(self, env):
         p_instances = []
@@ -206,7 +204,7 @@ class PersistablePool(object):
                             WHERE
                                 v_level.property_instance_iname='__meta_level' AND v_level.value = '2' AND
                                 v_name.property_instance_iname='__name'
-                            GROUP BY id, v_name.value
+                            GROUP BY id, iname, v_name.value
                             ORDER BY is_not_entity, v_name.value""")
         for id, version, dummy in rows.fetchall():
             p_instances.append(PersistableInstance.load(env, id, version=version, ppool=self))
@@ -225,6 +223,6 @@ class PersistablePool(object):
                                 v_idm.property_instance_iname='__meta' AND v_idm.value='%s' AND
                                 v_lvm.property_instance_iname='__meta_level' AND v_lvm.value in (%s)
                             GROUP BY id""" % (id_meta, ",".join(["%s" % lvl for lvl in levels])))
-        for id, version in rows.fetchall():
+        for id, iname, version in rows.fetchall():
             p_instances.append(PersistableInstance.load(env, id, version=version, ppool=self))
         return p_instances

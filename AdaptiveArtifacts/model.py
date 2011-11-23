@@ -33,12 +33,13 @@ class Instance(object):
     id = None
 
     """Represents an instance at any model level"""
-    def __init__(self, pool, id_meta, identifier=None, meta_level='0'):
+    def __init__(self, pool, id_meta, identifier=None, iname=None, meta_level='0'):
         """
         Arguments:
         pool -- the pool that the instances of this class will belong to
         id_meta -- the Entity to which this instance complies. For M2 and M3 instances it will always be 'Entity'
         identifier -- the uuid that uniquely identifies this instance
+        iname -- internal name; exists only for meta-model (M2) instances
         meta_level -- the model level that the instance belongs to: '0', '1' or '2'
         """
 
@@ -50,6 +51,7 @@ class Instance(object):
             self.__identifier = str(uuid.uuid4())
         else:
             self.__identifier = identifier
+        self.__iname = iname
         self.set_value_by_iname('__meta', id_meta)
         self.set_value_by_iname('__meta_level', meta_level)
         if not pool is None:
@@ -67,11 +69,14 @@ class Instance(object):
     def get_identifier(self):
         return self.__identifier
 
+    def get_iname(self):
+        return self.__iname
+
     def get_id_meta(self):
         return self.get_value_by_iname('__meta')
 
     def get_meta(self):
-        return self.pool.get(self.get_value_by_iname('__meta'))
+        return self.pool.get_instance(self.get_value_by_iname('__meta'))
 
     def get_property_from_meta(self, iname):
         return self.pool.get_property(self.__class__.id, iname=iname)
@@ -170,11 +175,12 @@ class Instance(object):
                 raise Exception("Unknown element meta: %s" % name_meta)
 
     @classmethod
-    def create_from_properties(cls, pool, identifier, contents_dict, inames_dict):
+    def create_from_properties(cls, pool, identifier, iname, contents_dict, property_inames_dict):
         instance = Instance(pool, 'Instance', identifier)
         instance.pool.remove(identifier)
         instance.__identifier = identifier
-        instance.add_state(InstanceState.create_from_properties(contents_dict, inames_dict))
+        instance.__iname = iname
+        instance.add_state(InstanceState.create_from_properties(contents_dict, property_inames_dict))
         pool.add(instance)
         return instance
 
@@ -200,10 +206,10 @@ class MetaElementInstance(Instance):
     """
     id = None
 
-    def __init__(self, pool, name, id_meta, meta_level='1'):
+    def __init__(self, pool, name, id_meta, iname, meta_level='1'):
         if meta_level < '1':
             raise Exception("MetaElementInstances' level must be at least 1")
-        super(MetaElementInstance, self).__init__(pool=pool, id_meta=id_meta, meta_level=meta_level)
+        super(MetaElementInstance, self).__init__(pool=pool, id_meta=id_meta, iname=iname, meta_level=meta_level)
         self.set_value_by_iname('__name', name)
 
     def get_name(self):
@@ -217,7 +223,7 @@ class Property(MetaElementInstance):
     id = None
 
     def __init__(self, pool, name, owner, domain = "string", lower_bound = 0, upper_bound = 1, iname=None, meta_level='1'):
-        super(Property, self).__init__(pool=pool, name=name, id_meta=Property.id, meta_level=meta_level)
+        super(Property, self).__init__(pool=pool, name=name, id_meta=Property.id, iname=iname, meta_level=meta_level)
         #TODO: mindtwist: changing an instance of this class will have to automatically result in changing instance that represents it in the pool.
         self.set_value_by_iname('__meta_level', meta_level)
         self.set_value_by_iname('__owner', owner) #Entity
@@ -227,17 +233,11 @@ class Property(MetaElementInstance):
         #self.set_value_by_iname('__unique', False)
         #self.set_value_by_iname('__read_only', False)
 
-        #TODO: iname is set here but is also set in the state's inames dict. it should be done in a single place if possible
-        self.iname = iname
-
     def get_domain(self):
         """
         Returns the domain of the property.
         """
         return self.get_value_by_iname("__domain")
-
-    def get_iname(self):
-        return self.iname
 
     def get_owner_id(self):
         return self.get_value_by_iname("__owner")
@@ -245,14 +245,14 @@ class Property(MetaElementInstance):
 class Classifier(MetaElementInstance):
     id = None
 
-    def __init__(self, pool, name, id_meta, meta_level='1'):
-        super(Classifier, self).__init__(pool=pool, name=name, id_meta=id_meta, meta_level=meta_level)
-        self.set_value_by_iname('__package', 'default') #Package
+    def __init__(self, pool, name, id_meta, iname=None, meta_level='1'):
+        super(Classifier, self).__init__(pool=pool, name=name, id_meta=id_meta, iname=iname, meta_level=meta_level)
+        self.set_value_by_iname('__packageof', 'default') #Package
 
 class Entity(Classifier):
     id = None
 
-    def __init__(self, pool, name, inherits=None, hard_class=None, meta_level='1'):
+    def __init__(self, pool, name, inherits=None, iname=None, hard_class=None, meta_level='1'):
         """
         Arguments:
         pool -- the pool that the instances of this class will belong to
@@ -261,7 +261,7 @@ class Entity(Classifier):
         hard_class --
         meta_level -- the model level that the instance belongs to: '0', '1' or '2'. Usually '1'.
         """
-        super(Entity, self).__init__(pool=pool, name=name, id_meta=Entity.id, meta_level=meta_level)
+        super(Entity, self).__init__(pool=pool, name=name, iname=iname, id_meta=Entity.id, meta_level=meta_level)
         self.set_value_by_iname('__inherits', inherits)
         # There will also be 0..* Properties, each stored in its own key
         # TODO: handle properties with cardinality > 1
@@ -275,7 +275,7 @@ class Entity(Classifier):
         """
         Returns the parent class, following the inheritance relation.
         """
-        return self.pool.get(id=self.get_value_by_iname('__inherits'))
+        return self.pool.get_instance(self.get_value_by_iname('__inherits'))
 
     def is_a(self, name):
         """
@@ -308,17 +308,17 @@ class InstancePool(object):
         if bootstrap_with_new_m2:
             pool = self
             # Create new M2 instances
-            instance_ent = Entity(pool, name=Instance.__name__, inherits=None, hard_class=Instance, meta_level='2')
-            metaelement_ent = Entity(pool, name=MetaElementInstance.__name__, inherits=Instance.id, hard_class=MetaElementInstance, meta_level='2')
-            property_ent = Entity(pool, name=Property.__name__, inherits=MetaElementInstance.id, hard_class=Property, meta_level='2')
-            classifier_ent = Entity(pool, name=Classifier.__name__, inherits=MetaElementInstance.id, hard_class=Classifier, meta_level='2')
-            package_ent = Entity(pool, name=Package.__name__, inherits=MetaElementInstance.id, hard_class=Package, meta_level='2')
-            entity_ent = Entity(pool, name=Entity.__name__, inherits=Classifier.id, hard_class=Entity, meta_level='2')
+            instance_ent = Entity(pool, name=Instance.__name__, inherits=None, iname="__instance", hard_class=Instance, meta_level='2')
+            metaelement_ent = Entity(pool, name=MetaElementInstance.__name__, inherits=Instance.id, iname="__metaelement", hard_class=MetaElementInstance, meta_level='2')
+            property_ent = Entity(pool, name=Property.__name__, inherits=MetaElementInstance.id, iname="__property", hard_class=Property, meta_level='2')
+            classifier_ent = Entity(pool, name=Classifier.__name__, inherits=MetaElementInstance.id, iname="__classifier", hard_class=Classifier, meta_level='2')
+            package_ent = Entity(pool, name=Package.__name__, inherits=MetaElementInstance.id, iname="__package", hard_class=Package, meta_level='2')
+            entity_ent = Entity(pool, name=Entity.__name__, inherits=Classifier.id, iname="__entity", hard_class=Entity, meta_level='2')
 
             # Properties of Entity
             #Property(pool, "Meta", Entity.id, Entity.id, 1, 1, "__meta", "2")
             Property(pool, "Name", MetaElementInstance.id, "string", 1, 1, "__name", "2")
-            Property(pool, "PackageOf", Classifier.id, Package.id, 1, 1, "__package", "2")
+            Property(pool, "PackageOf", Classifier.id, Package.id, 1, 1, "__packageof", "2")
             Property(pool, "Inherits", Entity.id, Entity.id, 1, 1, "__inherits", "2")
             # Properties of Property
             #Property(pool, "Meta", Property.id, Entity.id, 1, 1, "__meta", "2")
@@ -345,7 +345,7 @@ class InstancePool(object):
     def remove(self, identifier):
         del self.instances[identifier]
 
-    def get(self, id=None, name=None):
+    def get_instance(self, id=None, name=None):
         """
         The name parameter is deprecated!
         """
@@ -362,6 +362,12 @@ class InstancePool(object):
         else:
             return None
 
+    def get_instance_by_iname(self, iname):
+        for id, instance in self.instances.items():
+            if instance.get_iname()==iname:
+                return instance
+        return None # no instance by this iname exists in the pool
+
     def get_properties(self, owner_id):
         """
         Get Properties of the specified Entity
@@ -372,7 +378,7 @@ class InstancePool(object):
                 if instance.get_value_by_iname('__owner') == owner_id:
                     props.append(instance)
 
-        parent = self.get(owner_id).get_parent()
+        parent = self.get_instance(owner_id).get_parent()
         if not parent is None:
             props.extend(self.get_properties(parent.get_identifier()))
 
