@@ -47,7 +47,7 @@ class Core(Component):
 
     def process_request(self, req):
         action = req.args.get('action', 'list') # view, edit, list, instantiate
-        asa_resource_name = req.args.get('asa_resource', 'Entity')
+        asa_resource_name = req.args.get('asa_resource', 'entity')
         version = req.args.get('version')
         #old_version = req.args.get('old_version')
 
@@ -61,7 +61,7 @@ class Core(Component):
             if pi is None:
                 raise ResourceNotFound("No resource found with identifier '%s'" % asa_resource_name)
         else:
-            pi = ppool.get_instance(self.env, name=asa_resource_name, version=version)
+            pi = ppool.get_instance(self.env, iname="__"+asa_resource_name, version=version)
             if pi is None:
                 raise ResourceNotFound("No resource goes by the name of '%s'" % asa_resource_name)
 
