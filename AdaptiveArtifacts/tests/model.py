@@ -143,6 +143,11 @@ class MetaModelSanityCheck(unittest.TestCase):
         #self.assertEqual(len(expected_prop_inames), len(slot_inames), "Instance '%s' contains unexpected inames. Expected %s. Found: %s." % (instance_iname, expected_prop_inames, slot_inames))
         self.assertEqual(len(expected_prop_inames), number_filled_slots, "Instance '%s' contains unexpected inames. \nExpected %s. \nFound: %s." % (instance_iname, expected_prop_inames, prop_inames))
 
+    def test_no_inames_as_property_id(self):
+        for instance in self.pool.instances.values():
+            for key in instance.state.slots.keys():
+                self.assertTrue(not key.startswith('__'), "The instance with iname '%s' has a property with an iname ('%s') instead of an id." % (instance.get_iname(), key))
+
 class ModelInspection(unittest.TestCase):
     def setUp(self):
         self.pool = InstancePool(True)
