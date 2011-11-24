@@ -13,6 +13,7 @@ schema = [
     Table('asa_instance', key=('id', 'version'))[ #Instance and InstanceState rolled into a single table
         Column('id'),
         Column('iname'),
+        Column('meta_level'),
         Column('version', type='int64'),
         Column('time', type='int64'),
         Column('author'),

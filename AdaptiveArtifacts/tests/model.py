@@ -57,7 +57,7 @@ class MetaModelSanityCheck(unittest.TestCase):
     def setUp(self):
         self.pool = InstancePool(True)
         self.expected_entity_prop_inames = ['__inherits', '__packageof','__name', '__meta']
-        self.expected_property_prop_inames = ['__owner', '__domain', '__lower_bound', '__upper_bound', '__name', '__meta']
+        self.expected_property_prop_inames = ['__owner', '__domain', '__lower_bound', '__upper_bound', '__order', '__name', '__meta']
 
     def test_self_meta(self):
         self.assertEqual(self.pool.get_instance_by_iname("__entity").get_meta().get_name(), "Entity")

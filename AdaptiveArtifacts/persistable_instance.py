@@ -56,7 +56,7 @@ class PersistableInstance(object):
             raise Exception("Nothing to fetch. Either identifier or name must be previded")
 
         query = """
-            SELECT id, iname, version, time, author, ipnr, op_type, comment
+            SELECT id, iname, meta_level, version, time, author, ipnr, op_type, comment
             FROM asa_instance i
             """
         if not iname is None:
@@ -83,7 +83,7 @@ class PersistableInstance(object):
         if not row:
             raise Exception("""Could not fetch data for instance.\n %s \n %s""" % (emsg, query))
 
-        identifier, iname, version, time, author, ipnr, op_type, comment = row
+        identifier, iname, meta_level, version, time, author, ipnr, op_type, comment = row
 
         query = """
                 SELECT property_instance_id, value
@@ -107,7 +107,7 @@ class PersistableInstance(object):
             ppool = PersistablePool.load(self.env)
         from AdaptiveArtifacts.model import Instance
         #TODO: maybe we should probably get this directly from PersistablePool?
-        self.instance =  Instance.create_from_properties(ppool.pool, identifier, iname, contents_dict, property_inames_dict)
+        self.instance =  Instance.create_from_properties(ppool.pool, identifier, iname, meta_level, contents_dict, property_inames_dict)
         #    self.version = 1
         self.version = int(version)
         self.time = from_utimestamp(time)
@@ -132,9 +132,9 @@ class PersistableInstance(object):
             new_version = self.version + 1
             cursor = db.cursor()
             cursor.execute("""
-                INSERT INTO asa_instance (id, iname, version, time, author, ipnr, op_type, comment)
-                VALUES (%s,%s, %s,%s,%s,%s,%s,%s)
-                """, (self.instance.get_identifier(), self.instance.get_iname(), new_version, to_utimestamp(t), author, remote_addr, 'C', comment))
+                INSERT INTO asa_instance (id, iname, meta_level, version, time, author, ipnr, op_type, comment)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                """, (self.instance.get_identifier(), self.instance.get_iname(), self.instance.get_meta_level(), new_version, to_utimestamp(t), author, remote_addr, 'C', comment))
             for property_ref in self.instance.state.slots: #TODO: state shouldn't be accessed directly
                 #pool = self.instance.pool
                 #instance_meta = pool.get(id=self.instance.get_value('__meta'))
@@ -195,17 +195,13 @@ class PersistablePool(object):
         p_instances = []
         db = env.get_read_db()
         cursor = db.cursor()
-        # Note the exquisite acrobatics to ensure that "Entity" is the first result. It must be, because of call to meta
+        # Note the exquisite acrobatics to ensure that "Entity" is the first result. This is because of the calls to meta
         rows = cursor.execute("""
-                            SELECT id, max(version) version, CASE WHEN v_name.value = 'Entity' THEN 0 WHEN v_name.value in ('Property', 'Classifier', 'Instance', 'MetaElementInstance', 'Package') THEN 1 ELSE 2 END AS is_not_entity
-                            FROM asa_instance i
-                            	INNER JOIN asa_value v_level ON v_level.instance_id=i.id
-                            	INNER JOIN asa_value v_name ON v_name.instance_id=i.id
-                            WHERE
-                                v_level.property_instance_iname='__meta_level' AND v_level.value = '2' AND
-                                v_name.property_instance_iname='__name'
-                            GROUP BY id, iname, v_name.value
-                            ORDER BY is_not_entity, v_name.value""")
+            SELECT id, max(version) version, CASE WHEN i.iname = '__entity' THEN 0 WHEN i.iname in ('__property', '__classifier', '__instance', '__metaelement', '__package') THEN 1 ELSE 2 END AS is_not_entity
+            FROM asa_instance i
+            WHERE i.meta_level = 2
+            GROUP BY id
+            ORDER BY is_not_entity, i.iname""")
         for id, version, dummy in rows.fetchall():
             p_instances.append(PersistableInstance.load(env, id, version=version, ppool=self))
         return p_instances
@@ -215,14 +211,13 @@ class PersistablePool(object):
         db = env.get_read_db()
         cursor = db.cursor()
         rows = cursor.execute("""
-                            SELECT id, max(version) version
-                            FROM asa_instance i
-                            	INNER JOIN asa_value v_idm ON v_idm.instance_id=i.id
-                            	INNER JOIN asa_value v_lvm ON v_lvm.instance_id=i.id
-                            WHERE
-                                v_idm.property_instance_iname='__meta' AND v_idm.value='%s' AND
-                                v_lvm.property_instance_iname='__meta_level' AND v_lvm.value in (%s)
-                            GROUP BY id""" % (id_meta, ",".join(["%s" % lvl for lvl in levels])))
+                SELECT id, max(version) version
+                FROM asa_instance i
+                    INNER JOIN asa_value v_idm ON v_idm.instance_id=i.id
+                WHERE
+                    v_idm.property_instance_iname='__meta' AND v_idm.value='%s' AND
+                    i.meta_level in (%s)
+                GROUP BY id""" % (id_meta, ",".join(["%s" % lvl for lvl in levels])))
         for id, iname, version in rows.fetchall():
             p_instances.append(PersistableInstance.load(env, id, version=version, ppool=self))
         return p_instances

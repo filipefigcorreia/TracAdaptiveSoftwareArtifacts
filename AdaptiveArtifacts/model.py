@@ -52,8 +52,8 @@ class Instance(object):
         else:
             self.__identifier = identifier
         self.__iname = iname
+        self.__meta_level = meta_level
         self.set_value_by_iname('__meta', id_meta)
-        self.set_value_by_iname('__meta_level', meta_level)
         if not pool is None:
             pool.add(self)
         self.pool = pool
@@ -63,7 +63,7 @@ class Instance(object):
         Replace all magic words used in the slots by the respective uuids. Magic words are used only while bootstrapping the M2.
         """
         for key in self.state.slots.keys():
-            if key != '__meta_level' and not self.get_property_from_meta(key) is None: # , '__lower_bound', '__upper_bound' # it's a iname. replace by a proper uuid!
+            if not self.get_property_from_meta(key) is None: # it's a iname. replace by a proper uuid!
                 self.set_property_ref(key, self.get_property_from_meta(key).get_identifier())
 
     def get_identifier(self):
@@ -71,6 +71,9 @@ class Instance(object):
 
     def get_iname(self):
         return self.__iname
+
+    def get_meta_level(self):
+        return self.__meta_level
 
     def get_id_meta(self):
         return self.get_value_by_iname('__meta')
@@ -81,12 +84,9 @@ class Instance(object):
     def get_property_from_meta(self, iname):
         return self.pool.get_property(self.__class__.id, iname=iname)
 
-    def get_meta_level(self):
-        return self.get_value_by_iname('__meta_level')
-
     def add_value(self, property_ref, property_value):
         """
-        property_ref: can be either a private system reference, like '__meta_level', or a uuid identifier, if a reference to a Property
+        property_ref: can be either a private system reference, like '__meta', or a uuid identifier, if a reference to a Property
         """
         if not property_ref in self.state.slots:
             self.state.slots[property_ref] = []
@@ -175,11 +175,12 @@ class Instance(object):
                 raise Exception("Unknown element meta: %s" % name_meta)
 
     @classmethod
-    def create_from_properties(cls, pool, identifier, iname, contents_dict, property_inames_dict):
+    def create_from_properties(cls, pool, identifier, iname, meta_level, contents_dict, property_inames_dict):
         instance = Instance(pool, 'Instance', identifier)
         instance.pool.remove(identifier)
         instance.__identifier = identifier
         instance.__iname = iname
+        instance.__meta_level = meta_level
         instance.add_state(InstanceState.create_from_properties(contents_dict, property_inames_dict))
         pool.add(instance)
         return instance
@@ -222,14 +223,13 @@ class MetaElementInstance(Instance):
 class Property(MetaElementInstance):
     id = None
 
-    def __init__(self, pool, name, owner, domain = "string", lower_bound = 0, upper_bound = 1, iname=None, meta_level='1'):
+    def __init__(self, pool, name, owner, domain = "string", lower_bound = 0, upper_bound = 1, order=None, iname=None, meta_level='1'):
         super(Property, self).__init__(pool=pool, name=name, id_meta=Property.id, iname=iname, meta_level=meta_level)
-        #TODO: mindtwist: changing an instance of this class will have to automatically result in changing instance that represents it in the pool.
-        self.set_value_by_iname('__meta_level', meta_level)
         self.set_value_by_iname('__owner', owner) #Entity
         self.set_value_by_iname('__domain', domain) #Classifier. will be the id to an other instance, but can also assume the special value "string"
         self.set_value_by_iname('__lower_bound', lower_bound)
         self.set_value_by_iname('__upper_bound', upper_bound)
+        self.set_value_by_iname('__order', order)
         #self.set_value_by_iname('__unique', False)
         #self.set_value_by_iname('__read_only', False)
 
@@ -241,6 +241,11 @@ class Property(MetaElementInstance):
 
     def get_owner_id(self):
         return self.get_value_by_iname("__owner")
+
+    def get_order(self):
+        return self.get_value_by_iname("__order")
+
+
 
 class Classifier(MetaElementInstance):
     id = None
@@ -317,18 +322,19 @@ class InstancePool(object):
 
             # Properties of Entity
             #Property(pool, "Meta", Entity.id, Entity.id, 1, 1, "__meta", "2")
-            Property(pool, "Name", MetaElementInstance.id, "string", 1, 1, "__name", "2")
-            Property(pool, "PackageOf", Classifier.id, Package.id, 1, 1, "__packageof", "2")
-            Property(pool, "Inherits", Entity.id, Entity.id, 1, 1, "__inherits", "2")
+            Property(pool, "Name", MetaElementInstance.id, "string", 1, 1, 1, "__name", "2")
+            Property(pool, "PackageOf", Classifier.id, Package.id, 1, 1, 0, "__packageof", "2")
+            Property(pool, "Inherits", Entity.id, Entity.id, 1, 1, 2, "__inherits", "2")
             # Properties of Property
             #Property(pool, "Meta", Property.id, Entity.id, 1, 1, "__meta", "2")
             #Property(pool, "Name", Property.id, "string", 1, 1, "__name", "2")
-            Property(pool, "Domain", Property.id, "string", 0, 1, "__domain", "2")
-            Property(pool, "Owner", Property.id, Entity.id, 1, 1, "__owner", "2")
-            Property(pool, "Lower Bound", Property.id, "string", 1, 1, "__lower_bound", "2")
-            Property(pool, "Upper Bound", Property.id, "string", 1, 1, "__upper_bound", "2")
+            Property(pool, "Domain", Property.id, "string", 0, 1, 2, "__domain", "2")
+            Property(pool, "Owner", Property.id, Entity.id, 1, 1, 1, "__owner", "2")
+            Property(pool, "Lower Bound", Property.id, "string", 1, 1, 3, "__lower_bound", "2")
+            Property(pool, "Upper Bound", Property.id, "string", 1, 1, 4, "__upper_bound", "2")
+            Property(pool, "Order", Property.id, "string", 1, 1, 5, "__order", "2")
             # Properties of Instance
-            Property(pool, "Meta", Instance.id, Entity.id, 1, 1, "__meta", "2")
+            Property(pool, "Meta", Instance.id, Entity.id, 1, 1, 0, "__meta", "2")
 
             # The meta of all M2 instances is Entity. This is what finally ClosesTheRoof.
             for entity in (instance_ent, metaelement_ent, property_ent, classifier_ent, package_ent, entity_ent):
@@ -336,7 +342,7 @@ class InstancePool(object):
 
             # Close the roof also at the properties level, ovewriting all their ids with the proper uuids
             # TODO: check if this can, someway, be done from within the properties
-            for instance in pool.get_metamodel_instances(Property.id):
+            for instance in pool.get_metamodel_instances():
                 instance.set_properties_definite_id()
 
     def add(self, instance):
@@ -382,6 +388,7 @@ class InstancePool(object):
         if not parent is None:
             props.extend(self.get_properties(parent.get_identifier()))
 
+        props.sort(key=lambda prop: prop.get_order())
         return props
 
     def get_property(self, owner_id, iname=None, property_ref=None):
