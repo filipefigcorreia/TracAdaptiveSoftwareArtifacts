@@ -159,7 +159,7 @@ class PersistableInstance(object):
         cursor = db.cursor()
         cursor.execute("SELECT version,time,author,comment,ipnr FROM asa_instance "
                        "WHERE id=%s AND version<=%s "
-                       "ORDER BY version DESC", (self.identifier, self.version))
+                       "ORDER BY version DESC", (self.instance.get_identifier(), self.version))
         for version, ts, author, comment, ipnr in cursor:
             yield version, from_utimestamp(ts), author, comment, ipnr
 
