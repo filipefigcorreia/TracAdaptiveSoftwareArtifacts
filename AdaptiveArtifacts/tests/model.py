@@ -36,21 +36,27 @@ class EntityInheritance(unittest.TestCase):
 
 class Properties(unittest.TestCase):
     def setUp(self):
-        self.pool = InstancePool()
+        self.pool = InstancePool(True)
         self.car = Entity(self.pool, "Car")
         self.wheels = Property(self.pool, "Wheels", self.car.get_identifier(), "string", "4", "4")
 
     def test_access_property(self):
+        #TODO: recheck if this test is still testing what it should. It doesn't appear to be using anything from the meta-level, which is suspicious
         self.assertEqual(len(self.car.get_properties()), 1)
         self.assertEqual(self.car.get_properties()[0].get_name(), 'Wheels')
 
     def test_add_property(self):
+        #TODO: recheck if this test is still testing what it should. It doesn't appear to be using anything from the meta-level, which is suspicious
         self.lightningMcQueen = Instance(self.pool, self.car)
         self.lightningMcQueen.add_value('Wheels', 'front left wheel')
         self.lightningMcQueen.add_value('Wheels', 'front right wheel')
         self.lightningMcQueen.add_value('Wheels', 'rear left wheel')
         self.lightningMcQueen.add_value('Wheels', 'front right wheel')
         self.assertEqual(len(self.lightningMcQueen.get_values('Wheels')), 4)
+
+    def test_new_instance_has_iname_translation(self):
+        for key in self.car.state.slots.keys():
+            self.assertTrue(not key.startswith('__'), "Found a iname ('%s') where a uuid was expected." % key)
 
 
 class MetaModelSanityCheck(unittest.TestCase):

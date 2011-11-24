@@ -46,21 +46,31 @@ class Instance(object):
         if meta_level == '0' and self.__class__.__name__ != 'Instance':
             raise Exception("All M0s should be naturally born instances.")
 
-        self.state = InstanceState() # TODO: refactor this to a self.states dictionay in which each key,value is of type Version,InstanceState
         if identifier is None:
             self.__identifier = str(uuid.uuid4())
         else:
             self.__identifier = identifier
         self.__iname = iname
         self.__meta_level = meta_level
+
+        meta = pool.get_instance(id_meta)
+        inames_dict = {}
+        if not meta is None:
+            # This dict will not be complete while the properties roof isn't closed.
+            # That's why calling set_properties_definite_id(...) is needed in the end
+            inames_dict = meta.get_properties_inames()
+
+        self.state = InstanceState(inames=inames_dict) # TODO: refactor this to a self.states dictionay in which each key,value is of type Version,InstanceState
         self.set_value_by_iname('__meta', id_meta)
+
         if not pool is None:
             pool.add(self)
         self.pool = pool
 
     def set_properties_definite_id(self):
         """
-        Replace all magic words used in the slots by the respective uuids. Magic words are used only while bootstrapping the M2.
+        Replace all magic words used in the slots by the respective uuids. Magic words are used
+        only while bootstrapping the M2, while the "roof" isn't yet closed.
         """
         for key in self.state.slots.keys():
             if not self.get_property_from_meta(key) is None: # it's a iname. replace by a proper uuid!
@@ -188,16 +198,15 @@ class Instance(object):
 
 class InstanceState(object):
 
-    def __init__(self, version=None):
+    def __init__(self, inames={}, version=None):
         self.slots = {} # dict in which each key,value is of type unicodestring,arbitraryvalue
-        self.inames = {} # translation of uuids to internal names
+        self.inames = inames # translation of uuids to internal names
         #self.version = version # version in which this state was created
 
     @classmethod
     def create_from_properties(cls, contents_dict, inames_dict):
-        state = InstanceState()
+        state = InstanceState(inames=inames_dict)
         state.slots = contents_dict
-        state.inames = inames_dict
         return state
 
 
@@ -299,6 +308,11 @@ class Entity(Classifier):
     def get_properties(self):
         return self.pool.get_properties(self.get_identifier())
 
+    def get_properties_inames(self):
+        """
+        Returns a dictionary of property uuids to iname
+        """
+        return dict([(prop.get_identifier(), prop.get_iname()) for prop in self.get_properties()])
 
 class Package(MetaElementInstance):
     id = None
