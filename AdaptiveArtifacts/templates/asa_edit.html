@@ -8,32 +8,45 @@
   <xi:include href="layout.html" />
   <head>
     <title></title>
+    <style>
+        label{
+            width: 11em;
+            margin-right: 0.5em;
+            text-align: right;
+            display: inline-block;
+        }
+    </style>
   </head>
   <body>
+      <div id="content" class="ticket">
       <h1>Create new ${instance_meta.get_name()} <small>(inherits ${instance_meta.get_parent().get_name()})</small></h1>
       <form method="post" action="${href.adaptiveartifacts(instance_meta.id)}">
           <input type="hidden" name="meta_id" value="${instance_meta.id}" />
-          <ul>
-              <li py:for="property in instance_meta.get_properties()">${property.get_name()}<py:if test="property.is_mandatory()">*</py:if>:
-                  <py:choose test="property.get_field_type()">
-                      <py:when test="'text'">
-                          <input type="text" name="${property.get_identifier()}" value="${instance.get_value(property.get_identifier())}" /> Domain: <input type="text" name="" value="${property.get_domain()}" />
-                      </py:when>
-                      <py:when test="'combo'">
-                          <select>
-                              <option py:for="inst_possible_value in property.get_possible_values()" value="inst_possible_value.get_identifier()">${inst_possible_value.get_text_repr()}</option>
-                          </select> <a href="" title="Add new ${property.get_domain_name()}">[+]</a>
-                    </py:when>
-                    <py:otherwise></py:otherwise>
-                  </py:choose>
-              </li>
-          </ul>
+          <py:for each="property in instance_meta.get_properties()">
+              <label for="id_${property.get_identifier()}">${property.get_name()}<py:if test="property.is_mandatory()">*</py:if>:</label>
+              <py:choose test="property.get_field_type()">
+                  <py:when test="'text'">
+                      <input type="text" id="id_${property.get_identifier()}" name="${property.get_identifier()}" value="${instance.get_value(property.get_identifier())}" /> Domain: <input type="text" name="" value="${property.get_domain()}" />
+                  </py:when>
+                  <py:when test="'combo'">
+                      <select id="id_${property.get_identifier()}" name="${property.get_identifier()}">
+                          <option py:for="inst_possible_value in property.get_possible_values()" value="inst_possible_value.get_identifier()">${inst_possible_value.get_text_repr()}</option>
+                      </select>
+                </py:when>
+                <py:otherwise></py:otherwise>
+              </py:choose>
+              <br/>
+          </py:for>
+
           <!-- TODO: also show all the propeties. When we implement composition relations we no longer have to hardcode this, instead of showing the "properties", we will show whatever has composition relations -->
-          <h2>Properties</h2>
-          Name: <input type="text" name="new-property-1" value="" /> Domain: <input type="text" name="" value="" />
+          <label>Properties:</label>
+          <input type="text" name="new-property-1" value="" /> of type: <input type="text" name="" value="" /> <a href="" title="Add one more property">[+]</a>
+          <br/>
 
           <input type="hidden" name="action" value="instantiate" />
-          <input type="submit" value="Create" />
+          <input style="margin-left:14em;" type="submit" value="Create Instance" />
+          <br/><br/>
       </form>
+      </div>
   </body>
 </html>
