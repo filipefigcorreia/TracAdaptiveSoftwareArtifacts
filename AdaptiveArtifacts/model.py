@@ -388,6 +388,13 @@ class InstancePool(object):
                 return instance
         return None # no instance by this iname exists in the pool
 
+    def get_instances_of(self, meta_id):
+        instances = []
+        for id, instance in self.instances.items():
+            if instance.get_id_meta() == meta_id:
+                instances.append(instance)
+        return instances
+
     def get_properties(self, owner_id):
         """
         Get Properties of the specified Entity
