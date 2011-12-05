@@ -62,16 +62,16 @@ class Properties(unittest.TestCase):
 class MetaModelSanityCheck(unittest.TestCase):
     def setUp(self):
         self.pool = InstancePool(True)
-        self.expected_entity_prop_inames = ['__inherits', '__packageof','__name', '__meta']
-        self.expected_property_prop_inames = ['__owner', '__domain', '__lower_bound', '__upper_bound', '__order', '__name', '__meta']
+        self.expected_entity_prop_inames = ['__inherits', '__packageof','__name', '__text_repr_expr', '__meta']
+        self.expected_property_prop_inames = ['__owner', '__domain', '__lower_bound', '__upper_bound', '__order', '__name', '__text_repr_expr', '__meta']
 
     def test_self_meta(self):
         self.assertEqual(self.pool.get_instance_by_iname("__entity").get_meta().get_name(), "Entity")
 
     def test_instance_properties(self):
         instance_iname = "__instance"
-        expected_prop_inames = ['__packageof','__name', '__meta']
-        self.assert_properties(instance_iname, expected_prop_inames, number_filled_slots=3)
+        expected_prop_inames = ['__text_repr_expr', '__packageof','__name', '__meta'] # the "instance" Entity has no __inherits
+        self.assert_properties(instance_iname, expected_prop_inames, number_filled_slots=4)
 
     def test_metaelement_properties(self):
         instance_iname = "__metaelement"
@@ -145,8 +145,7 @@ class MetaModelSanityCheck(unittest.TestCase):
         # no more than the expected inames exist in the instance
         if number_filled_slots is None:
             number_filled_slots = len(prop_inames)
-        #TODO: uncomment the following line after getting rid of __meta_level from the slots
-        #self.assertEqual(len(expected_prop_inames), len(slot_inames), "Instance '%s' contains unexpected inames. Expected %s. Found: %s." % (instance_iname, expected_prop_inames, slot_inames))
+        self.assertEqual(len(expected_prop_inames), len(slot_inames), "Instance '%s' contains unexpected inames. \nExpected %s. \nFound: %s." % (instance_iname, expected_prop_inames, slot_inames))
         self.assertEqual(len(expected_prop_inames), number_filled_slots, "Instance '%s' contains unexpected inames. \nExpected %s. \nFound: %s." % (instance_iname, expected_prop_inames, prop_inames))
 
     def test_no_inames_as_property_id(self):

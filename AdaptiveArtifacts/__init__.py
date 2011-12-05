@@ -18,6 +18,7 @@ from trac.resource import *
 from trac.mimeview.api import Context
 from AdaptiveArtifacts.environment_maintainer import ASAEnvironmentMaintainer
 from AdaptiveArtifacts.persistable_instance import PersistableInstance, PersistablePool
+from AdaptiveArtifacts.presentable_instance import PresentableInstance, PresentableProperty
 
 class Core(Component):
     """Core module of the plugin. Provides the Adaptive-Artifacts themselves."""
@@ -72,8 +73,9 @@ class Core(Component):
             return self._render_list(req, entities, pi.instance, instances, pi.resource)
         elif action == 'instantiate':
             from model import Instance
-            shallow_instance = Instance(ppool.pool, pi.instance.get_identifier())
-            return self._render_instantiate(req, pi.instance, shallow_instance, pi.resource)
+            shallow_instance = PresentableInstance(Instance(ppool.pool, pi.instance.get_identifier()))
+            return self._render_instantiate(req, PresentableInstance(pi.instance), shallow_instance, pi.resource)
+            #return self._render_instantiate(req, pi.instance.get_meta(), pi.instance, pi.resource)
 
         """
         if req.method == 'POST':

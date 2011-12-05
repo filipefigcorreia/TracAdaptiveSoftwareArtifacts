@@ -13,13 +13,23 @@
       <h1>Create new ${instance_meta.get_name()} <small>(inherits ${instance_meta.get_parent().get_name()})</small></h1>
       <form method="post" action="${href.adaptiveartifacts(instance_meta.id)}">
           <input type="hidden" name="meta_id" value="${instance_meta.id}" />
-          <h2>Properties</h2>
           <ul>
-              <li py:for="property in instance_meta.get_properties()">${property.get_name()}: <input type="text" name="${property.get_identifier()}" value="${instance.get_value(property.get_identifier())}" /> Domain: <input type="text" name="" value="${property.get_domain()}" /></li>
+              <li py:for="property in instance_meta.get_properties()">${property.get_name()}<py:if test="property.is_mandatory()">*</py:if>:
+                  <py:choose test="property.get_field_type()">
+                      <py:when test="'text'">
+                          <input type="text" name="${property.get_identifier()}" value="${instance.get_value(property.get_identifier())}" /> Domain: <input type="text" name="" value="${property.get_domain()}" />
+                      </py:when>
+                      <py:when test="'combo'">
+                          <select>
+                              <option py:for="inst_possible_value in property.get_possible_values()" value="inst_possible_value.get_identifier()">${inst_possible_value.get_text_repr()}</option>
+                          </select> <a href="" title="Add new ${property.get_domain_name()}">[+]</a>
+                    </py:when>
+                    <py:otherwise></py:otherwise>
+                  </py:choose>
+              </li>
           </ul>
           <!-- TODO: also show all the propeties. When we implement composition relations we no longer have to hardcode this, instead of showing the "properties", we will show whatever has composition relations -->
-          Add new property:
-          <br/>
+          <h2>Properties</h2>
           Name: <input type="text" name="new-property-1" value="" /> Domain: <input type="text" name="" value="" />
 
           <input type="hidden" name="action" value="instantiate" />

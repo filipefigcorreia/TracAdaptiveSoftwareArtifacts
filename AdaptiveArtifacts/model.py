@@ -33,7 +33,7 @@ class Instance(object):
     id = None
 
     """Represents an instance at any model level"""
-    def __init__(self, pool, id_meta, identifier=None, iname=None, meta_level='0'):
+    def __init__(self, pool, id_meta, identifier=None, text_repr_expr = '', iname=None, meta_level='0'):
         """
         Arguments:
         pool -- the pool that the instances of this class will belong to
@@ -42,7 +42,6 @@ class Instance(object):
         iname -- internal name; exists only for meta-model (M2) instances
         meta_level -- the model level that the instance belongs to: '0', '1' or '2'
         """
-
         if meta_level == '0' and self.__class__.__name__ != 'Instance':
             raise Exception("All M0s should be naturally born instances.")
 
@@ -62,6 +61,7 @@ class Instance(object):
 
         self.state = InstanceState(inames=inames_dict) # TODO: refactor this to a self.states dictionay in which each key,value is of type Version,InstanceState
         self.set_value_by_iname('__meta', id_meta)
+        self.set_value_by_iname('__text_repr_expr', text_repr_expr)
 
         if not pool is None:
             pool.add(self)
@@ -90,6 +90,12 @@ class Instance(object):
 
     def get_meta(self):
         return self.pool.get_instance(self.get_value_by_iname('__meta'))
+
+    def get_text_repr(self):
+        text_repr_expr = self.get_value_by_iname('__text_repr_expr')
+        if text_repr_expr is None or text_repr_expr=='':
+            return self.get_meta().get_name() + " object with id: " + self.get_identifier()[:5] + ".."
+        return eval(text_repr_expr)
 
     def get_property_from_meta(self, iname):
         return self.pool.get_property(self.__class__.id, iname=iname)
@@ -216,10 +222,12 @@ class MetaElementInstance(Instance):
     """
     id = None
 
-    def __init__(self, pool, name, id_meta, iname, meta_level='1'):
+    def __init__(self, pool, name, id_meta, iname, text_repr_expr=None, meta_level='1'):
         if meta_level < '1':
             raise Exception("MetaElementInstances' level must be at least 1")
-        super(MetaElementInstance, self).__init__(pool=pool, id_meta=id_meta, iname=iname, meta_level=meta_level)
+        if text_repr_expr is None:
+            text_repr_expr = 'self.get_name()'
+        super(MetaElementInstance, self).__init__(pool=pool, id_meta=id_meta, text_repr_expr=text_repr_expr, iname=iname, meta_level=meta_level)
         self.set_value_by_iname('__name', name)
 
     def get_name(self):
@@ -254,6 +262,12 @@ class Property(MetaElementInstance):
     def get_order(self):
         return self.get_value_by_iname("__order")
 
+    def get_lower_bound(self):
+        return self.get_value_by_iname("__lower_bound")
+
+    def get_upper_bound(self):
+        return self.get_value_by_iname("__lower_bound")
+
 
 
 class Classifier(MetaElementInstance):
@@ -276,7 +290,8 @@ class Entity(Classifier):
         meta_level -- the model level that the instance belongs to: '0', '1' or '2'. Usually '1'.
         """
         super(Entity, self).__init__(pool=pool, name=name, iname=iname, id_meta=Entity.id, meta_level=meta_level)
-        self.set_value_by_iname('__inherits', inherits)
+        if not inherits is None:
+            self.set_value_by_iname('__inherits', inherits)
         # There will also be 0..* Properties, each stored in its own key
         # TODO: handle properties with cardinality > 1
 
@@ -337,7 +352,7 @@ class InstancePool(object):
             # Properties of Entity
             #Property(pool, "Meta", Entity.id, Entity.id, 1, 1, "__meta", "2")
             Property(pool, "Name", MetaElementInstance.id, "string", 1, 1, 1, "__name", "2")
-            Property(pool, "PackageOf", Classifier.id, Package.id, 1, 1, 0, "__packageof", "2")
+            Property(pool, "PackageOf", Classifier.id, Package.id, 0, 1, 0, "__packageof", "2")
             Property(pool, "Inherits", Entity.id, Entity.id, 1, 1, 2, "__inherits", "2")
             # Properties of Property
             #Property(pool, "Meta", Property.id, Entity.id, 1, 1, "__meta", "2")
@@ -349,6 +364,7 @@ class InstancePool(object):
             Property(pool, "Order", Property.id, "string", 1, 1, 5, "__order", "2")
             # Properties of Instance
             Property(pool, "Meta", Instance.id, Entity.id, 1, 1, 0, "__meta", "2")
+            Property(pool, "Text Representation", Instance.id, "python", 0, 1, 0, "__text_repr_expr", "2")
 
             # The meta of all M2 instances is Entity. This is what finally ClosesTheRoof.
             for entity in (instance_ent, metaelement_ent, property_ent, classifier_ent, package_ent, entity_ent):
