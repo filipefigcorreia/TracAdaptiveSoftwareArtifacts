@@ -190,6 +190,15 @@ class Instance(object):
             else:
                 raise Exception("Unknown element meta: %s" % name_meta)
 
+    def is_a(self, name):
+        """
+        Checks if this instance is of the specified entity (or one of it's parents)
+        """
+        if self.get_meta().get_name() == name:
+            return True
+        return self.get_meta().is_a(name)
+
+
     @classmethod
     def create_from_properties(cls, pool, identifier, iname, meta_level, contents_dict, property_inames_dict):
         instance = Instance(pool, 'Instance', identifier)

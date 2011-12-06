@@ -23,6 +23,7 @@ class EntityInheritance(unittest.TestCase):
         self.car = Entity(self.pool, "Car")
         self.corsa = Entity(self.pool, "Opel Corsa", self.car.get_identifier())
         self.enjoy = Entity(self.pool, "Opel Corsa Enjoy", self.corsa.get_identifier())
+        self.myfirstcar = Instance(self.pool, self.corsa.get_identifier())
 
     def test_inherited_entity_1level(self):
         self.assertEqual(self.corsa.get_parent().get_name(), 'Car')
@@ -30,9 +31,15 @@ class EntityInheritance(unittest.TestCase):
     def test_inherited_entity_2levels(self):
         self.assertEqual(self.enjoy.get_parent().get_parent().get_name(), 'Car')
 
-    def test_inheritance_hierarchy(self):
+    def test_entity_inheritance_hierarchy(self):
         self.assertTrue(self.enjoy.is_a(self.car.get_name()))
         self.assertFalse(self.car.is_a(self.enjoy.get_name()))
+
+    def test_instance_inheritance_hierarchy(self):
+        self.assertTrue(self.myfirstcar.is_a(self.corsa.get_name()))
+        self.assertFalse(self.myfirstcar.is_a(self.enjoy.get_name()))
+
+
 
 class Properties(unittest.TestCase):
     def setUp(self):
