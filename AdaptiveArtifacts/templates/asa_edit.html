@@ -9,8 +9,15 @@
   <head>
     <title></title>
     <style>
-        label{
-            width: 11em;
+        #content.asa {
+            width: 58em;
+            max-width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #content.asa label{
+            width: 20%;
             margin-right: 0.5em;
             text-align: right;
             display: inline-block;
@@ -18,33 +25,50 @@
     </style>
   </head>
   <body>
-      <div id="content" class="ticket">
+      <div id="content" class="asa">
       <h1>Create new ${instance_meta.get_name()} <small>(inherits ${instance_meta.get_parent().get_name()})</small></h1>
       <form method="post" action="${href.adaptiveartifacts(instance_meta.id)}">
           <input type="hidden" name="meta_id" value="${instance_meta.id}" />
+          <fieldset id="basics">
+          <legend>Basics</legend>
           <py:for each="property in instance_meta.get_properties()">
               <label for="id_${property.get_identifier()}">${property.get_name()}<py:if test="property.is_mandatory()">*</py:if>:</label>
               <py:choose test="property.get_field_type()">
                   <py:when test="'text'">
-                      <input type="text" id="id_${property.get_identifier()}" name="${property.get_identifier()}" value="${instance.get_value(property.get_identifier())}" /> Domain: <input type="text" name="" value="${property.get_domain()}" />
+                      <input type="text" id="id_${property.get_identifier()}" name="${property.get_identifier()}" value="${instance.get_value(property.get_identifier())}" /> <a href="docs#${property.get_domain()}">(?)</a>
                   </py:when>
                   <py:when test="'combo'">
                       <select id="id_${property.get_identifier()}" name="${property.get_identifier()}">
-                          <option py:for="inst_possible_value in property.get_possible_values()" value="inst_possible_value.get_identifier()">${inst_possible_value.get_text_repr()}</option>
-                      </select>
+                          <py:if test="not property.is_mandatory()">
+                              <option value="None"></option>
+                          </py:if>
+                          <option py:for="inst_possible_value in property.get_possible_values()" value="${inst_possible_value.get_identifier()}">${inst_possible_value.get_text_repr()}</option>
+                      </select> <a href="docs#${property.get_domain()}">(?)</a>
                 </py:when>
                 <py:otherwise></py:otherwise>
               </py:choose>
               <br/>
           </py:for>
+          </fieldset>
 
-          <!-- TODO: also show all the propeties. When we implement composition relations we no longer have to hardcode this, instead of showing the "properties", we will show whatever has composition relations -->
-          <label>Properties:</label>
-          <input type="text" name="new-property-1" value="" /> of type: <input type="text" name="" value="" /> <a href="" title="Add one more property">[+]</a>
-          <br/>
+          <py:if test="instance.is_instance('Entity')">
+              <fieldset id="properties">
+                  <legend>Properties</legend>
+                  <!-- TODO: also show all the propeties. When we implement composition relations we no longer have to hardcode this, instead of showing the "properties", we will show whatever has composition relations -->
+                  <label>Name:</label>
+                  <input type="text" name="new-property-1" value="" />
+                  <select name="new-property-1-domain">
+                      <option value="text">text</option>
+                  </select>
+                  <a href="" title="Delete property">[-]</a>
+                  <a href="docs#">(?)</a>
+                  <br/>
+                  <a style="margin-left: 9.5em;" href="" title="Add one more property">[+]</a>
+              </fieldset>
+          </py:if>
 
           <input type="hidden" name="action" value="instantiate" />
-          <input style="margin-left:14em;" type="submit" value="Create Instance" />
+          <input type="submit" value="Create Instance" />
           <br/><br/>
       </form>
       </div>
