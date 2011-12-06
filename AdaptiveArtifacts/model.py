@@ -360,9 +360,9 @@ class InstancePool(object):
 
             # Properties of Entity
             #Property(pool, "Meta", Entity.id, Entity.id, 1, 1, "__meta", "2")
-            Property(pool, "Name", MetaElementInstance.id, "string", 1, 1, 1, "__name", "2")
             Property(pool, "PackageOf", Classifier.id, Package.id, 0, 1, 0, "__packageof", "2")
-            Property(pool, "Inherits", Entity.id, Entity.id, 1, 1, 2, "__inherits", "2")
+            Property(pool, "Inherits", Entity.id, Entity.id, 0, 1, 1, "__inherits", "2")
+            Property(pool, "Name", MetaElementInstance.id, "string", 1, 1, 2, "__name", "2")
             # Properties of Property
             #Property(pool, "Meta", Property.id, Entity.id, 1, 1, "__meta", "2")
             #Property(pool, "Name", Property.id, "string", 1, 1, "__name", "2")
