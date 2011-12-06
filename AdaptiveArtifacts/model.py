@@ -190,13 +190,13 @@ class Instance(object):
             else:
                 raise Exception("Unknown element meta: %s" % name_meta)
 
-    def is_a(self, name):
+    def is_instance(self, name):
         """
         Checks if this instance is of the specified entity (or one of it's parents)
         """
         if self.get_meta().get_name() == name:
             return True
-        return self.get_meta().is_a(name)
+        return self.get_meta().is_subclass(name)
 
 
     @classmethod
@@ -315,7 +315,7 @@ class Entity(Classifier):
         """
         return self.pool.get_instance(self.get_value_by_iname('__inherits'))
 
-    def is_a(self, name):
+    def is_subclass(self, name):
         """
         Searches for a MetaElementInstance name by traversing the inheritance relations; going up, from child to parent
         """

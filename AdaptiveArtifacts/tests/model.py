@@ -31,13 +31,13 @@ class EntityInheritance(unittest.TestCase):
     def test_inherited_entity_2levels(self):
         self.assertEqual(self.enjoy.get_parent().get_parent().get_name(), 'Car')
 
-    def test_entity_inheritance_hierarchy(self):
-        self.assertTrue(self.enjoy.is_a(self.car.get_name()))
-        self.assertFalse(self.car.is_a(self.enjoy.get_name()))
+    def test_inheritance_hierarchy(self):
+        self.assertTrue(self.enjoy.is_subclass(self.car.get_name()))
+        self.assertFalse(self.car.is_subclass(self.enjoy.get_name()))
 
-    def test_instance_inheritance_hierarchy(self):
-        self.assertTrue(self.myfirstcar.is_a(self.corsa.get_name()))
-        self.assertFalse(self.myfirstcar.is_a(self.enjoy.get_name()))
+    def test_instantiation_hierarchy(self):
+        self.assertTrue(self.myfirstcar.is_instance(self.corsa.get_name()))
+        self.assertFalse(self.myfirstcar.is_instance(self.enjoy.get_name()))
 
 
 
