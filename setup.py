@@ -13,6 +13,7 @@ setup(name=PACKAGE,
     packages=['AdaptiveArtifacts'],
     entry_points={'trac.plugins': '%s = AdaptiveArtifacts' % PACKAGE},
     package_data={'AdaptiveArtifacts': ['htdocs/css/*.css',
+                                        'htdocs/js/*.js',
                                         'htdocs/images/*.jpg',
                                         'templates/*.cs']},
 )

@@ -10,7 +10,7 @@ import re
 import string
 from trac.core import *
 from trac.resource import IResourceManager, ResourceNotFound
-from trac.web.chrome import INavigationContributor, ITemplateProvider #, add_stylesheet
+from trac.web.chrome import INavigationContributor, ITemplateProvider, add_javascript #, add_stylesheet
 from trac.web.main import IRequestHandler
 from trac.util import escape, Markup, datefmt
 from trac.env import IEnvironmentSetupParticipant
@@ -65,6 +65,7 @@ class Core(Component):
             if pi is None:
                 raise ResourceNotFound("No resource goes by the name of '%s'" % asa_resource_name)
 
+        add_javascript(req, 'adaptiveartifacts/js/uuid.js')
         if action == 'view':
             return self._render_view(req, pi.instance, pi.resource)
         elif action == 'list':
