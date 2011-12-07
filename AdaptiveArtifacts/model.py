@@ -67,6 +67,10 @@ class Instance(object):
             pool.add(self)
         self.pool = pool
 
+    @classmethod
+    def get_new_default_instance(cls, pool, id_meta):
+        return Instance(pool, id_meta)
+
     def set_properties_definite_id(self):
         """
         Replace all magic words used in the slots by the respective uuids. Magic words are used
@@ -239,6 +243,11 @@ class MetaElementInstance(Instance):
         super(MetaElementInstance, self).__init__(pool=pool, id_meta=id_meta, text_repr_expr=text_repr_expr, iname=iname, meta_level=meta_level)
         self.set_value_by_iname('__name', name)
 
+    @classmethod
+    def get_new_default_instance(cls, pool, id_meta):
+        #ToDo: Check if there's anything stopping us from making this class abstract
+        raise Exception(cls.__name__ + " should never be instantiated directly.")
+
     def get_name(self):
         """
         Returns the name that was assigned to self.
@@ -259,6 +268,10 @@ class Property(MetaElementInstance):
         #self.set_value_by_iname('__unique', False)
         #self.set_value_by_iname('__read_only', False)
 
+    @classmethod
+    def get_new_default_instance(cls, pool, id_meta):
+        return Property(pool, "Unnamed Property", None)
+
     def get_domain(self):
         """
         Returns the domain of the property.
@@ -278,13 +291,17 @@ class Property(MetaElementInstance):
         return self.get_value_by_iname("__lower_bound")
 
 
-
 class Classifier(MetaElementInstance):
     id = None
 
     def __init__(self, pool, name, id_meta, iname=None, meta_level='1'):
         super(Classifier, self).__init__(pool=pool, name=name, id_meta=id_meta, iname=iname, meta_level=meta_level)
         self.set_value_by_iname('__packageof', 'default') #Package
+
+    @classmethod
+    def get_new_default_instance(cls, pool, id_meta):
+        #ToDo: Check if there's anything stopping us from making this class abstract
+        raise Exception(cls.__name__ + " should never be instantiated directly.")
 
 class Entity(Classifier):
     id = None
@@ -308,6 +325,10 @@ class Entity(Classifier):
         if not hard_class is None:
             # Copy identifiers from the data-meta-model to the hardcoded-meta-model, for convenience
             hard_class.id = self.get_identifier()
+
+    @classmethod
+    def get_new_default_instance(cls, pool, id_meta):
+        return Entity(pool, "Unnamed Entity")
 
     def get_parent(self):
         """
@@ -455,3 +476,4 @@ class InstancePool(object):
 
     def get_model_instances(self):
         return [instance for id, instance in self.instances.items() if instance.get_meta_level() == '1']
+
