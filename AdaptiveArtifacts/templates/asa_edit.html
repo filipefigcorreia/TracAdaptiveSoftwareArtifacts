@@ -8,6 +8,20 @@
   <xi:include href="layout.html" />
   <head>
     <title></title>
+    <script type="text/javascript">
+      $(document).ready(function(){
+        $("a.addproperty").click(function(){
+          var count = $("div.property").length
+          var copy = $("div.property:last").clone(true, true)
+          name_input = copy.find("input[name^='property-name-']")
+          name_input.attr("name", "property-name-" + (count+1))
+          name_input.attr("value", "")
+          domain_input = copy.find("select[name^='property-domain-']")
+          domain_input.attr("name", "property-domain-" + (count+1))
+          $("div.property:last").after(copy)
+        });
+      });
+    </script>
     <style>
         #content.asa {
             width: 58em;
@@ -47,7 +61,7 @@
                           <py:if test="not property.is_mandatory()">
                               <option value="None"></option>
                           </py:if>
-                          <option py:for="inst_possible_value in property.get_possible_values()" value="${inst_possible_value.get_identifier()}">${inst_possible_value.get_text_repr()}</option>
+                          <option py:for="inst_possible_value in property.get_possible_values(instance)" value="${inst_possible_value.get_identifier()}">${inst_possible_value.get_text_repr()}</option>
                       </select> <a href="docs#${property.get_domain()}">(?)</a>
                 </py:when>
                 <py:otherwise></py:otherwise>
@@ -60,15 +74,17 @@
               <fieldset id="properties">
                   <legend>Properties</legend>
                   <!-- TODO: also show all the propeties. When we implement composition relations we no longer have to hardcode this, instead of showing the "properties", we will show whatever has composition relations -->
-                  <label>Name:</label>
-                  <input type="text" name="new-property-1" value="" />
-                  <select name="new-property-1-domain">
-                      <option value="text">text</option>
-                  </select>
-                  <a href="" title="Delete property">[-]</a>
-                  <a href="docs#">(?)</a>
-                  <br/>
-                  <a style="margin-left: 9.5em;" href="" title="Add one more property">[+]</a>
+                  <div class="property">
+                      <label>Name:</label>
+                      <input type="text" name="property-name-1" value="" />
+                      <select name="property-domain-1">
+                          <option value="text">text</option>
+                      </select>
+                      <a href="" title="Delete property">[-]</a>
+                      <a href="docs#">(?)</a>
+                      <br/>
+                  </div>
+                  <a style="margin-left: 12.5em;" class="addproperty" href="#" title="Add one more property">[+]</a>
               </fieldset>
           </py:if>
 
