@@ -56,10 +56,10 @@ class PresentableProperty(Proxy):
         else:
             return 'combo'
 
-    def get_possible_values(self):
+    def get_possible_values(self, pinstance):
         domain = self.property.get_domain()
         if domain == 'string':
             return None
         else: # uuid
-            return [instance for instance in self.property.pool.get_instances_of(domain) if int(instance.get_meta_level()) == int(self.get_meta_level())-1]
+            return [inst_value for inst_value in self.property.pool.get_instances_of(domain) if not inst_value is pinstance.instance and int(inst_value.get_meta_level()) == int(self.get_meta_level())-1]
 
