@@ -30,9 +30,11 @@ class Version(object):
 
 
 class Instance(object):
+    """
+    Represents an instance at any model level
+    """
     id = None
 
-    """Represents an instance at any model level"""
     def __init__(self, pool, id_meta, identifier=None, text_repr_expr = '', iname=None, meta_level='0'):
         """
         Arguments:
@@ -174,25 +176,14 @@ class Instance(object):
         else:
             return []
 
-    def add_state(self, state):
+    def reset_class_from_inner_state(self):
         """
-        Adds a new state to the dictionary and changes the instance's __class__
+        Inspects the instance's state and changes its __class__ accordingly
         """
-        self.state = state #TODO: this should be a dictionary and not a var
         if self.get_identifier()==self.get_id_meta(): # special case: closing the meta-* roof
             self.__class__ = Entity
         else:
-            name_meta = self.get_meta().get_name()
-            if name_meta==Entity.__name__:
-                self.__class__ = Entity
-            elif name_meta==Instance.__name__:
-                self.__class__ = Instance
-            elif name_meta==Package.__name__:
-                self.__class__ = Package
-            elif name_meta==Property.__name__:
-                self.__class__ = Property
-            else:
-                raise Exception("Unknown element meta: %s" % name_meta)
+            self.__class__ = self.pool.get_metamodel_python_class_by_name(self.get_meta().get_name())
 
     def is_instance(self, name):
         """
@@ -202,7 +193,6 @@ class Instance(object):
             return True
         return self.get_meta().is_subclass(name)
 
-
     @classmethod
     def create_from_properties(cls, pool, identifier, iname, meta_level, contents_dict, property_inames_dict):
         instance = Instance(pool, 'Instance', identifier)
@@ -210,7 +200,10 @@ class Instance(object):
         instance.__identifier = identifier
         instance.__iname = iname
         instance.__meta_level = meta_level
-        instance.add_state(InstanceState.create_from_properties(contents_dict, property_inames_dict))
+        #TODO: state should probably be a dictionary and not a var
+        instance.state = InstanceState.create_from_properties(contents_dict, property_inames_dict)
+        instance.reset_class_from_inner_state()
+        instance.reset_class_id()
         pool.add(instance)
         return instance
 
@@ -248,6 +241,12 @@ class MetaElementInstance(Instance):
         #ToDo: Check if there's anything stopping us from making this class abstract
         raise Exception(cls.__name__ + " should never be instantiated directly.")
 
+    def reset_class_id(self):
+        if self.get_meta_level() == u'2': # if a meta-model (m2) instance, copy its id to the corresponding python class
+            a_m2_class = self.pool.get_metamodel_python_class_by_name(self.get_name())
+            if not a_m2_class is None: # not all m2 instances have corresponding python classes
+                a_m2_class.id = self.get_identifier()
+
     def get_name(self):
         """
         Returns the name that was assigned to self.
@@ -281,6 +280,9 @@ class Property(MetaElementInstance):
     def get_owner_id(self):
         return self.get_value_by_iname("__owner")
 
+    def get_owner(self):
+        return self.pool.get_instance(self.get_value_by_iname("__owner"))
+
     def get_order(self):
         return self.get_value_by_iname("__order")
 
@@ -306,13 +308,12 @@ class Classifier(MetaElementInstance):
 class Entity(Classifier):
     id = None
 
-    def __init__(self, pool, name, inherits=None, iname=None, hard_class=None, meta_level='1'):
+    def __init__(self, pool, name, inherits=None, iname=None, meta_level='1'):
         """
         Arguments:
         pool -- the pool that the instances of this class will belong to
         name -- the name attribute of the entity
         inherits -- the uuid of the Entity from which this Entity derives from
-        hard_class --
         meta_level -- the model level that the instance belongs to: '0', '1' or '2'. Usually '1'.
         """
         super(Entity, self).__init__(pool=pool, name=name, iname=iname, id_meta=Entity.id, meta_level=meta_level)
@@ -321,14 +322,19 @@ class Entity(Classifier):
         # There will also be 0..* Properties, each stored in its own key
         # TODO: handle properties with cardinality > 1
 
-        # Only happens for M2 entities
-        if not hard_class is None:
-            # Copy identifiers from the data-meta-model to the hardcoded-meta-model, for convenience
-            hard_class.id = self.get_identifier()
+        # Copy identifiers from the data-meta-model to the hardcoded-meta-model, for convenience
+        # Only does something for M2 entities
+        self.reset_class_id()
 
     @classmethod
     def get_new_default_instance(cls, pool, id_meta):
         return Entity(pool, "Unnamed Entity")
+
+    #@classmethod
+    #def get_class_id(cls, pool):
+    #    for m2_instance in pool.get_metamodel_instances():
+    #        if m2_instance.get_name() == cls.__name__:
+    #            return m2_instance.get_identifier()
 
     def get_parent(self):
         """
@@ -372,12 +378,12 @@ class InstancePool(object):
         if bootstrap_with_new_m2:
             pool = self
             # Create new M2 instances
-            instance_ent = Entity(pool, name=Instance.__name__, inherits=None, iname="__instance", hard_class=Instance, meta_level='2')
-            metaelement_ent = Entity(pool, name=MetaElementInstance.__name__, inherits=Instance.id, iname="__metaelement", hard_class=MetaElementInstance, meta_level='2')
-            property_ent = Entity(pool, name=Property.__name__, inherits=MetaElementInstance.id, iname="__property", hard_class=Property, meta_level='2')
-            classifier_ent = Entity(pool, name=Classifier.__name__, inherits=MetaElementInstance.id, iname="__classifier", hard_class=Classifier, meta_level='2')
-            package_ent = Entity(pool, name=Package.__name__, inherits=MetaElementInstance.id, iname="__package", hard_class=Package, meta_level='2')
-            entity_ent = Entity(pool, name=Entity.__name__, inherits=Classifier.id, iname="__entity", hard_class=Entity, meta_level='2')
+            instance_ent = Entity(pool, name=Instance.__name__, inherits=None, iname="__instance", meta_level='2')
+            metaelement_ent = Entity(pool, name=MetaElementInstance.__name__, inherits=Instance.id, iname="__metaelement", meta_level='2')
+            property_ent = Entity(pool, name=Property.__name__, inherits=MetaElementInstance.id, iname="__property", meta_level='2')
+            classifier_ent = Entity(pool, name=Classifier.__name__, inherits=MetaElementInstance.id, iname="__classifier", meta_level='2')
+            package_ent = Entity(pool, name=Package.__name__, inherits=MetaElementInstance.id, iname="__package", meta_level='2')
+            entity_ent = Entity(pool, name=Entity.__name__, inherits=Classifier.id, iname="__entity", meta_level='2')
 
             # Properties of Entity
             #Property(pool, "Meta", Entity.id, Entity.id, 1, 1, "__meta", "2")
@@ -477,3 +483,21 @@ class InstancePool(object):
     def get_model_instances(self):
         return [instance for id, instance in self.instances.items() if instance.get_meta_level() == '1']
 
+    @classmethod
+    def get_metamodel_python_classes(cls):
+        #TODO: Would be interesting to make this method more dynamic
+        return [Instance, MetaElementInstance, Property, Classifier, Package, Entity]
+
+    @classmethod
+    def get_metamodel_python_class_by_id(cls, identifier):
+        for a_class in cls.get_metamodel_python_classes():
+            if a_class.id == identifier:
+                return a_class
+        return None
+
+    @classmethod
+    def get_metamodel_python_class_by_name(cls, name):
+        for a_class in cls.get_metamodel_python_classes():
+            if a_class.__name__ == name:
+                return a_class
+        return None

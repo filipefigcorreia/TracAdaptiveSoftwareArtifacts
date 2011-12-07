@@ -61,4 +61,5 @@ class PresentableProperty(Proxy):
         if domain == 'string':
             return None
         else: # uuid
-            return self.property.pool.get_instances_of(domain)
+            return [instance for instance in self.property.pool.get_instances_of(domain) if int(instance.get_meta_level()) == int(self.get_meta_level())-1]
+

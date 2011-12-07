@@ -75,6 +75,10 @@ class MetaModelSanityCheck(unittest.TestCase):
     def test_self_meta(self):
         self.assertEqual(self.pool.get_instance_by_iname("__entity").get_meta().get_name(), "Entity")
 
+    def test_data_to_code_translation(self):
+        self.assertEqual(Entity, self.pool.get_metamodel_python_class_by_id(Entity.id))
+        self.assertEqual(Property, self.pool.get_metamodel_python_class_by_id(Property.id))
+
     def test_instance_properties(self):
         instance_iname = "__instance"
         expected_prop_inames = ['__text_repr_expr', '__packageof','__name', '__meta'] # the "instance" Entity has no __inherits

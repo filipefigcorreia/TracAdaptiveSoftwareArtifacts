@@ -72,8 +72,9 @@ class Core(Component):
             instances = [pi.instance for pi in ppool.get_instances_of(self.env, pi.instance.get_identifier(), [0])]
             return self._render_list(req, entities, pi.instance, instances, pi.resource)
         elif action == 'instantiate':
-            from model import Instance
-            shallow_instance = PresentableInstance(Instance(ppool.pool, pi.instance.get_identifier()))
+            from model import InstancePool, Instance
+            a_class = InstancePool.get_metamodel_python_class_by_id(pi.instance.get_identifier())
+            shallow_instance = PresentableInstance(a_class.get_new_default_instance(pool=ppool.pool, id_meta=pi.instance.get_identifier()))
             return self._render_instantiate(req, PresentableInstance(pi.instance), shallow_instance, pi.resource)
             #return self._render_instantiate(req, pi.instance.get_meta(), pi.instance, pi.resource)
 
