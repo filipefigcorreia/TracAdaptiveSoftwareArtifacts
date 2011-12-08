@@ -389,7 +389,7 @@ class InstancePool(object):
             # Properties of Property
             #Property(pool, "Meta", Property.id, Entity.id, 1, 1, "__meta", "2")
             #Property(pool, "Name", Property.id, "string", 1, 1, "__name", "2")
-            Property(pool, "Domain", Property.id, "string", 0, 1, 2, "__domain", "2")
+            Property(pool, "Domain", Property.id, "string", 1, 1, 2, "__domain", "2")
             Property(pool, "Owner", Property.id, Entity.id, 1, 1, 1, "__owner", "2")
             Property(pool, "Lower Bound", Property.id, "string", 1, 1, 3, "__lower_bound", "2")
             Property(pool, "Upper Bound", Property.id, "string", 1, 1, 4, "__upper_bound", "2")
