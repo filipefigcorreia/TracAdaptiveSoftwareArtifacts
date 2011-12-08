@@ -437,11 +437,24 @@ class InstancePool(object):
         return None # no instance by this iname exists in the pool
 
     def get_instances_of(self, meta_id):
+        return self.__get_instances(None, meta_id)
+
+    def get_metamodel_instances(self, meta_id = None):
+        return self.__get_instances('2', meta_id)
+
+    def get_model_instances(self, meta_id = None):
+        return self.__get_instances('1', meta_id)
+
+    def __get_instances(self, meta_level=None, meta_id=None):
         instances = []
         for id, instance in self.instances.items():
-            if instance.get_id_meta() == meta_id:
-                instances.append(instance)
+            if not meta_level is None and instance.get_meta_level() != meta_level:
+                continue
+            if not meta_id is None and instance.get_id_meta() != meta_id:
+                continue
+            instances.append(instance)
         return instances
+
 
     def get_properties(self, owner_id):
         """
@@ -470,15 +483,6 @@ class InstancePool(object):
 
         return None
 
-    def get_metamodel_instances(self, meta_id = None):
-        all_m2_instances = [instance for id, instance in self.instances.items() if instance.get_meta_level() == '2']
-        if not meta_id is None:
-            all_m2_instances = [instance for instance in all_m2_instances if instance.get_value_by_iname('__meta') == meta_id]
-        return all_m2_instances
-
-    def get_model_instances(self):
-        return [instance for id, instance in self.instances.items() if instance.get_meta_level() == '1']
-
     @classmethod
     def get_metamodel_python_classes(cls):
         #TODO: Would be interesting to make this method more dynamic
@@ -497,3 +501,10 @@ class InstancePool(object):
             if a_class.__name__ == name:
                 return a_class
         return None
+
+    def get_possible_domains(self):
+        pool = self
+        possible_domains = {'text':'text'}
+        possible_domains.update(dict([(i.get_identifier(), i.get_name()) for i in pool.get_model_instances(Entity.id)]))
+        return possible_domains
+

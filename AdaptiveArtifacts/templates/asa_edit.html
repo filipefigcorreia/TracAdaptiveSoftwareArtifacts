@@ -63,7 +63,7 @@
               <label for="id_${property.get_identifier()}">${property.get_name()}<py:if test="property.is_mandatory()">*</py:if>:</label>
               <py:choose test="property.get_field_type()">
                   <py:when test="'text'">
-                      <input type="text" id="id_${property.get_identifier()}" name="${property.get_identifier()}" value="${instance.get_value(property.get_identifier())}" /> <a href="docs#${property.get_domain()}">(?)</a>
+                      <input type="text" id="id_${property.get_identifier()}" name="${property.get_identifier()}" value="${instance.get_value(property.get_identifier())}" />
                   </py:when>
                   <py:when test="'combo'">
                       <select id="id_${property.get_identifier()}" name="${property.get_identifier()}">
@@ -71,10 +71,11 @@
                               <option value="None"></option>
                           </py:if>
                           <option py:for="inst_possible_value in property.get_possible_values(instance)" value="${inst_possible_value.get_identifier()}">${inst_possible_value.get_text_repr()}</option>
-                      </select> <a href="docs#${property.get_domain()}">(?)</a>
+                      </select>
                 </py:when>
                 <py:otherwise></py:otherwise>
               </py:choose>
+              <a href="docs#${property.get_domain()}">(?)</a>
               <br/>
           </py:for>
           </fieldset>
@@ -83,13 +84,27 @@
               <fieldset id="properties">
                   <legend>Properties</legend>
                   <!-- TODO: also show all the properties. When we implement composition relations we no longer have to hardcode this, instead of showing the "properties", we will show whatever has composition relations -->
+
+                  <py:def function="domain_combo(prop_id=None, prop_domain=None, possible_domains=None)">
+                      <select id="id_${prop_id}" name="property-domain-${prop_id}">
+                          <py:for each="domain_value_id, domain_value_name in possible_domains">
+                            <py:choose>
+                                <py:when test="domain_value_id == prop_domain">
+                                    <option value="${domain_value_id}" selected="selected">${domain_value_name}</option>
+                                </py:when>
+                                <py:otherwise>
+                                    <option value="${domain_value_id}">${domain_value_name}</option>
+                                </py:otherwise>
+                            </py:choose>
+                          </py:for>
+                      </select>
+                  </py:def>
+
                   <div class="properties">
                       <div class="property prototype">
                           <label>Name:</label>
                           <input type="text" name="property-name-X" value="" />
-                          <select name="property-domain-X">
-                              <option value="text">text</option>
-                          </select>
+                          ${domain_combo(prop_id="X", possible_domains=instance.pool.get_possible_domains().items())}
                           <a href="#" class="delproperty" title="Delete property">[-]</a>
                           <a href="docs#">(?)</a>
                           <br/>
@@ -97,11 +112,9 @@
                       <div py:for="prop in instance.get_properties()" class="property">
                           <label>Name:</label>
                           <input type="text" name="property-name-${prop.get_identifier()}" value="${prop.get_name()}" />
-                          <select name="property-domain-${prop.get_identifier()}">
-                              <option value="text">text</option>
-                          </select>
-                          <a href="#" class="delproperty" title="Delete property">[-]</a>
+                          ${domain_combo(prop.get_identifier(), prop.get_domain(), instance.pool.get_possible_domains().items())}
                           <a href="docs#${prop.get_domain()}">(?)</a>
+                          <a href="#" class="delproperty" title="Delete property">[-]</a>
                           <br/>
                       </div>
                   </div>
