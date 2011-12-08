@@ -23,7 +23,7 @@ class PresentableInstance(Proxy):
 
     # shadowing the instance function
     def get_properties(self):
-        return [PresentableProperty(prop) for prop in self.instance.get_properties() if int(prop.get_order()) > 0]
+        return [PresentableProperty(prop) for prop in self.instance.get_properties() if int(prop.get_order() or "1") > 0]
 
     #unused?
     #def get_properties_from_meta(self):

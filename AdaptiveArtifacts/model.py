@@ -69,10 +69,6 @@ class Instance(object):
             pool.add(self)
         self.pool = pool
 
-    @classmethod
-    def get_new_default_instance(cls, pool, id_meta):
-        return Instance(pool, id_meta)
-
     def set_properties_definite_id(self):
         """
         Replace all magic words used in the slots by the respective uuids. Magic words are used
@@ -237,7 +233,7 @@ class MetaElementInstance(Instance):
         self.set_value_by_iname('__name', name)
 
     @classmethod
-    def get_new_default_instance(cls, pool, id_meta):
+    def get_new_default_instance(cls, pool, name):
         #ToDo: Check if there's anything stopping us from making this class abstract
         raise Exception(cls.__name__ + " should never be instantiated directly.")
 
@@ -268,8 +264,8 @@ class Property(MetaElementInstance):
         #self.set_value_by_iname('__read_only', False)
 
     @classmethod
-    def get_new_default_instance(cls, pool, id_meta):
-        return Property(pool, "Unnamed Property", None)
+    def get_new_default_instance(cls, pool, name, owner=None):
+        return Property(pool, name, owner)
 
     def get_domain(self):
         """
@@ -300,11 +296,6 @@ class Classifier(MetaElementInstance):
         super(Classifier, self).__init__(pool=pool, name=name, id_meta=id_meta, iname=iname, meta_level=meta_level)
         self.set_value_by_iname('__packageof', 'default') #Package
 
-    @classmethod
-    def get_new_default_instance(cls, pool, id_meta):
-        #ToDo: Check if there's anything stopping us from making this class abstract
-        raise Exception(cls.__name__ + " should never be instantiated directly.")
-
 class Entity(Classifier):
     id = None
 
@@ -327,8 +318,8 @@ class Entity(Classifier):
         self.reset_class_id()
 
     @classmethod
-    def get_new_default_instance(cls, pool, id_meta):
-        return Entity(pool, "Unnamed Entity")
+    def get_new_default_instance(cls, pool, name):
+        return Entity(pool, name)
 
     #@classmethod
     #def get_class_id(cls, pool):
@@ -368,8 +359,13 @@ class Entity(Classifier):
 class Package(MetaElementInstance):
     id = None
 
-    def __init__(self, pool, name, id_meta):
-        super(Package, self).__init__(pool=pool, name=name, id_meta=id_meta)
+    def __init__(self, pool, name, iname=None):
+        super(Package, self).__init__(pool=pool, name=name, id_meta=Package.id, iname=iname)
+
+    @classmethod
+    def get_new_default_instance(cls, pool, name):
+        return Package(pool, name)
+
 
 class InstancePool(object):
     def __init__(self, bootstrap_with_new_m2=False):

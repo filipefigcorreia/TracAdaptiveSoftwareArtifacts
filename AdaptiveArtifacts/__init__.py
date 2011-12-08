@@ -73,10 +73,13 @@ class Core(Component):
             instances = [pi.instance for pi in ppool.get_instances_of(self.env, pi.instance.get_identifier(), [0])]
             return self._render_list(req, entities, pi.instance, instances, pi.resource)
         elif action == 'instantiate':
-            from model import InstancePool, Instance
-            a_class = InstancePool.get_metamodel_python_class_by_id(pi.instance.get_identifier())
-            shallow_instance = PresentableInstance(a_class.get_new_default_instance(pool=ppool.pool, id_meta=pi.instance.get_identifier()))
-            return self._render_instantiate(req, PresentableInstance(pi.instance), shallow_instance, pi.resource)
+            from model import InstancePool, Package, Property, Entity
+            a_m2_class = InstancePool.get_metamodel_python_class_by_id(pi.instance.get_identifier())
+            if not a_m2_class in [Package, Property, Entity]:
+                raise Exception("Trying to instanciate a not instantiatable instance '%s'." % a_m2_class)
+            brand_new_instance = a_m2_class.get_new_default_instance(pool=ppool.pool, name="Unnamed " + a_m2_class.__name__)
+            Property.get_new_default_instance(ppool.pool, "Unnamed Property", owner=brand_new_instance.get_identifier())
+            return self._render_instantiate(req, PresentableInstance(pi.instance), PresentableInstance(brand_new_instance), pi.resource)
             #return self._render_instantiate(req, pi.instance.get_meta(), pi.instance, pi.resource)
 
         """

@@ -10,16 +10,21 @@
     <title></title>
     <script type="text/javascript">
       $(document).ready(function(){
-        $("a.addproperty").click(function(){
-          var count = $("div.property").length
-          var copy = $("div.property:last").clone(true, true)
-          name_input = copy.find("input[name^='property-name-']")
-          name_input.attr("name", "property-name-" + (count+1))
-          name_input.attr("value", "")
-          domain_input = copy.find("select[name^='property-domain-']")
-          domain_input.attr("name", "property-domain-" + (count+1))
-          $("div.property:last").after(copy)
-        });
+          $("a.addproperty").click(function(){
+            var newid = uuid.v4()
+            var copy = $("div.property:last").clone(true)
+            copy.removeClass('prototype')
+            name_input = copy.find("input[name^='property-name-']")
+            name_input.attr("name", "property-name-" + newid)
+            name_input.attr("value", "")
+            domain_input = copy.find("select[name^='property-domain-']")
+            domain_input.attr("name", "property-domain-" + newid)
+            $("div.properties").append(copy)
+          });
+
+          $("a.delproperty").click(function(){
+              $(this).parent().remove()
+          });
       });
     </script>
     <style>
@@ -40,6 +45,10 @@
         #content.asa input, #content.asa select{
             width: 17em;
             display: inline-block;
+        }
+
+        .prototype{
+            display: none;
         }
     </style>
   </head>
@@ -73,18 +82,30 @@
           <py:if test="instance.is_instance('Entity')">
               <fieldset id="properties">
                   <legend>Properties</legend>
-                  <!-- TODO: also show all the propeties. When we implement composition relations we no longer have to hardcode this, instead of showing the "properties", we will show whatever has composition relations -->
-                  <div class="property">
-                      <label>Name:</label>
-                      <input type="text" name="property-name-1" value="" />
-                      <select name="property-domain-1">
-                          <option value="text">text</option>
-                      </select>
-                      <a href="" title="Delete property">[-]</a>
-                      <a href="docs#">(?)</a>
-                      <br/>
+                  <!-- TODO: also show all the properties. When we implement composition relations we no longer have to hardcode this, instead of showing the "properties", we will show whatever has composition relations -->
+                  <div class="properties">
+                      <div class="property prototype">
+                          <label>Name:</label>
+                          <input type="text" name="property-name-X" value="" />
+                          <select name="property-domain-X">
+                              <option value="text">text</option>
+                          </select>
+                          <a href="#" class="delproperty" title="Delete property">[-]</a>
+                          <a href="docs#">(?)</a>
+                          <br/>
+                      </div>
+                      <div py:for="prop in instance.get_properties()" class="property">
+                          <label>Name:</label>
+                          <input type="text" name="property-name-${prop.get_identifier()}" value="${prop.get_name()}" />
+                          <select name="property-domain-${prop.get_identifier()}">
+                              <option value="text">text</option>
+                          </select>
+                          <a href="#" class="delproperty" title="Delete property">[-]</a>
+                          <a href="docs#${prop.get_domain()}">(?)</a>
+                          <br/>
+                      </div>
                   </div>
-                  <a style="margin-left: 12.5em;" class="addproperty" href="#" title="Add one more property">[+]</a>
+                  <a href="#" class="addproperty" title="Add one more property" style="margin-left: 12.5em;">[+]</a>
               </fieldset>
           </py:if>
 
