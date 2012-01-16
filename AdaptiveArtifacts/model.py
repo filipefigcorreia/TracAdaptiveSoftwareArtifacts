@@ -103,6 +103,7 @@ class Instance(object):
     def get_property_from_meta(self, iname):
         return self.pool.get_property(self.__class__.id, iname=iname)
 
+    # TODO: deprecated?
     def add_value(self, property_ref, property_value):
         """
         property_ref: can be either a private system reference, like '__meta', or a uuid identifier, if a reference to a Property

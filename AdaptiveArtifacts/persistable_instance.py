@@ -8,6 +8,7 @@
 
 from trac.resource import Resource
 from trac.util.datefmt import from_utimestamp, to_utimestamp, utc
+
 try:
     import cPickle as pickle
 except:
@@ -108,7 +109,6 @@ class PersistableInstance(object):
         from AdaptiveArtifacts.model import Instance
         #TODO: maybe we should probably get this directly from PersistablePool?
         self.instance =  Instance.create_from_properties(ppool.pool, identifier, iname, meta_level, contents_dict, property_inames_dict)
-        #    self.version = 1
         self.version = int(version)
         self.time = from_utimestamp(time)
         self.author = author
@@ -145,7 +145,7 @@ class PersistableInstance(object):
                     INSERT INTO asa_value (instance_id, instance_version, property_instance_id, property_instance_iname, value)
                     VALUES (%s,%s,%s,%s,%s)
                     """, (self.instance.get_identifier(), new_version, property_ref, self.instance.get_property_iname(property_ref), self.instance.get_slot_value(property_ref)))
-                
+
             self.version += new_version
             self.resource = self.resource(version=self.version)
 
@@ -167,11 +167,12 @@ class PersistablePool(object):
     def __init__(self, pool):
         self.pool = pool
 
+    """
     @classmethod
     def load_old(cls, env):
         # Loads the entire M2 level from the database
         from AdaptiveArtifacts.model import Instance, MetaElementInstance, Classifier, Package, Property, Entity, InstancePool
-        ppool = PersistablePool(InstancePool())
+        ppool = PersistablePool(env, InstancePool())
         # TODO: FIXME: either I must expand this (currently very naive) list of M2 entities, or make it more dynamic. I probably want to just load everything marked as lvl 2 that exists in the database
         for m2_class in (Entity, Instance, MetaElementInstance, Classifier, Package, Property):
             pi = PersistableInstance.load(env, name=m2_class.__name__, ppool=ppool)
@@ -179,6 +180,7 @@ class PersistablePool(object):
             pi.instance.set_value_by_iname('__meta', Entity.id) # the meta of all M2 instances is Entity
             pi.instance.__class__ = Entity
         return ppool
+    """
 
     @classmethod
     def load(cls, env):
