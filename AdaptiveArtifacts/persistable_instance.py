@@ -223,3 +223,10 @@ class PersistablePool(object):
         for id, iname, version in rows.fetchall():
             p_instances.append(PersistableInstance.load(env, id, version=version, ppool=self))
         return p_instances
+    def save(self, env, meta_levels=['0','1']):
+        @with_transaction(env)
+        def do_save(db):
+            for instance in self.pool.get_instances(meta_levels=meta_levels):
+                pi = PersistableInstance(self.env, instance.get_identifier(), 0)
+                pi.instance = instance
+                pi.save(env, "system", "", "")

@@ -445,18 +445,18 @@ class InstancePool(object):
         return None # no instance by this iname exists in the pool
 
     def get_instances_of(self, meta_id):
-        return self.__get_instances(None, meta_id)
+        return self.get_instances(meta_id=meta_id)
 
     def get_metamodel_instances(self, meta_id = None):
-        return self.__get_instances('2', meta_id)
+        return self.get_instances(['2'], meta_id)
 
     def get_model_instances(self, meta_id = None):
-        return self.__get_instances('1', meta_id)
+        return self.get_instances(['1'], meta_id)
 
-    def __get_instances(self, meta_level=None, meta_id=None):
+    def get_instances(self, meta_levels=['0','1','2'], meta_id=None):
         instances = []
         for id, instance in self.instances.items():
-            if not meta_level is None and instance.get_meta_level() != meta_level:
+            if not meta_levels is None and not instance.get_meta_level() in meta_levels:
                 continue
             if not meta_id is None and instance.get_id_meta() != meta_id:
                 continue
