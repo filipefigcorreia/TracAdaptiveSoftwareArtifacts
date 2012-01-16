@@ -420,22 +420,22 @@ class InstancePool(object):
     def remove(self, identifier):
         del self.instances[identifier]
 
-    def get_instance(self, id=None, name=None):
+    def get_instance(self, id=None): #, name=None
         """
         The name parameter is deprecated!
         """
-        if not id is None:
-            if not id in self.instances:
-                return None
-            return self.instances[id]
-        elif not name is None:
-            for id, instance in self.instances.items():
-                if hasattr(instance, 'get_name'):
-                    if instance.get_name()==name:
-                        return instance
-            return None # no instance by this name exists in the pool
-        else:
+        #if not id is None:
+        if not id in self.instances:
             return None
+        return self.instances[id]
+        #elif not name is None:
+        #    for id, instance in self.instances.items():
+        #        if hasattr(instance, 'get_name'):
+        #            if instance.get_name()==name:
+        #                return instance
+        #    return None # no instance by this name exists in the pool
+        #else:
+        #    return None
 
     def get_instance_by_iname(self, iname):
         for id, instance in self.instances.items():
