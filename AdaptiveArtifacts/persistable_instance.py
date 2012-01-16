@@ -21,7 +21,7 @@ class PersistableInstance(object):
     """
     realm = 'asa'
 
-    def __init__(self, env, identifier=None, name=None, version=None):
+    def __init__(self, env, identifier=None, version=None):
         """
         Creates a brand new PersistableInstance. I.e., one that does not exist in the database yet.
         """
