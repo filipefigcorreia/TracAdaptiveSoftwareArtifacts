@@ -21,10 +21,6 @@ class PresentableInstance(Proxy):
     def get_properties(self):
         return [PresentableProperty(prop) for prop in self.instance.get_properties() if int(prop.get_order() or "1") > 0]
 
-    #unused?
-    #def get_properties_from_meta(self):
-    #    return [PresentableProperty(prop) for prop in self.instance.get_meta().get_properties()]
-
 
 class PresentableProperty(Proxy):
     def __init__(self, property):

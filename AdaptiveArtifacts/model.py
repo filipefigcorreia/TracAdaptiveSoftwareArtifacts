@@ -342,12 +342,6 @@ class Entity(Classifier):
     def get_new_default_instance(cls, pool, name):
         return Entity(pool, name)
 
-    #@classmethod
-    #def get_class_id(cls, pool):
-    #    for m2_instance in pool.get_metamodel_instances():
-    #        if m2_instance.get_name() == cls.__name__:
-    #            return m2_instance.get_identifier()
-
     def get_parent(self):
         """
         Returns the parent class, following the inheritance relation.

@@ -17,7 +17,7 @@ except:
 
 class PersistableInstance(object):
     """
-    Proxy to an instance of AdaptiveArtifacts.model.Instance (new or existing).
+    Wrapper of an instance of AdaptiveArtifacts.model.Instance (new or existing).
     This class provides behavior required by Trac's plugin architecture. Namely, behavior to deal with loading
     and saving instances from the database.
     """
@@ -187,11 +187,6 @@ class PersistableInstance(object):
                 VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
                 """, (self.instance.get_identifier(), self.instance.get_iname(), self.instance.get_meta_level(), new_version, to_utimestamp(t), author, remote_addr, 'C', comment))
             for property_ref in self.instance.state.slots: #TODO: state shouldn't be accessed directly
-                #pool = self.instance.pool
-                #instance_meta = pool.get(id=self.instance.get_value('__meta'))
-                #properties_meta = pool.get_properties(instance_meta)
-                #if property_ref in properties_meta:
-                #self.env.log.error((self.instance.get_identifier(), new_version, property_ref, self.instance.state.slots[property_ref]))
                 cursor.execute("""
                     INSERT INTO asa_value (instance_id, instance_version, property_instance_id, property_instance_iname, value)
                     VALUES (%s,%s,%s,%s,%s)
@@ -218,21 +213,6 @@ class PersistablePool(object):
     def __init__(self, env, pool):
         self.env = env
         self.pool = pool
-
-    """
-    @classmethod
-    def load_old(cls, env):
-        # Loads the entire M2 level from the database
-        from AdaptiveArtifacts.model import Instance, MetaElementInstance, Classifier, Package, Property, Entity, InstancePool
-        ppool = PersistablePool(env, InstancePool())
-        # TODO: FIXME: either I must expand this (currently very naive) list of M2 entities, or make it more dynamic. I probably want to just load everything marked as lvl 2 that exists in the database
-        for m2_class in (Entity, Instance, MetaElementInstance, Classifier, Package, Property):
-            pi = PersistableInstance.load(env, name=m2_class.__name__, ppool=ppool)
-            m2_class.id = pi.instance.get_identifier()
-            pi.instance.set_value_by_iname('__meta', Entity.id) # the meta of all M2 instances is Entity
-            pi.instance.__class__ = Entity
-        return ppool
-    """
 
     @classmethod
     def load(cls, env):
