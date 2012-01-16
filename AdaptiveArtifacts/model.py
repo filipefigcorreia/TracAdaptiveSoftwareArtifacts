@@ -289,6 +289,12 @@ class Property(MetaElementInstance):
     def get_upper_bound(self):
         return self.get_value_by_iname("__lower_bound")
 
+    def get_possible_values(self, instance):
+        domain = self.get_domain()
+        if is_uuid(domain):
+            return [inst_value for inst_value in self.pool.get_instances_of(domain) if not inst_value is instance and int(inst_value.get_meta_level()) == int(self.get_meta_level())-1]
+        else:
+            return None
 
 class Classifier(MetaElementInstance):
     id = None
