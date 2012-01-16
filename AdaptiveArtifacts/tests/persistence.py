@@ -11,13 +11,13 @@ import shutil
 import tempfile
 import unittest
 from trac.test import EnvironmentStub
-from AdaptiveArtifacts.schema import ASASetup
+from AdaptiveArtifacts.db import Setup
 
 class BasicEntityBehaviour(unittest.TestCase):
     def setUp(self):
-        self.env = EnvironmentStub(enable=['trac.*', 'AdaptiveArtifacts.*', 'AdaptiveArtifacts.schema.*'])
+        self.env = EnvironmentStub(enable=['trac.*', 'AdaptiveArtifacts.*', 'AdaptiveArtifacts.db.*'])
         self.env.path = tempfile.mkdtemp()
-        ASASetup(self.env).upgrade_environment(self.env.get_db_cnx())
+        Setup(self.env).upgrade_environment(self.env.get_db_cnx())
 
     def tearDown(self):
         shutil.rmtree(self.env.path)
