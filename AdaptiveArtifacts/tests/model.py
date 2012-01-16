@@ -7,7 +7,6 @@
 # you should have received as part of this distribution.
 #
 
-"""Unit tests for AdaptiveArtifacts.core (core.py)"""
 import unittest
 from AdaptiveArtifacts.model import *
 
