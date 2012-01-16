@@ -11,12 +11,12 @@ from trac.core import *
 from trac.resource import IResourceManager, ResourceNotFound
 from trac.web.chrome import INavigationContributor, ITemplateProvider, add_notice, add_javascript #, add_stylesheet
 from trac.web.main import IRequestHandler
-from trac.util import escape, Markup, datefmt
+from trac.util import Markup
 from trac.env import IEnvironmentSetupParticipant
 from trac.mimeview.api import Context
 from AdaptiveArtifacts.environment_maintainer import ASAEnvironmentMaintainer
 from AdaptiveArtifacts.persistable_instance import PersistableInstance, PersistablePool
-from AdaptiveArtifacts.presentable_instance import PresentableInstance, PresentableProperty
+from AdaptiveArtifacts.presentable_instance import PresentableInstance
 from util import is_uuid
 
 

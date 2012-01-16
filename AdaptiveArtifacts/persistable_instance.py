@@ -84,7 +84,6 @@ class PersistableInstance(object):
         cursor.execute(query)
 
         property_ids = None
-        emsg = None
         try:
             property_ids = dict(cursor.fetchall())
         except Exception, e:
@@ -190,7 +189,7 @@ class PersistableInstance(object):
                 cursor.execute("""
                     INSERT INTO asa_value (instance_id, instance_version, property_instance_id, property_instance_iname, value)
                     VALUES (%s,%s,%s,%s,%s)
-                    """, (self.instance.get_identifier(), new_version, property_ref, self.instance.get_property_iname(property_ref), self.instance.get_slot_value(property_ref)))
+                    """, (self.instance.get_identifier(), new_version, property_ref, self.instance.get_property_iname(property_ref), self.instance.get_slot_value(property_ref))) # TODO: fix. broken for multiplicty > 1
 
             self.version += new_version
             self.resource = self.resource(version=self.version)

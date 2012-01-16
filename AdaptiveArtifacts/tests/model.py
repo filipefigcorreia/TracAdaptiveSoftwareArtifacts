@@ -52,14 +52,13 @@ class Properties(unittest.TestCase):
         self.assertEqual(len(self.car.get_properties()), 1)
         self.assertEqual(self.car.get_properties()[0].get_name(), 'Wheels')
 
-    def test_add_property(self):
-        #TODO: recheck if this test is still testing what it should. It doesn't appear to be using anything from the meta-level, which is suspicious
+    def test_property_values(self):
         self.lightningMcQueen = Instance(self.pool, self.car)
-        self.lightningMcQueen.add_value('Wheels', 'front left wheel')
-        self.lightningMcQueen.add_value('Wheels', 'front right wheel')
-        self.lightningMcQueen.add_value('Wheels', 'rear left wheel')
-        self.lightningMcQueen.add_value('Wheels', 'front right wheel')
-        self.assertEqual(len(self.lightningMcQueen.get_values('Wheels')), 4)
+        self.lightningMcQueen.set_value(self.wheels.get_identifier(), 'front left wheel')
+        self.lightningMcQueen.add_value(self.wheels.get_identifier(), 'front right wheel')
+        self.lightningMcQueen.add_value(self.wheels.get_identifier(), 'rear left wheel')
+        self.lightningMcQueen.add_value(self.wheels.get_identifier(), 'front right wheel')
+        self.assertEqual(len(self.lightningMcQueen.get_values(self.wheels.get_identifier())), 4)
 
     def test_new_instance_has_iname_translation(self):
         for key in self.car.state.slots.keys():
@@ -186,12 +185,6 @@ class Instantiation(unittest.TestCase):
         ent = Entity(pool, "Car")
         inst = Instance(pool, ent.get_identifier())
         self.assertEqual(ent.get_name(), inst.get_meta().get_name())
-
-
-"""
-class Inheritance(unittest.TestCase):
-class Properties(unittest.TestCase):
-"""
 
 class PoolOperations(unittest.TestCase):
     def test_inexistent_instance(self):

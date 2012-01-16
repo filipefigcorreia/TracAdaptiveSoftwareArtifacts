@@ -62,7 +62,7 @@ class Instance(object):
             # That's why calling set_properties_definite_id(...) is needed in the end
             inames_dict = meta.get_properties_inames()
 
-        self.state = InstanceState(inames=inames_dict) # TODO: refactor this to a self.states dictionay in which each key,value is of type Version,InstanceState
+        self.state = InstanceState(inames=inames_dict) # TODO: refactor this to a self.states dictionary in which each key,value is of type Version,InstanceState
         self.set_value_by_iname('__meta', id_meta)
         self.set_value_by_iname('__text_repr_expr', text_repr_expr)
 
@@ -103,8 +103,8 @@ class Instance(object):
     def get_property_from_meta(self, iname):
         return self.pool.get_property(self.__class__.id, iname=iname)
 
-    # TODO: deprecated?
-    def add_value(self, property_ref, property_value):
+    #TODO: refactor. delegate this logic to the state object
+    def add_value(self, property_ref, value):
         """
         property_ref: can be either a private system reference, like '__meta', or a uuid identifier, if a reference to a Property
         """
@@ -113,8 +113,9 @@ class Instance(object):
         elif property_ref in self.state.slots and not isinstance(self.state.slots[property_ref], list):
             val = self.state.slots[property_ref]
             self.state.slots[property_ref] = [val]
-        self.state.slots[property_ref].append(property_value)
+        self.state.slots[property_ref].append(value)
 
+    #TODO: refactor. delegate this logic to the state object
     def set_property_ref(self, iname, property_ref):
         """
         Sets the property_ref for a given iname.
@@ -127,6 +128,7 @@ class Instance(object):
                 del self.state.inames[iname]
             self.state.inames[property_ref] = iname
 
+    #TODO: refactor. delegate this logic to the state object
     def set_value(self, property_ref, value):
         """Overwrite the value for the specified property."""
         if value is None:
@@ -135,25 +137,30 @@ class Instance(object):
         else:
             self.state.slots[property_ref] = value
 
+    #TODO: refactor. delegate this logic to the state object
     def set_value_by_iname(self, iname, value):
         property_ref = self.get_property_ref_if_known(iname)
         self.set_value(property_ref, value)
         self.state.inames[property_ref] = iname
 
+    #TODO: refactor. delegate this logic to the state object
     def get_value(self, property_ref):
         return self.get_slot_value(property_ref)
 
+    #TODO: refactor. delegate this logic to the state object
     def get_value_by_iname(self, iname):
         value = self.get_slot_value(iname)
         if value is None:
             value = self.get_slot_value(self.get_property_ref_if_known(iname))
         return value
 
+    #TODO: refactor. delegate this logic to the state object
     def get_property_iname(self, property_ref):
         if property_ref in self.state.inames:
             return self.state.inames[property_ref]
         return None
 
+    #TODO: refactor. delegate this logic to the state object
     def get_property_ref_if_known(self, iname):
         """
         If property_ref is not know, returns the iname provided as input.
@@ -163,11 +170,13 @@ class Instance(object):
                 return property_ref_key
         return iname
 
+    #TODO: refactor. delegate this logic to the state object
     def get_slot_value(self, property_ref):
         if not property_ref is None and property_ref in self.state.slots:
             return self.state.slots[property_ref]
         return None
 
+    #TODO: refactor. delegate this logic to the state object
     def get_values(self, property_ref):
         if not property_ref is None and property_ref in self.state.slots:
             return self.state.slots[property_ref]
@@ -193,8 +202,8 @@ class Instance(object):
 
     @classmethod
     def create_from_properties(cls, pool, identifier, iname, meta_level, contents_dict, property_inames_dict):
-        instance = Instance(pool, 'Instance', identifier)
-        instance.pool.remove(identifier)
+        instance = Instance(pool, None, identifier) # TODO: fix. id_meta should not be None
+        instance.pool.remove(identifier) #TODO: rethink. the instance should not exist in the pool yet. ever. because we're only loading instances only if they don't exist in the pool
         instance.__identifier = identifier
         instance.__iname = iname
         instance.__meta_level = meta_level
@@ -208,7 +217,9 @@ class Instance(object):
 
 class InstanceState(object):
 
-    def __init__(self, inames={}, version=None):
+    def __init__(self, inames=None, version=None):
+        if inames is None:
+            inames = {}
         self.slots = {} # dict in which each key,value is of type unicodestring,arbitraryvalue
         self.inames = inames # translation of uuids to internal names
         #self.version = version # version in which this state was created
@@ -434,22 +445,10 @@ class InstancePool(object):
     def remove(self, identifier):
         del self.instances[identifier]
 
-    def get_instance(self, id=None): #, name=None
-        """
-        The name parameter is deprecated!
-        """
-        #if not id is None:
+    def get_instance(self, id=None):
         if not id in self.instances:
             return None
         return self.instances[id]
-        #elif not name is None:
-        #    for id, instance in self.instances.items():
-        #        if hasattr(instance, 'get_name'):
-        #            if instance.get_name()==name:
-        #                return instance
-        #    return None # no instance by this name exists in the pool
-        #else:
-        #    return None
 
     def get_instance_by_iname(self, iname):
         for id, instance in self.instances.items():

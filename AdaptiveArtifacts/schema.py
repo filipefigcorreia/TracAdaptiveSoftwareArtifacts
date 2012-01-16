@@ -27,9 +27,6 @@ schema = [
         Column('instance_version', type='int64'),
         Column('property_instance_id'), #uuid
         Column('property_instance_iname'),
-        #Column('id_meta'),
-        #Column('name'), # only filled if meta_level >= 1
-        #Column('contents'), # contains pickled properties dictionary
         Column('value'),
         Index(['instance_id', 'instance_version', 'property_instance_id'], unique=True),
     ],
