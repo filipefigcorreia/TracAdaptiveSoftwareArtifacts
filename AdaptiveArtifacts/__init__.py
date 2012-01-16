@@ -19,6 +19,8 @@ from trac.mimeview.api import Context
 from AdaptiveArtifacts.environment_maintainer import ASAEnvironmentMaintainer
 from AdaptiveArtifacts.persistable_instance import PersistableInstance, PersistablePool
 from AdaptiveArtifacts.presentable_instance import PresentableInstance, PresentableProperty
+from util import is_uuid
+
 
 class Core(Component):
     """Core module of the plugin. Provides the Adaptive-Artifacts themselves."""
@@ -56,14 +58,20 @@ class Core(Component):
 
         ppool = PersistablePool.load(self.env)
         pi = None
-        if string.find(asa_resource_name, '-') != -1:
+        if is_uuid(asa_resource_name):
             pi = ppool.get_instance(self.env, identifier=asa_resource_name, version=version)
             if pi is None:
                 raise ResourceNotFound("No resource found with identifier '%s'" % asa_resource_name)
         else:
             pi = ppool.get_instance(self.env, iname="__"+asa_resource_name, version=version)
             if pi is None:
-                raise ResourceNotFound("No resource goes by the name of '%s'" % asa_resource_name)
+                raise ResourceNotFound("No resource goes by the iname of '%s'" % asa_resource_name)
+
+        if action is None: # default action depends on the instance's meta-level
+            if pi.instance.get_meta_level() > 0:
+                action = 'list'
+            else:
+                action = 'view'
 
         add_javascript(req, 'adaptiveartifacts/js/uuid.js')
         if action == 'view':
