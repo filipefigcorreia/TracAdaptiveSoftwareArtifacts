@@ -58,15 +58,11 @@ class ASAEnvironmentMaintainer(object):
 
 
 def _save_m2_bootstraped_pool(env):
-    from persistable_instance import PersistableInstance
+    from persistable_instance import PersistableInstance, PersistablePool
     from model import InstancePool
 
-    pool = InstancePool(True)
-
-    for entity in pool.get_metamodel_instances():
-        pi = PersistableInstance(env, entity.get_identifier(), entity.get_name(), 0)
-        pi.instance = entity
-        pi.save_instance("system", "", "")
+    ppool = PersistablePool(env, InstancePool(True))
+    ppool.save(meta_levels=['2'])
 
 # additional methods
 def get_system_value(env, key):
