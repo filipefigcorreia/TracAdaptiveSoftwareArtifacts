@@ -6,6 +6,7 @@
 # This software is licensed as described in the file license.txt, which
 # you should have received as part of this distribution.
 
+from trac.db import with_transaction
 from trac.resource import Resource
 from trac.util.datefmt import from_utimestamp, to_utimestamp, utc
 
@@ -40,16 +41,60 @@ class PersistableInstance(object):
 
 
     @classmethod
-    def load(cls, env, identifier=None, iname=None, version=None, ppool=None):
+    def load(cls, env, identifier=None, iname=None, version=None, ppool=None, load_owned=True):
         """
         Loads an existing PersistableInstance from the database
         """
+        if ppool is None:
+            ppool = PersistablePool.load(env)
+
+        if not identifier is None:
+            instance = ppool.pool.get_instance(identifier)
+        else:
+            instance = ppool.pool.get_instance_by_iname(iname)
+
         pi = PersistableInstance(env, identifier, version)
-        pi._fetch_contents(identifier=identifier, iname=iname, version=version, ppool=ppool)
-        pi.resource = Resource('asa', pi.instance.get_identifier(), version) # in case we fetched the instance byits name instead of its identifier
+        if instance is None:
+            pi._fetch_contents(ppool, identifier, iname, version)
+        else:
+            #TODO: fix. something is deeply wrong here. version should not be kept by PIs
+            pi.instance = instance
+            #pi.version = int(version)
+            #pi.time =
+            #pi.author = author
+            #pi.comment = comment
+
+        if load_owned:
+            pi.load_properties(ppool)
+        pi.resource = Resource('asa', pi.instance.get_identifier(), version) # in case we fetched the instance by its name instead of its identifier
         return pi
 
-    def _fetch_contents(self, identifier=None, iname=None, version=None, ppool=None):
+    def load_properties(self, ppool):
+        query = """
+            SELECT id, max(version) version
+            FROM asa_instance i
+                INNER JOIN asa_value v_idm ON v_idm.instance_id=i.id
+            WHERE
+                v_idm.property_instance_iname='__owner' AND v_idm.value='%s'
+            GROUP BY id
+            """ % (self.instance.get_identifier(),)
+
+        db = self.env.get_read_db()
+        cursor = db.cursor()
+        cursor.execute(query)
+
+        property_ids = None
+        emsg = None
+        try:
+            property_ids = dict(cursor.fetchall())
+        except Exception, e:
+            raise Exception("""Could not determine properties for instance.\n %s \n %s""" % (e.message, query))
+
+        for id, version in property_ids.items():
+            PersistableInstance.load(self.env, identifier=id, version=version,ppool=ppool)
+
+
+    def _fetch_contents(self, ppool, identifier, iname, version=None):
         """
         Retrieves from the database a given state, or a set of states, for the specified instance
         """
@@ -104,8 +149,6 @@ class PersistableInstance(object):
         cursor.execute(query)
         property_inames_dict = dict(cursor.fetchall())
 
-        if ppool is None:
-            ppool = PersistablePool.load(self.env)
         from AdaptiveArtifacts.model import Instance
         #TODO: maybe we should probably get this directly from PersistablePool?
         self.instance =  Instance.create_from_properties(ppool.pool, identifier, iname, meta_level, contents_dict, property_inames_dict)
@@ -116,18 +159,26 @@ class PersistableInstance(object):
 
     exists = property(fget=lambda self: self.version > 0)
 
-    def delete_instance(self, version=None, db=None):
+    def delete_instance(self, env, version=None):
         assert self.exists, 'Cannot delete non-existent asa_instance'
 
-        @self.env.with_transaction()
+        @with_transaction(env)
         def do_delete(db):
-            cursor = db.cursor()
-            cursor.execute("DELETE FROM asa_instance WHERE id=%s", (self.identifier,))
-            cursor.execute("DELETE FROM asa_value WHERE instance_id=%s", (self.identifier,))
-            self.env.log.info('Deleted asa_instance %s' % self.identifier)
+            def do_delete_instance(cursor, instance_id):
+                cursor.execute("DELETE FROM asa_instance WHERE id=%s", (instance_id,))
+                cursor.execute("DELETE FROM asa_value WHERE instance_id=%s", (instance_id,))
+                self.env.log.info("Deleted asa_instance '%s'" % instance_id)
 
-    def save_instance(self, author, comment, remote_addr, t=None, db=None):
-        @self.env.with_transaction()
+            cursor = db.cursor()
+            # get and delete all properties owned by this instance (or more precisely, "entity", if any properties are found)
+            cursor.execute("SELECT instance_id FROM asa_value WHERE property_instance_iname='__owner' and value='%s'", (self.identifier,))
+            for instance_id in cursor:
+                do_delete_instance(cursor, instance_id)
+            # delete the instance itself
+            do_delete_instance(cursor, self.identifier)
+
+    def save(self, env, author, comment, remote_addr, t=None):
+        @with_transaction(env)
         def do_save(db):
             new_version = self.version + 1
             cursor = db.cursor()
@@ -164,7 +215,8 @@ class PersistableInstance(object):
             yield version, from_utimestamp(ts), author, comment, ipnr
 
 class PersistablePool(object):
-    def __init__(self, pool):
+    def __init__(self, env, pool):
+        self.env = env
         self.pool = pool
 
     """
@@ -186,7 +238,7 @@ class PersistablePool(object):
     def load(cls, env):
         # Loads the entire M2 level from the database
         from model import InstancePool
-        ppool = PersistablePool(InstancePool())
+        ppool = PersistablePool(env, InstancePool())
         ppool.get_metamodel_instances(env)
         return ppool
 
@@ -205,10 +257,10 @@ class PersistablePool(object):
             GROUP BY id
             ORDER BY is_not_entity, i.iname""")
         for id, version, dummy in rows.fetchall():
-            p_instances.append(PersistableInstance.load(env, id, version=version, ppool=self))
+            p_instances.append(PersistableInstance.load(env, id, version=version, ppool=self, load_owned=False))
         return p_instances
 
-    def get_instances_of(self, env, id_meta, levels=[0,1]):
+    def get_instances_of(self, env, id_meta, meta_levels=[0,1]):
         p_instances = []
         db = env.get_read_db()
         cursor = db.cursor()
@@ -219,10 +271,11 @@ class PersistablePool(object):
                 WHERE
                     v_idm.property_instance_iname='__meta' AND v_idm.value='%s' AND
                     i.meta_level in (%s)
-                GROUP BY id""" % (id_meta, ",".join(["%s" % lvl for lvl in levels])))
-        for id, iname, version in rows.fetchall():
+                GROUP BY id""" % (id_meta, ",".join(["%s" % lvl for lvl in meta_levels])))
+        for id, version in rows.fetchall():
             p_instances.append(PersistableInstance.load(env, id, version=version, ppool=self))
         return p_instances
+
     def save(self, env, meta_levels=['0','1']):
         @with_transaction(env)
         def do_save(db):

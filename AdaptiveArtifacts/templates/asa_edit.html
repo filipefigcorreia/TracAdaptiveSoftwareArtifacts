@@ -55,8 +55,7 @@
   <body>
       <div id="content" class="asa">
       <h1>Create new ${instance_meta.get_name()} <small>(inherits ${instance_meta.get_parent().get_name()})</small></h1>
-      <form method="post" action="${href.adaptiveartifacts(instance_meta.id)}">
-          <input type="hidden" name="meta_id" value="${instance_meta.id}" />
+      <form method="post" action="${href.adaptiveartifacts(instance_meta.id)}?action=instantiate">
           <fieldset id="basics">
           <legend>Basics</legend>
           <py:for each="property in instance_meta.get_properties()">
@@ -68,7 +67,7 @@
                   <py:when test="'combo'">
                       <select id="id_${property.get_identifier()}" name="${property.get_identifier()}">
                           <py:if test="not property.is_mandatory()">
-                              <option value="None"></option>
+                              <option value=""></option>
                           </py:if>
                           <option py:for="inst_possible_value in property.get_possible_values(instance)" value="${inst_possible_value.get_identifier()}">${inst_possible_value.get_text_repr()}</option>
                       </select>

@@ -20,6 +20,11 @@
                     <li py:for="property in instance.get_meta().get_properties()">${property.get_name()}: ${instance.get_values(property.get_identifier())}</li>
                 </ul>
             </li>
+            <li>Properties:
+                <ul>
+                    <li py:for="property in instance.get_properties()">${property.get_name()}</li>
+                </ul>
+            </li>
         </ul>
     </div>
   </body>

@@ -297,6 +297,19 @@ class Property(MetaElementInstance):
         else:
             return None
 
+    def is_valid_value(self, value):
+        #domain
+        if not value is None and not value == '':
+            possible_values = self.get_possible_values(None)
+            if not possible_values is None and not value in possible_values:
+                return False
+
+        #cardinality
+        #TODO: check cardinality
+        return True
+
+
+
 class Classifier(MetaElementInstance):
     id = None
 
@@ -357,6 +370,12 @@ class Entity(Classifier):
 
     def get_properties(self):
         return self.pool.get_properties(self.get_identifier())
+
+    def get_property(self, ref):
+        for p in self.get_properties():
+            if p.get_identifier() == ref:
+                return p
+        return None
 
     def get_properties_inames(self):
         """
