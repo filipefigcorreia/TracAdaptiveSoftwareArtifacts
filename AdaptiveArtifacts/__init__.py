@@ -12,9 +12,7 @@ from trac.resource import IResourceManager, ResourceNotFound
 from trac.web.chrome import INavigationContributor, ITemplateProvider, add_notice, add_javascript #, add_stylesheet
 from trac.web.main import IRequestHandler
 from trac.util import Markup
-from trac.env import IEnvironmentSetupParticipant
 from trac.mimeview.api import Context
-from AdaptiveArtifacts.environment_maintainer import ASAEnvironmentMaintainer
 from AdaptiveArtifacts.persistable_instance import PersistableInstance, PersistablePool
 from AdaptiveArtifacts.presentable_instance import PresentableInstance
 from util import is_uuid
@@ -22,7 +20,7 @@ from util import is_uuid
 
 class Core(Component):
     """Core module of the plugin. Provides the Adaptive-Artifacts themselves."""
-    implements(INavigationContributor, IRequestHandler, ITemplateProvider, IEnvironmentSetupParticipant, IResourceManager)
+    implements(INavigationContributor, IRequestHandler, ITemplateProvider, IResourceManager)
 
     def __init__(self):
         self.base_url = 'adaptiveartifacts'
@@ -167,18 +165,6 @@ class Core(Component):
         from pkg_resources import resource_filename
         return [('adaptiveartifacts', resource_filename(__name__, 'htdocs'))]
 
-    # IEnvironmentSetupParticipant
-    def environment_created(self):
-        em = ASAEnvironmentMaintainer(self.env)
-        em.install_asa_support()
-
-    def environment_needs_upgrade(self, db):
-        return ASAEnvironmentMaintainer(self.env).needs_upgrade()
-
-    def upgrade_environment(self, db):
-        ASAEnvironmentMaintainer(self.env).upgrade()
-
-
     # IResourceManager
     def get_resource_realms(self):
         yield 'asa'
@@ -193,3 +179,4 @@ class Core(Component):
     def resource_exists(self, resource):
         pi = PersistableInstance.load(self.env, identifier=resource.id, version=resource.version)
         return not pi.instance is None
+
