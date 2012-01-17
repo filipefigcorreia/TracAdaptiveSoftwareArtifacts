@@ -74,7 +74,7 @@ class Setup(Component):
 #                cursor.execute("UPDATE system SET value=%s WHERE name='%s'" % (self.db_key, self.running_version))
 #               self.log.info('Upgraded ASA tables from version %s to %s' % (self.db_key, self.running_version))
         except Exception as e:
-            self.env.log("Error while upgrading the environment.\n" + str(e))
+            self.env.log.debug("Error while upgrading the environment.\n" + str(e))
         finally:
             pass
             #self.env.log.error(traceback.format_exc())
