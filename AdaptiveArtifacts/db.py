@@ -14,7 +14,8 @@ from trac.env import IEnvironmentSetupParticipant
 
 schema_version = 1
 schema = [
-    Table('asa_instance', key=('id', 'version'))[ #Instance and InstanceState rolled into a single table
+    # Represents which instances exist and in which versions
+    Table('asa_instance', key=('id', 'version'))[
         Column('id'),
         Column('iname'),
         Column('meta_level'),
@@ -26,13 +27,15 @@ schema = [
         Column('comment'),
         Index(['id', 'version'], unique=True),
     ],
-    Table('asa_value', key=('instance_id', 'instance_version', 'property_instance_id'))[
+    # Represents instance's property values. The absence of a key is deliberate as, depending
+    # on the multiplicity of each property, an instance may have several values for each property.
+    Table('asa_value')[
         Column('instance_id'),
         Column('instance_version', type='int64'),
         Column('property_instance_id'), #uuid
         Column('property_instance_iname'),
         Column('value'),
-        Index(['instance_id', 'instance_version', 'property_instance_id'], unique=True),
+        Index(['instance_id', 'instance_version', 'property_instance_id']),
     ],
 ]
 
