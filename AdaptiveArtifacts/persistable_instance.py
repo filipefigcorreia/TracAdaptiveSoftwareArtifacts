@@ -10,10 +10,6 @@ from trac.db import with_transaction
 from trac.resource import Resource
 from trac.util.datefmt import from_utimestamp, to_utimestamp, utc
 
-try:
-    import cPickle as pickle
-except:
-    import pickle
 
 class PersistableInstance(object):
     """
@@ -38,7 +34,6 @@ class PersistableInstance(object):
         self.comment = self.author = ''
         #self.text =
         #self.readonly = 0
-
 
     @classmethod
     def load(cls, env, identifier=None, iname=None, version=None, ppool=None, load_owned=True):
@@ -213,6 +208,7 @@ class PersistablePool(object):
         self.env = env
         self.pool = pool
 
+    #TODO: rethink. why is this a classmethod and not an extra parameter in the constructor instead
     @classmethod
     def load(cls, env):
         # Loads the entire M2 level from the database
