@@ -87,6 +87,18 @@ class PersistableInstance(object):
         for id, version in property_ids.items():
             PersistableInstance.load(self.env, identifier=id, version=version,ppool=ppool)
 
+    @classmethod
+    def _aggregate_values(cls, contents_list):
+        contents_dict = dict()
+        for id, value in contents_list:
+            if not id in contents_dict:
+                contents_dict[id] = value
+            else:
+                if isinstance(contents_dict[id], list):
+                    contents_dict[id].append(value)
+                else:
+                    contents_dict[id] = [contents_dict[id], value]
+        return contents_dict
 
     def _fetch_contents(self, ppool, identifier, iname, version=None):
         """
@@ -132,10 +144,11 @@ class PersistableInstance(object):
                 """ % (identifier, version)
         
         cursor.execute(query)
-        contents_dict = dict(cursor.fetchall())
+        contents_list = cursor.fetchall()
+        contents_dict = PersistableInstance._aggregate_values(contents_list)
 
         query = """
-                SELECT property_instance_id, property_instance_iname
+                SELECT DISTINCT property_instance_id, property_instance_iname
                 FROM asa_value
                 WHERE instance_id='%s' AND instance_version='%s'
                 """ % (identifier, version)
@@ -172,6 +185,12 @@ class PersistableInstance(object):
             do_delete_instance(cursor, self.identifier)
 
     def save(self, env, author, comment, remote_addr, t=None):
+        def insert_property_value(cursor, instance_id, instance_version, property_instance_id, property_instance_iname, value):
+            cursor.execute("""
+                INSERT INTO asa_value (instance_id, instance_version, property_instance_id, property_instance_iname, value)
+                VALUES (%s,%s,%s,%s,%s)
+                """, (instance_id, instance_version, property_instance_id, property_instance_iname, value))
+
         @with_transaction(env)
         def do_save(db):
             new_version = self.version + 1
@@ -181,10 +200,12 @@ class PersistableInstance(object):
                 VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
                 """, (self.instance.get_identifier(), self.instance.get_iname(), self.instance.get_meta_level(), new_version, to_utimestamp(t), author, remote_addr, 'C', comment))
             for property_ref in self.instance.state.slots: #TODO: state shouldn't be accessed directly
-                cursor.execute("""
-                    INSERT INTO asa_value (instance_id, instance_version, property_instance_id, property_instance_iname, value)
-                    VALUES (%s,%s,%s,%s,%s)
-                    """, (self.instance.get_identifier(), new_version, property_ref, self.instance.get_property_iname(property_ref), self.instance.get_slot_value(property_ref))) # TODO: fix. broken for multiplicty > 1
+                value = self.instance.get_slot_value(property_ref)
+                if not isinstance(value, list):
+                    insert_property_value(cursor, self.instance.get_identifier(), new_version, property_ref, self.instance.get_property_iname(property_ref), value)
+                else: # multiplicity > 1 for this property
+                    for v in value:
+                        insert_property_value(cursor, self.instance.get_identifier(), new_version, property_ref, self.instance.get_property_iname(property_ref), v)
 
             self.version += new_version
             self.resource = self.resource(version=self.version)

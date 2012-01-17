@@ -190,7 +190,13 @@ class Instance(object):
         if self.get_identifier()==self.get_id_meta(): # special case: closing the meta-* roof
             self.__class__ = Entity
         else:
-            self.__class__ = self.pool.get_metamodel_python_class_by_name(self.get_meta().get_name())
+            if self.get_meta() is None:
+                raise Exception("Meta not loaded. Please first load meta with id %s" % (self.get_id_meta(),))
+            the_class = self.pool.get_metamodel_python_class_by_name(self.get_meta().get_name())
+            if not the_class is None:
+                self.__class__ = the_class
+            else: # meta is not part of the metamodel. it must be part of the model, which means this is an instance
+                self.__class__ = Instance
 
     def is_instance(self, name):
         """
@@ -209,8 +215,9 @@ class Instance(object):
         instance.__meta_level = meta_level
         #TODO: state should probably be a dictionary and not a var
         instance.state = InstanceState.create_from_properties(contents_dict, property_inames_dict)
-        instance.reset_class_from_inner_state()
-        instance.reset_class_id()
+        if meta_level>'0':
+            instance.reset_class_from_inner_state()
+            instance.reset_class_id()
         pool.add(instance)
         return instance
 
