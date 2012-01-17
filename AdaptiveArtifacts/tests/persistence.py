@@ -23,4 +23,19 @@ class BasicEntityBehaviour(unittest.TestCase):
         shutil.rmtree(self.env.path)
 
     def test_something(self):
-        pass
+        from AdaptiveArtifacts.persistable_instance import PersistablePool
+        from AdaptiveArtifacts.model import InstancePool, Entity, Property, Instance
+
+        pool = InstancePool(True)
+        car = Entity(pool, "Car")
+        wheels = Property(pool, "Wheels", car.get_identifier(), "string", "4", "4")
+        lightningMcQueen = Instance(pool, car.get_identifier())
+        lightningMcQueen.set_value(wheels.get_identifier(), 'front left wheel')
+        lightningMcQueen.add_value(wheels.get_identifier(), 'front right wheel')
+        lightningMcQueen.add_value(wheels.get_identifier(), 'rear left wheel')
+        lightningMcQueen.add_value(wheels.get_identifier(), 'front right wheel')
+        ppool = PersistablePool(self.env, pool)
+        ppool.save(self.env)
+        ppool = PersistablePool.load(self.env)
+        pinstances = ppool.get_instances_of(self.env, ppool.get_instance(iname='__property').get_identifier())
+        self.assertEqual(len(pinstances), 4)

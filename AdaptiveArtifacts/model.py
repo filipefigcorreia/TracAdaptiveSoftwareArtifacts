@@ -342,6 +342,10 @@ class Entity(Classifier):
         super(Entity, self).__init__(pool=pool, name=name, iname=iname, id_meta=Entity.id, meta_level=meta_level)
         if not inherits is None:
             self.set_value_by_iname('__inherits', inherits)
+        else:
+            if meta_level=='1':
+                self.set_value_by_iname('__inherits', Instance.id) # default value for entities without a parent
+
         # There will also be 0..* Properties, each stored in its own key
         # TODO: handle properties with cardinality > 1
 
@@ -384,9 +388,11 @@ class Entity(Classifier):
 
     def get_properties_inames(self):
         """
-        Returns a dictionary of property uuids to iname
+        Returns a dictionary of property uuids to iname.
         """
         return dict([(prop.get_identifier(), prop.get_iname()) for prop in self.get_properties()])
+        # When there isn't a iname, the property's ref is returned twice (i.e., as both key and value)
+#        return dict([(prop.get_identifier(), prop.get_iname() if not prop.get_iname() is None else prop.get_identifier()) for prop in self.get_properties()])
 
 class Package(MetaElementInstance):
     id = None

@@ -221,9 +221,11 @@ class PersistablePool(object):
         ppool.get_metamodel_instances(env)
         return ppool
 
+    #TODO: check if the env param is really needed. there's already an env in self
     def get_instance(self, env, identifier=None, iname=None, version=None):
         return PersistableInstance.load(env, identifier=identifier, iname=iname, version=version, ppool=self)
 
+    #TODO: check if the env param is really needed. there's already an env in self
     def get_metamodel_instances(self, env):
         p_instances = []
         db = env.get_read_db()
@@ -239,7 +241,10 @@ class PersistablePool(object):
             p_instances.append(PersistableInstance.load(env, id, version=version, ppool=self, load_owned=False))
         return p_instances
 
-    def get_instances_of(self, env, id_meta, meta_levels=[0,1]):
+    #TODO: check if the env param is really needed. there's already an env in self
+    def get_instances_of(self, env, id_meta, meta_levels=None):
+        if meta_levels is None:
+            meta_levels = [0,1]
         p_instances = []
         db = env.get_read_db()
         cursor = db.cursor()
@@ -255,6 +260,7 @@ class PersistablePool(object):
             p_instances.append(PersistableInstance.load(env, id, version=version, ppool=self))
         return p_instances
 
+    #TODO: check if the env param is really needed. there's already an env in self
     def save(self, env, meta_levels=['0','1']):
         @with_transaction(env)
         def do_save(db):

@@ -48,11 +48,11 @@ class Properties(unittest.TestCase):
 
     def test_access_property(self):
         #TODO: recheck if this test is still testing what it should. It doesn't appear to be using anything from the meta-level, which is suspicious
-        self.assertEqual(len(self.car.get_properties()), 1)
+        self.assertEqual(len(self.car.get_properties()), 3) # wheels + meta + text_repr
         self.assertEqual(self.car.get_properties()[0].get_name(), 'Wheels')
 
     def test_property_values(self):
-        self.lightningMcQueen = Instance(self.pool, self.car)
+        self.lightningMcQueen = Instance(self.pool, self.car.get_identifier())
         self.lightningMcQueen.set_value(self.wheels.get_identifier(), 'front left wheel')
         self.lightningMcQueen.add_value(self.wheels.get_identifier(), 'front right wheel')
         self.lightningMcQueen.add_value(self.wheels.get_identifier(), 'rear left wheel')
@@ -165,13 +165,21 @@ class MetaModelSanityCheck(unittest.TestCase):
 class ModelInspection(unittest.TestCase):
     def setUp(self):
         self.pool = InstancePool(True)
-        car = Entity(self.pool, "Car")
-        corsa = Entity(self.pool, "Opel Corsa", car.get_name())
-        enjoy = Entity(self.pool, "Opel Corsa Enjoy", corsa.get_name())
+        self.car = Entity(self.pool, "Car")
+        self.corsa = Entity(self.pool, "Opel Corsa", self.car.get_identifier())
+        self.enjoy = Entity(self.pool, "Opel Corsa Enjoy", self.corsa.get_identifier())
 
-    def test_list_model_entities(self):
+    def test_model_instances(self):
         entities = self.pool.get_model_instances()
         self.assertTrue(len(entities) == 3)
+        for ent in entities:
+            self.assertEqual(ent.get_meta().get_identifier(), Entity.id)
+        self.assertTrue(len([ent for ent in entities if ent.get_identifier() == self.car.get_identifier()])==1)
+        self.assertTrue(len([ent for ent in entities if ent.get_identifier() == self.corsa.get_identifier()])==1)
+        self.assertTrue(len([ent for ent in entities if ent.get_identifier() == self.enjoy.get_identifier()])==1)
+
+    def test_model_instances_names(self):
+        entities = self.pool.get_model_instances()
         for ent in entities:
             self.assertEqual(ent.get_meta().get_name(), "Entity")
         self.assertTrue(len([ent for ent in entities if ent.get_name() == "Car"])==1)
@@ -183,7 +191,9 @@ class Instantiation(unittest.TestCase):
         pool = InstancePool(True)
         ent = Entity(pool, "Car")
         inst = Instance(pool, ent.get_identifier())
-        self.assertEqual(ent.get_name(), inst.get_meta().get_name())
+        self.assertEqual(ent.get_identifier(), inst.get_meta().get_identifier())
+
+
 
 class PoolOperations(unittest.TestCase):
     def test_inexistent_instance(self):
