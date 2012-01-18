@@ -54,8 +54,8 @@
   </head>
   <body>
       <div id="content" class="asa">
-      <h1>Create new ${instance_meta.get_name()} <small>(inherits ${instance_meta.get_parent().get_name()})</small></h1>
-      <form method="post" action="${href.adaptiveartifacts(instance_meta.id)}?action=instantiate">
+      <h1>Create new ${instance_meta.get_name()} <py:if test="not instance_meta.get_parent() is None"><small>(inherits ${instance_meta.get_parent().get_name()})</small></py:if></h1>
+      <form method="post" action="${href.adaptiveartifacts(instance_meta.get_identifier())}?action=instantiate">
           <fieldset id="basics">
           <legend>Basics</legend>
           <py:for each="property in instance_meta.get_properties()">
@@ -117,7 +117,7 @@
           </py:if>
 
           <input type="hidden" name="action" value="instantiate" />
-          <input type="submit" value="Create Instance" />
+          <input type="submit" value="Create" />
           <br/><br/>
       </form>
       </div>

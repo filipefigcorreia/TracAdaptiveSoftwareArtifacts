@@ -338,7 +338,7 @@ class Classifier(MetaElementInstance):
 class Entity(Classifier):
     id = None
 
-    def __init__(self, pool, name, inherits=None, iname=None, meta_level='1'):
+    def __init__(self, pool, name, inherits=None, iname=None, id_meta=None, meta_level='1'):
         """
         Arguments:
         pool -- the pool that the instances of this class will belong to
@@ -346,7 +346,9 @@ class Entity(Classifier):
         inherits -- the uuid of the Entity from which this Entity derives from
         meta_level -- the model level that the instance belongs to: '0', '1' or '2'. Usually '1'.
         """
-        super(Entity, self).__init__(pool=pool, name=name, iname=iname, id_meta=Entity.id, meta_level=meta_level)
+        if id_meta is None:
+            id_meta=Entity.id
+        super(Entity, self).__init__(pool=pool, name=name, iname=iname, id_meta=id_meta, meta_level=meta_level)
         if not inherits is None:
             self.set_value_by_iname('__inherits', inherits)
         else:
@@ -361,8 +363,8 @@ class Entity(Classifier):
         self.reset_class_id()
 
     @classmethod
-    def get_new_default_instance(cls, pool, name):
-        return Entity(pool, name)
+    def get_new_default_instance(cls, pool, name, id_meta=None):
+        return Entity(pool, name, id_meta=id_meta)
 
     def get_parent(self):
         """
@@ -537,7 +539,7 @@ class InstancePool(object):
 
     def get_possible_domains(self):
         pool = self
-        possible_domains = {'text':'text'}
+        possible_domains = {'string':'string'}
         possible_domains.update(dict([(i.get_identifier(), i.get_name()) for i in pool.get_model_instances(Entity.id)]))
         return possible_domains
 

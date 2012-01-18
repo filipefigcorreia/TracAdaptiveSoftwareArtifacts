@@ -10,20 +10,15 @@
     <title></title>
   </head>
   <body>
-      Entities:
+      Available ${context_instance.get_name()}s:
       <ul>
+          <li py:for="entity in entities"><a href="${req.href.adaptiveartifacts(entity.get_identifier(), action='view')}">${entity.get_name()}</a></li>
           <li py:for="instance in instances">${instance.get_identifier()} - ${instance.get_name()}</li>
       </ul>
-
-
-      <hr/>
-      <form method="get" action="${href.adaptiveartifacts(context_instance.id)}" id="modifypage">
+      <form method="get" action="${href.adaptiveartifacts(context_instance.get_identifier())}" id="modifypage">
           <input type="hidden" name="action" value="instantiate" />
-          <input type="submit" value="Create new instance" />
+          <input type="submit" value="Create new" />
       </form>
-      Instances:
-      <ul>
-          <li py:for="instance in instances">${instance.get_identifier()} - ${instance.get_name()}</li>
-      </ul>
+      <br/>
   </body>
 </html>

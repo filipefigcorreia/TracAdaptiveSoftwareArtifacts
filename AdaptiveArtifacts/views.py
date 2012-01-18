@@ -36,9 +36,16 @@ def get_instantiate(req, ppool, instance, resource):
     from presentable_instance import PresentableInstance
 
     a_m2_class = InstancePool.get_metamodel_python_class_by_id(instance.get_identifier())
-    if not a_m2_class in [Package, Property, Entity]:
-        raise Exception("Trying to instanciate a not instantiatable instance '%s'." % a_m2_class)
-    brand_new_instance = a_m2_class.get_new_default_instance(pool=ppool.pool, name="A New " + a_m2_class.__name__)
+    if not a_m2_class is None:
+        if not a_m2_class in [Package, Property, Entity]:
+            raise Exception("Trying to instanciate a not instantiatable instance '%s'." % a_m2_class)
+
+        brand_new_instance = a_m2_class.get_new_default_instance(pool=ppool.pool, name="A New " + instance.get_name())
+    else: # we're instantiating a model (M1) instance, not a metamodel (M2) instance
+        a_m2_class = Entity
+        brand_new_instance = a_m2_class.get_new_default_instance(pool=ppool.pool, name="A New " + instance.get_name(), id_meta=instance.get_identifier())
+
+
     Property(ppool.pool, "A New Property", owner=brand_new_instance.get_identifier())
 
     data = {
@@ -56,10 +63,15 @@ def post_instantiate(req, ppool, instance, resource):
 
     meta = instance
     a_m2_class = InstancePool.get_metamodel_python_class_by_id(instance.get_identifier())
-    if not a_m2_class in [Package, Property, Entity]:
-        raise Exception("Trying to instanciate a not instantiatable instance '%s'." % a_m2_class)
-    #create empty instance of meta
-    brand_new_instance = a_m2_class.get_new_default_instance(pool=ppool.pool, name="A brand new " + a_m2_class.__name__)
+    if not a_m2_class is None:
+        if not a_m2_class in [Package, Property, Entity]:
+            raise Exception("Trying to instanciate a not instantiatable instance '%s'." % a_m2_class)
+
+        brand_new_instance = a_m2_class.get_new_default_instance(pool=ppool.pool, name="A New " + instance.get_name())
+    else: # we're instantiating a model (M1) instance, not a metamodel (M2) instance
+        a_m2_class = Entity
+        brand_new_instance = a_m2_class.get_new_default_instance(pool=ppool.pool, name="A New " + instance.get_name(), id_meta=instance.get_identifier())
+
     for key in req.args.keys(): # go through submitted values
         value = req.args.get(key)
         if is_uuid(key): # it's a property of meta

@@ -21,7 +21,6 @@ class PresentableInstance(Proxy):
     def get_properties(self):
         return [PresentableProperty(prop) for prop in self.instance.get_properties() if int(prop.get_order() or "1") > 0]
 
-
 class PresentableProperty(Proxy):
     def __init__(self, property):
         super(PresentableProperty, self).__init__(property)
@@ -49,4 +48,6 @@ class PresentableProperty(Proxy):
             return 'combo'
 
     def get_possible_values(self, pinstance):
-        return self.property.get_possible_values(pinstance.instance)
+        values = self.property.get_possible_values(pinstance.instance)
+        if values is None: values = []
+        return values
