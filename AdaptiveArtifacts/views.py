@@ -2,7 +2,9 @@ from trac.mimeview.api import Context
 from trac.web.chrome import add_notice
 from util import is_uuid
 
-def _render_view(req, ppool, instance, resource):
+#All the methods here should return a `(template_name, data, content_type)` tuple
+
+def get_view(req, ppool, instance, resource):
     data = {
         'context': Context.from_request(req, resource),
         'action': 'view',
@@ -14,38 +16,20 @@ def _render_view(req, ppool, instance, resource):
     }
     return 'asa_view.html', data, None
 
+def get_list(req, ppool, instance, resource):
+    entities = [pi.instance for pi in ppool.get_instances_of(ppool.env, instance.get_identifier(), [1])]
+    instances = [pi.instance for pi in ppool.get_instances_of(ppool.env, instance.get_identifier(), [0])]
 
-def _render_list(req, entities, context_instance, instances, resource):
     data = {
         'context': Context.from_request(req, resource),
         'action': 'list',
         'resource': resource,
-        'context_instance': context_instance,
+        'context_instance': instance,
         'entities': entities,
         'instances': instances,
     }
     return 'asa_list.html', data, None
 
-def _render_instantiate(req, instance_meta, shallow_instance, resource):
-    data = {
-        'context': Context.from_request(req, resource),
-        'action': 'list',
-        'resource': resource,
-        'instance_meta': instance_meta,
-        'instance': shallow_instance,
-    }
-    return 'asa_edit.html', data, None
-
-
-#All the methods here should return a `(template_name, data, content_type)` tuple
-
-def get_view(req, ppool, instance, resource):
-    return _render_view(req, instance, resource)
-
-def get_list(req, ppool, instance, resource):
-    entities = [pi.instance for pi in ppool.get_instances_of(ppool.env, instance.get_identifier(), [1])]
-    instances = [pi.instance for pi in ppool.get_instances_of(ppool.env, instance.get_identifier(), [0])]
-    return _render_list(req, entities, instance, instances, resource)
 
 def get_instantiate(req, ppool, instance, resource):
     from model import InstancePool, Package, Property, Entity
@@ -56,7 +40,16 @@ def get_instantiate(req, ppool, instance, resource):
         raise Exception("Trying to instanciate a not instantiatable instance '%s'." % a_m2_class)
     brand_new_instance = a_m2_class.get_new_default_instance(pool=ppool.pool, name="A New " + a_m2_class.__name__)
     Property(ppool.pool, "A New Property", owner=brand_new_instance.get_identifier())
-    return _render_instantiate(req, PresentableInstance(instance), PresentableInstance(brand_new_instance), resource)
+
+    data = {
+        'context': Context.from_request(req, resource),
+        'action': 'list',
+        'resource': resource,
+        'instance_meta': PresentableInstance(instance),
+        'instance': PresentableInstance(brand_new_instance),
+    }
+    return 'asa_edit.html', data, None
+
 
 def post_instantiate(req, ppool, instance, resource):
     from model import InstancePool, Package, Property, Entity
