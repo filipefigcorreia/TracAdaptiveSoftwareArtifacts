@@ -87,8 +87,8 @@ class PersistableInstance(object):
         for id, version in property_ids.items():
             PersistableInstance.load(self.env, identifier=id, version=version,ppool=ppool)
 
-    @classmethod
-    def _aggregate_values(cls, contents_list):
+    @staticmethod
+    def _aggregate_values(contents_list):
         contents_dict = dict()
         for id, value in contents_list:
             if not id in contents_dict:
