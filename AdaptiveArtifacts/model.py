@@ -9,27 +9,6 @@
 import uuid
 from util import is_uuid
 
-class Version(object):
-    id = None
-
-    @classmethod
-    def get_all_version(cls, instance=None):
-        """
-        Returns all the versions of the system, or of a given instance in case it's specified
-        """
-        return []
-
-    @classmethod
-    def get_latest_version(cls, instance=None):
-        """
-        Returns the latest version of the system, or the latest version for a given instance in case it's specified
-        """
-        return Version()
-
-    def __init__(self):
-        self.states = [] # array of InstanceStates that were created in this version
-
-
 class Instance(object):
     """
     Represents an instance at any model level
@@ -310,6 +289,14 @@ class InstanceState(object):
         self.author = author
         self.comment = comment
 
+    #@classmethod
+    #def create_from_properties(cls, contents_dict, inames_dict, version, time, author, comment):
+    #    state = InstanceState(inames=inames_dict, version=version, time=time, author=author, comment=comment)
+    #    state.slots = contents_dict
+    #    return state
+
+    #def set_raw_contents(self, contents_dict):
+    #    self.slots = contents_dict
 
 
 class MetaElementInstance(Instance):
@@ -399,8 +386,6 @@ class Property(MetaElementInstance):
         #cardinality
         #TODO: check cardinality
         return True
-
-
 
 class Classifier(MetaElementInstance):
     id = None
