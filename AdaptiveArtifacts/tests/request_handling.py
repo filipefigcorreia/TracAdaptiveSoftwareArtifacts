@@ -9,7 +9,7 @@
 
 import unittest
 from AdaptiveArtifacts import Core
-from AdaptiveArtifacts.views import get_view, post_instantiate
+from AdaptiveArtifacts.views import view_get, instantiate_post
 
 class RequestHandling(unittest.TestCase):
     def setUp(self):
@@ -20,6 +20,6 @@ class RequestHandling(unittest.TestCase):
 
     def test_view_resolution(self):
         view = Core._resolve_view(action="view", method="GET")
-        self.assertEqual(get_view, view)
+        self.assertEqual(view_get, view)
         view = Core._resolve_view(action="instantiate", method="POST")
-        self.assertEqual(post_instantiate, view)
+        self.assertEqual(instantiate_post, view)

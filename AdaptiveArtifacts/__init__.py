@@ -75,19 +75,19 @@ class Core(Component):
             return None # Something's very wrong
 
     @staticmethod
-    def _get_resource(instance):
-        from trac.resource import Resource
-        return Resource('asa', instance.get_identifier(), instance.get_state().version)
-
-    @staticmethod
     def _resolve_view(action, method):
         from AdaptiveArtifacts import views
-        mlist = [method_name for method_name in dir(views) if callable(getattr(views, method_name)) and method_name.split('_',1)[0] in ('get', 'post')]
-        mname = method.lower() + '_' + action.lower()
+        mlist = [method_name for method_name in dir(views) if callable(getattr(views, method_name)) and method_name.split('_',1)[-1] in ('get', 'post')]
+        mname = action.lower() + '_' + method.lower()
         if mname in mlist:
             return getattr(views, mname)
         else:
             return None
+
+    @staticmethod
+    def _get_resource(instance):
+        from trac.resource import Resource
+        return Resource('asa', instance.get_identifier(), instance.get_state().version)
 
     # ITemplateProvider methods
     def get_templates_dirs(self):

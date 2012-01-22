@@ -4,7 +4,7 @@ from util import is_uuid
 
 #All the methods here should return a `(template_name, data, content_type)` tuple
 
-def get_view(req, ppool, instance, resource):
+def view_get(req, ppool, instance, resource):
     data = {
         'context': Context.from_request(req, resource),
         'action': 'view',
@@ -16,7 +16,7 @@ def get_view(req, ppool, instance, resource):
     }
     return 'asa_view.html', data, None
 
-def get_list(req, ppool, instance, resource):
+def list_get(req, ppool, instance, resource):
     entities = [pi.instance for pi in ppool.get_instances_of(ppool.env, instance.get_identifier(), [1])]
     instances = [pi.instance for pi in ppool.get_instances_of(ppool.env, instance.get_identifier(), [0])]
 
@@ -30,7 +30,7 @@ def get_list(req, ppool, instance, resource):
     return 'asa_list.html', data, None
 
 
-def get_instantiate(req, ppool, instance, resource):
+def instantiate_get(req, ppool, instance, resource):
     from model import InstancePool, Package, Property, Entity
     from presentable_instance import PresentableInstance
 
@@ -55,7 +55,7 @@ def get_instantiate(req, ppool, instance, resource):
     return 'asa_edit.html', data, None
 
 
-def post_instantiate(req, ppool, instance, resource):
+def instantiate_post(req, ppool, instance, resource):
     from model import InstancePool, Package, Property, Entity
 
     meta = instance
