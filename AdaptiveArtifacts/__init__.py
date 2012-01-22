@@ -72,7 +72,7 @@ class Core(Component):
         if not view is None:
             return view(req, ppool, pi.instance, Core._get_resource(pi.instance))
         else:
-            return None # Something's very wront
+            return None # Something's very wrong
 
     @staticmethod
     def _get_resource(instance):
@@ -107,6 +107,7 @@ class Core(Component):
 
     def get_resource_description(self, resource, format='default', context=None, **kwargs):
         pi = PersistableInstance.load(self.env, identifier=resource.id, version=resource.version)
+        #TODO: instead of using the identifier, use the text_repr_expr property value, if it exists
         return "ASA: '" + pi.instance.get_identifier() + "'"
 
     def resource_exists(self, resource):
