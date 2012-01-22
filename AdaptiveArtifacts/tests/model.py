@@ -46,12 +46,11 @@ class Properties(unittest.TestCase):
         self.car = Entity(self.pool, "Car")
         self.wheels = Property(self.pool, "Wheels", self.car.get_identifier(), "string", "4", "4")
 
-    def test_access_property(self):
-        #TODO: recheck if this test is still testing what it should. It doesn't appear to be using anything from the meta-level, which is suspicious
+    def test_property(self):
         self.assertEqual(len(self.car.get_properties()), 3) # wheels + meta + text_repr
         self.assertEqual(self.car.get_properties()[0].get_name(), 'Wheels')
 
-    def test_property_values(self):
+    def test_existing_property_values(self):
         self.lightningMcQueen = Instance(self.pool, self.car.get_identifier())
         self.lightningMcQueen.set_value(self.wheels.get_identifier(), 'front left wheel')
         self.lightningMcQueen.add_value(self.wheels.get_identifier(), 'front right wheel')
@@ -59,8 +58,14 @@ class Properties(unittest.TestCase):
         self.lightningMcQueen.add_value(self.wheels.get_identifier(), 'front right wheel')
         self.assertEqual(len(self.lightningMcQueen.get_values(self.wheels.get_identifier())), 4)
 
+    def test_new_property_values(self):
+        contents = dict()
+        contents[self.wheels.get_identifier()] = ['front left wheel', 'front left wheel', 'rear left wheel', 'front right wheel']
+        self.lightningMcQueen = Instance(self.pool, self.car.get_identifier(), contents=contents)
+        self.assertEqual(len(self.lightningMcQueen.get_values(self.wheels.get_identifier())), 4)
+
     def test_new_instance_has_iname_translation(self):
-        for key in self.car.state.slots.keys():
+        for key in self.car.get_state().slots.keys():
             self.assertTrue(not key.startswith('__'), "Found a iname ('%s') where a uuid was expected." % key)
 
 
@@ -140,7 +145,7 @@ class MetaModelSanityCheck(unittest.TestCase):
         """
         instance = self.pool.get_instance_by_iname(instance_iname)
         entity = instance.get_meta()
-        slot_inames = instance.state.inames.values()
+        slot_inames = instance.get_state().inames.values()
         prop_inames = [prop.get_iname() for prop in entity.get_properties()]
 
         for iname in expected_prop_inames:
@@ -159,7 +164,7 @@ class MetaModelSanityCheck(unittest.TestCase):
 
     def test_no_inames_as_property_id(self):
         for instance in self.pool.instances.values():
-            for key in instance.state.slots.keys():
+            for key in instance.get_state().slots.keys():
                 self.assertTrue(not key.startswith('__'), "The instance with iname '%s' has a property with an iname ('%s') instead of an id." % (instance.get_iname(), key))
 
 class ModelInspection(unittest.TestCase):
@@ -192,6 +197,29 @@ class Instantiation(unittest.TestCase):
         ent = Entity(pool, "Car")
         inst = Instance(pool, ent.get_identifier())
         self.assertEqual(ent.get_identifier(), inst.get_meta().get_identifier())
+
+class InstanceStates(unittest.TestCase):
+    def setUp(self):
+        pool = InstancePool(True)
+        self.car = Entity(pool, "Car")
+        self.brand = Property(pool, "Brand", self.car.get_identifier(), "string", "1", "1")
+        self.lightningMcQueen = Instance(pool, self.car.get_identifier())
+
+    def test_change_uncommitted_state_version(self):
+        self.assertEquals(self.lightningMcQueen.get_state().version, None)
+
+        self.lightningMcQueen.set_value(self.brand.get_identifier(), 'Dodge')
+        self.assertEquals(self.lightningMcQueen.get_value(self.brand.get_identifier()), 'Dodge')
+        self.assertEquals(self.lightningMcQueen.get_state().version, None)
+
+    def test_try_create_2nd_uncommitted_state_versions(self):
+        self.assertRaises(ValueError, self.lightningMcQueen.create_empty_state)
+
+    def test_two_states(self):
+        self.lightningMcQueen.set_value(self.brand.get_identifier(), 'Dodge')
+        old_state = self.lightningMcQueen.create_state(self.lightningMcQueen.get_id_meta(), contents={self.brand.get_identifier(): 'Mazda'}, version=1)
+        self.assertEquals(self.lightningMcQueen.get_state(version=1), old_state)
+        self.assertEquals(self.lightningMcQueen.get_state().version, None)
 
 
 

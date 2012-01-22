@@ -158,11 +158,7 @@ class PersistableInstance(object):
 
         from AdaptiveArtifacts.model import Instance
         #TODO: maybe we should probably get this directly from PersistablePool?
-        self.instance =  Instance.create_from_properties(ppool.pool, identifier, iname, meta_level, contents_dict, property_inames_dict)
-        self.version = int(version)
-        self.time = from_utimestamp(time)
-        self.author = author
-        self.comment = comment
+        self.instance = Instance.create_from_properties(ppool.pool, identifier, iname, meta_level, contents_dict, property_inames_dict, int(version), from_utimestamp(time), author, comment)
 
     exists = property(fget=lambda self: self.version > 0)
 
@@ -199,7 +195,7 @@ class PersistableInstance(object):
                 INSERT INTO asa_instance (id, iname, meta_level, version, time, author, ipnr, op_type, comment)
                 VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
                 """, (self.instance.get_identifier(), self.instance.get_iname(), self.instance.get_meta_level(), new_version, to_utimestamp(t), author, remote_addr, 'C', comment))
-            for property_ref in self.instance.state.slots: #TODO: state shouldn't be accessed directly
+            for property_ref in self.instance.get_state().slots: #TODO: state shouldn't be accessed directly
                 value = self.instance.get_slot_value(property_ref)
                 if not isinstance(value, list):
                     insert_property_value(cursor, self.instance.get_identifier(), new_version, property_ref, self.instance.get_property_iname(property_ref), value)

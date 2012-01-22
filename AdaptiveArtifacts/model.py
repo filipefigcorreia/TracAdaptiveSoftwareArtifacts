@@ -36,17 +36,40 @@ class Instance(object):
     """
     id = None
 
-    def __init__(self, pool, id_meta, identifier=None, text_repr_expr = '', iname=None, meta_level='0'):
+    def __init__(self, pool, id_meta, identifier=None, iname=None, meta_level='0', text_repr_expr=None, inames=None, contents=None, version=None, time=None, author='', comment = ''):
         """
+        Each newly created Instance is created with one InstanceState. Further InstanceStates
+        can be added, although most of times at most two will exist per instance loaded in
+        memory: one loaded from the database (version=<number>) and one created by the user
+        (version=None).
+
         Arguments:
         pool -- the pool that the instances of this class will belong to
         id_meta -- the Entity to which this instance complies. For M2 and M3 instances it will always be 'Entity'
         identifier -- the uuid that uniquely identifies this instance
         iname -- internal name; exists only for meta-model (M2) instances
         meta_level -- the model level that the instance belongs to: '0', '1' or '2'
+        text_repr_expr -- a python expression, represented as a string, that returns the text representation for this instance
+
+        Additional arguments, needed for the creation of a state:
+        inames -- dict that translates from internal names to property references (uuids)
+        contents -- dict of property values indexed by property references.
+        version -- version of the state to create from the supplied inames and contents
+        time -- date/time in which the state was saved
+        author -- the user that created the state
+        comment -- a cooment supplied by the user that created the state
+
+        Values must be provided in the contents arg for at least these two inames, although
+        more can be supplied, depending on the meta of specific instance at hand:
+        __meta -- the Entity to which this instance complies. For M2 and M3 instances it will always be 'Entity'
+        __text_repr_expr -- a fragment of python code that returns a string representing the instance
+
         """
         if meta_level == '0' and self.__class__.__name__ != 'Instance':
-            raise Exception("All M0s should be naturally born instances.")
+            raise ValueError("All M0s should be naturally born instances.")
+
+        if id_meta is None:
+            pass # roof left unclosed
 
         if identifier is None:
             self.__identifier = str(uuid.uuid4())
@@ -55,27 +78,25 @@ class Instance(object):
         self.__iname = iname
         self.__meta_level = meta_level
 
-        meta = pool.get_instance(id_meta)
-        inames_dict = {}
-        if not meta is None:
-            # This dict will not be complete while the properties roof isn't closed.
-            # That's why calling set_properties_definite_id(...) is needed in the end
-            inames_dict = meta.get_properties_inames()
-
-        self.state = InstanceState(inames=inames_dict) # TODO: refactor this to a self.states dictionary in which each key,value is of type Version,InstanceState
-        self.set_value_by_iname('__meta', id_meta)
-        self.set_value_by_iname('__text_repr_expr', text_repr_expr)
-
         if not pool is None:
             pool.add(self)
         self.pool = pool
+
+        self.__states = dict()
+        if contents is None:
+            contents = dict()
+        self.create_state(id_meta=id_meta, inames=inames, contents=contents, version=version, time=time, author=author, comment=comment)
+
+        self.set_value_by_iname('__meta', id_meta)
+        self.set_value_by_iname('__text_repr_expr', id_meta)
+
 
     def set_properties_definite_id(self):
         """
         Replace all magic words used in the slots by the respective uuids. Magic words are used
         only while bootstrapping the M2, while the "roof" isn't yet closed.
         """
-        for key in self.state.slots.keys():
+        for key in self.get_state().slots.keys():
             if not self.get_property_from_meta(key) is None: # it's a iname. replace by a proper uuid!
                 self.set_property_ref(key, self.get_property_from_meta(key).get_identifier())
 
@@ -94,6 +115,36 @@ class Instance(object):
     def get_meta(self):
         return self.pool.get_instance(self.get_value_by_iname('__meta'))
 
+    def get_state(self, version=None):
+        # Returns the state of the specified version.
+        # In the case no version number is specified, returns the state with the highest version number.
+        # If an invalid version number is specified, returns None.
+        if version in self.__states:
+            return self.__states[version]
+        if version is None and len(self.__states.keys())>0: # get the most recent numeric version
+            return self.__states[max(self.__states.keys())]
+        return None
+
+    def create_empty_state(self):
+        return self.create_state(id_meta=self.get_id_meta())
+
+    def create_state(self, id_meta, inames=None, contents=None, version=None, time=None, author='', comment=''):
+        # Creates a new state from the provided information.
+
+        # If the inames parameter is not provided, tries to discover it from meta, that it assumes to be in the pool.
+        if inames is None:
+            meta = self.pool.get_instance(id_meta)
+            if not meta is None:
+                # This dict will not be complete while the properties roof isn't closed.
+                # That's why calling set_properties_definite_id(...) is needed in the end
+                inames = meta.get_properties_inames()
+
+        if version is None and None in self.__states:
+            raise ValueError("Only one uncommitted state allowed at a time. Please commit the currently uncommitted state first.")
+        state = InstanceState(inames=inames, contents=contents, version=version, time=time, author=author, comment=comment)
+        self.__states[state.version] = state
+        return state
+
     def get_text_repr(self):
         text_repr_expr = self.get_value_by_iname('__text_repr_expr')
         if text_repr_expr is None or text_repr_expr=='':
@@ -108,12 +159,15 @@ class Instance(object):
         """
         property_ref: can be either a private system reference, like '__meta', or a uuid identifier, if a reference to a Property
         """
-        if not property_ref in self.state.slots:
-            self.state.slots[property_ref] = []
-        elif property_ref in self.state.slots and not isinstance(self.state.slots[property_ref], list):
-            val = self.state.slots[property_ref]
-            self.state.slots[property_ref] = [val]
-        self.state.slots[property_ref].append(value)
+        if not self.get_state().version is None:
+            self.create_state()
+
+        if not property_ref in self.get_state().slots:
+            self.get_state().slots[property_ref] = []
+        elif property_ref in self.get_state().slots and not isinstance(self.get_state().slots[property_ref], list):
+            val = self.get_state().slots[property_ref]
+            self.get_state().slots[property_ref] = [val]
+        self.get_state().slots[property_ref].append(value)
 
     #TODO: refactor. delegate this logic to the state object
     def set_property_ref(self, iname, property_ref):
@@ -124,24 +178,26 @@ class Instance(object):
         if not value is None:
             self.set_value(iname, None)
             self.set_value(property_ref, value)
-            if iname in self.state.inames.keys():
-                del self.state.inames[iname]
-            self.state.inames[property_ref] = iname
+            if iname in self.get_state().inames.keys():
+                del self.get_state().inames[iname]
+            self.get_state().inames[property_ref] = iname
 
     #TODO: refactor. delegate this logic to the state object
     def set_value(self, property_ref, value):
-        """Overwrite the value for the specified property."""
+        """
+        Sets the value for the specified property, overriding it if already exists.
+        """
         if value is None:
-            if property_ref in self.state.slots:
-                del self.state.slots[property_ref]
+            if property_ref in self.get_state().slots:
+                del self.get_state().slots[property_ref]
         else:
-            self.state.slots[property_ref] = value
+            self.get_state().slots[property_ref] = value
 
     #TODO: refactor. delegate this logic to the state object
     def set_value_by_iname(self, iname, value):
         property_ref = self.get_property_ref_if_known(iname)
         self.set_value(property_ref, value)
-        self.state.inames[property_ref] = iname
+        self.get_state().inames[property_ref] = iname
 
     #TODO: refactor. delegate this logic to the state object
     def get_value(self, property_ref):
@@ -156,8 +212,9 @@ class Instance(object):
 
     #TODO: refactor. delegate this logic to the state object
     def get_property_iname(self, property_ref):
-        if property_ref in self.state.inames:
-            return self.state.inames[property_ref]
+        if not self.get_state() is None:
+            if property_ref in self.get_state().inames:
+                return self.get_state().inames[property_ref]
         return None
 
     #TODO: refactor. delegate this logic to the state object
@@ -165,21 +222,22 @@ class Instance(object):
         """
         If property_ref is not know, returns the iname provided as input.
         """
-        for property_ref_key, iname_value in self.state.inames.items():
-            if iname_value == iname:
-                return property_ref_key
+        if not self.get_state() is None:
+            for property_ref_key, iname_value in self.get_state().inames.items():
+                if iname_value == iname:
+                    return property_ref_key
         return iname
 
     #TODO: refactor. delegate this logic to the state object
     def get_slot_value(self, property_ref):
-        if not property_ref is None and property_ref in self.state.slots:
-            return self.state.slots[property_ref]
+        if not property_ref is None and not self.get_state() is None and property_ref in self.get_state().slots:
+            return self.get_state().slots[property_ref]
         return None
 
     #TODO: refactor. delegate this logic to the state object
     def get_values(self, property_ref):
-        if not property_ref is None and property_ref in self.state.slots:
-            return self.state.slots[property_ref]
+        if not property_ref is None and not self.get_state() is None and property_ref in self.get_state().slots:
+            return self.get_state().slots[property_ref]
         else:
             return []
 
@@ -207,35 +265,51 @@ class Instance(object):
         return self.get_meta().is_subclass(name)
 
     @classmethod
-    def create_from_properties(cls, pool, identifier, iname, meta_level, contents_dict, property_inames_dict):
-        instance = Instance(pool, None, identifier) # TODO: fix. id_meta should not be None
-        instance.pool.remove(identifier) #TODO: rethink. the instance should not exist in the pool yet. ever. because we're only loading instances only if they don't exist in the pool
-        instance.__identifier = identifier
-        instance.__iname = iname
-        instance.__meta_level = meta_level
-        #TODO: state should probably be a dictionary and not a var
-        instance.state = InstanceState.create_from_properties(contents_dict, property_inames_dict)
+    def create_from_properties(cls, pool, identifier, iname, meta_level, contents_dict, property_inames_dict, version, time, author, comment):
+        if identifier in pool.instances:
+            raise ValueError("Instance already in the pool: %s" % (identifier,)) # The instance should not already exist in the pool. Ever. Instances are only if they don't yet exist in the pool
+
+        def get_slot_value(property_ref, contents):
+            if not property_ref is None and property_ref in contents:
+                return contents[property_ref]
+            return None
+
+        def get_property_ref_if_known(iname, inames):
+            for property_ref_key, iname_value in inames.items():
+                if iname_value == iname:
+                    return property_ref_key
+            return iname
+
+        def get_value_by_iname(iname, inames, contents):
+            value = get_slot_value(iname, contents)
+            if value is None:
+                value = get_slot_value(get_property_ref_if_known(iname, inames), contents)
+            return value
+
+        id_meta = get_value_by_iname('__meta', property_inames_dict, contents_dict)
+        text_repr_expr = get_value_by_iname('__text_repr_expr', property_inames_dict, contents_dict)
+        instance = Instance(pool, id_meta=id_meta, identifier=identifier, iname=iname, meta_level=meta_level, text_repr_expr=text_repr_expr, inames=property_inames_dict, contents=contents_dict, version=version, time=time, author=author, comment=comment)
         if meta_level>'0':
             instance.reset_class_from_inner_state()
             instance.reset_class_id()
-        pool.add(instance)
         return instance
 
 
 class InstanceState(object):
 
-    def __init__(self, inames=None, version=None):
+    def __init__(self, inames=None, contents=None, version=None, time=None, author='', comment = ''):
         if inames is None:
             inames = {}
-        self.slots = {} # dict in which each key,value is of type unicodestring,arbitraryvalue
+        if contents is None:
+            contents = {}
+        self.slots = contents # dict in which each key,value is of type unicodestring,arbitraryvalue
         self.inames = inames # translation of uuids to internal names
-        #self.version = version # version in which this state was created
 
-    @classmethod
-    def create_from_properties(cls, contents_dict, inames_dict):
-        state = InstanceState(inames=inames_dict)
-        state.slots = contents_dict
-        return state
+        self.version = version # version in which this state was created
+        self.time = time
+        self.author = author
+        self.comment = comment
+
 
 
 class MetaElementInstance(Instance):
@@ -246,10 +320,10 @@ class MetaElementInstance(Instance):
 
     def __init__(self, pool, name, id_meta, iname, text_repr_expr=None, meta_level='1'):
         if meta_level < '1':
-            raise Exception("MetaElementInstances' level must be at least 1")
+            raise ValueError("MetaElementInstances' level must be at least 1.")
         if text_repr_expr is None:
             text_repr_expr = 'self.get_name()'
-        super(MetaElementInstance, self).__init__(pool=pool, id_meta=id_meta, text_repr_expr=text_repr_expr, iname=iname, meta_level=meta_level)
+        super(MetaElementInstance, self).__init__(pool=pool, id_meta=id_meta, iname=iname, meta_level=meta_level, text_repr_expr=text_repr_expr)
         self.set_value_by_iname('__name', name)
 
     @classmethod
@@ -338,7 +412,7 @@ class Classifier(MetaElementInstance):
 class Entity(Classifier):
     id = None
 
-    def __init__(self, pool, name, inherits=None, iname=None, id_meta=None, meta_level='1'):
+    def __init__(self, pool, name, inherits=None, id_meta=None, iname=None, meta_level='1'):
         """
         Arguments:
         pool -- the pool that the instances of this class will belong to
@@ -348,7 +422,8 @@ class Entity(Classifier):
         """
         if id_meta is None:
             id_meta=Entity.id
-        super(Entity, self).__init__(pool=pool, name=name, iname=iname, id_meta=id_meta, meta_level=meta_level)
+        super(Entity, self).__init__(pool=pool, name=name, id_meta=id_meta, iname=iname, meta_level=meta_level)
+
         if not inherits is None:
             self.set_value_by_iname('__inherits', inherits)
         else:
