@@ -70,9 +70,14 @@ class Core(Component):
         add_javascript(req, 'adaptiveartifacts/js/uuid.js')
         view = Core._resolve_view(action, req.method)
         if not view is None:
-            return view(req, ppool, pi.instance, pi.resource)
+            return view(req, ppool, pi.instance, Core._get_resource(pi.instance))
         else:
             return None # Something's very wront
+
+    @staticmethod
+    def _get_resource(instance):
+        from trac.resource import Resource
+        return Resource('asa', instance.get_identifier(), instance.get_state().version)
 
     @staticmethod
     def _resolve_view(action, method):

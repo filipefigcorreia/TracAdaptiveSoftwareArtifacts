@@ -12,7 +12,7 @@ def get_view(req, ppool, instance, resource):
         'dir': dir(instance),
         'type': type(instance),
         'repr': type(instance),
-        'version': resource.version,
+        'version': instance.get_state().version,
     }
     return 'asa_view.html', data, None
 
@@ -23,7 +23,6 @@ def get_list(req, ppool, instance, resource):
     data = {
         'context': Context.from_request(req, resource),
         'action': 'list',
-        'resource': resource,
         'context_instance': instance,
         'entities': entities,
         'instances': instances,
@@ -40,20 +39,18 @@ def get_instantiate(req, ppool, instance, resource):
         if not a_m2_class in [Package, Property, Entity]:
             raise Exception("Trying to instanciate a not instantiatable instance '%s'." % a_m2_class)
 
-        brand_new_instance = a_m2_class.get_new_default_instance(pool=ppool.pool, name="A New " + instance.get_name())
+        new_instance = a_m2_class.get_new_default_instance(pool=ppool.pool, name="A New " + instance.get_name())
     else: # we're instantiating a model (M1) instance, not a metamodel (M2) instance
         a_m2_class = Entity
-        brand_new_instance = a_m2_class.get_new_default_instance(pool=ppool.pool, name="A New " + instance.get_name(), id_meta=instance.get_identifier())
+        new_instance = a_m2_class.get_new_default_instance(pool=ppool.pool, name="A New " + instance.get_name(), id_meta=instance.get_identifier())
 
-
-    Property(ppool.pool, "A New Property", owner=brand_new_instance.get_identifier())
+    Property(ppool.pool, "A New Property", owner=new_instance.get_identifier())
 
     data = {
         'context': Context.from_request(req, resource),
         'action': 'list',
-        'resource': resource,
         'instance_meta': PresentableInstance(instance),
-        'instance': PresentableInstance(brand_new_instance),
+        'instance': PresentableInstance(new_instance),
     }
     return 'asa_edit.html', data, None
 

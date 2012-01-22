@@ -7,7 +7,6 @@
 # you should have received as part of this distribution.
 
 from trac.db import with_transaction
-from trac.resource import Resource
 from trac.util.datefmt import from_utimestamp, to_utimestamp, utc
 
 
@@ -28,11 +27,9 @@ class PersistableInstance(object):
         self.version = 0
         if version:
             self.version = int(version) # must be a number or None
-        self.resource = Resource('asa', identifier, version)
 
         self.time = None
         self.comment = self.author = ''
-        #self.text =
         #self.readonly = 0
 
     @classmethod
@@ -61,7 +58,6 @@ class PersistableInstance(object):
 
         if load_owned:
             pi.load_properties(ppool)
-        pi.resource = Resource('asa', pi.instance.get_identifier(), version) # in case we fetched the instance by its name instead of its identifier
         return pi
 
     def load_properties(self, ppool):
@@ -204,7 +200,6 @@ class PersistableInstance(object):
                         insert_property_value(cursor, self.instance.get_identifier(), new_version, property_ref, self.instance.get_property_iname(property_ref), v)
 
             self.version += new_version
-            self.resource = self.resource(version=self.version)
 
         self.author = author
         self.comment = comment
