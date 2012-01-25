@@ -224,25 +224,11 @@ class Instance(object):
         if identifier in pool.instances:
             raise ValueError("Instance already in the pool: %s" % (identifier,)) # The instance should not already exist in the pool. Ever. Instances are only if they don't yet exist in the pool
 
-        def get_slot_value(property_ref, contents):
-            if not property_ref is None and property_ref in contents:
-                return contents[property_ref]
-            return None
+        # Create a state just for convenient "parsing" of it's contents
+        temp_state = InstanceState(property_inames_dict, contents_dict, version, time, author, comment)
 
-        def get_property_ref_if_known(iname, inames):
-            for property_ref_key, iname_value in inames.items():
-                if iname_value == iname:
-                    return property_ref_key
-            return iname
-
-        def get_value_by_iname(iname, inames, contents):
-            value = get_slot_value(iname, contents)
-            if value is None:
-                value = get_slot_value(get_property_ref_if_known(iname, inames), contents)
-            return value
-
-        id_meta = get_value_by_iname('__meta', property_inames_dict, contents_dict)
-        text_repr_expr = get_value_by_iname('__text_repr_expr', property_inames_dict, contents_dict)
+        id_meta = temp_state.get_value_by_iname('__meta')
+        text_repr_expr = temp_state.get_value_by_iname('__text_repr_expr')
         instance = Instance(pool, id_meta=id_meta, identifier=identifier, iname=iname, meta_level=meta_level, text_repr_expr=text_repr_expr, inames=property_inames_dict, contents=contents_dict, version=version, time=time, author=author, comment=comment)
         if meta_level>'0':
             instance.reset_class_from_inner_state()
