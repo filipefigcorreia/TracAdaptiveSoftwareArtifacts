@@ -77,6 +77,10 @@ class Instance(object):
             if not self.get_property_from_meta(key) is None: # It's a iname. Replace by a proper uuid!
                 state.set_property_ref(key, self.get_property_from_meta(key).get_identifier())
 
+    @classmethod
+    def get_new_default_instance(cls, pool, name, id_meta=None):
+        return Instance(pool, id_meta=id_meta)
+
     def get_identifier(self):
         return self.__identifier
 
@@ -100,9 +104,16 @@ class Instance(object):
         # If an invalid version number is specified, returns None.
         if version in self.__states:
             return self.__states[version]
-        if version is None and len(self.__states.keys())>0: # get the most recent numeric version
-            return self.__states[max(self.__states.keys())]
+        if version is None:
+            max_v = self.get_highest_version_number()
+            if max_v > 0:
+                return self.__states[max_v]
         return None
+
+    def get_highest_version_number(self):
+        if len(self.__states.keys())>0:
+            return max(self.__states.keys()) or 0
+        return 0
 
     def create_empty_state(self):
         return self.create_state(id_meta=self.get_id_meta())
@@ -194,9 +205,7 @@ class Instance(object):
         if self.get_identifier()==self.get_id_meta(version): # special case: closing the meta-* roof
             self.__class__ = Entity
         else:
-            if self.get_meta(version) is None:
-                raise Exception("Meta not loaded. Please first load meta with id %s" % (self.get_id_meta(),))
-            the_class = self.pool.get_metamodel_python_class_by_name(self.get_meta().get_name())
+            the_class = self.pool.get_metamodel_python_class_by_id(self.get_id_meta(version))
             if not the_class is None:
                 self.__class__ = the_class
             else: # meta is not part of the metamodel. it must be part of the model, which means this is an instance

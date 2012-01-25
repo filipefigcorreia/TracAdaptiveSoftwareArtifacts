@@ -56,7 +56,7 @@ def instantiate_get(req, ppool, instance, resource):
 
 
 def instantiate_post(req, ppool, instance, resource):
-    from model import InstancePool, Package, Property, Entity
+    from model import InstancePool, Package, Property, Entity, Instance
 
     meta = instance
     a_m2_class = InstancePool.get_metamodel_python_class_by_id(instance.get_identifier())
@@ -66,7 +66,10 @@ def instantiate_post(req, ppool, instance, resource):
 
         brand_new_instance = a_m2_class.get_new_default_instance(pool=ppool.pool, name="A New " + instance.get_name())
     else: # we're instantiating a model (M1) instance, not a metamodel (M2) instance
-        a_m2_class = Entity
+        if instance.get_meta_level() == '2':
+            a_m2_class = Entity
+        else:
+            a_m2_class = Instance
         brand_new_instance = a_m2_class.get_new_default_instance(pool=ppool.pool, name="A New " + instance.get_name(), id_meta=instance.get_identifier())
 
     for key in req.args.keys(): # go through submitted values

@@ -33,9 +33,10 @@ class PersistableInstance(object):
         #self.readonly = 0
 
     @classmethod
-    def load(cls, env, identifier=None, iname=None, version=None, ppool=None, load_owned=True):
+    def load(cls, env, identifier=None, iname=None, version=None, ppool=None, load_dependent=True):
         """
-        Loads an existing PersistableInstance from the database
+        Loads an existing PersistableInstance from the database.
+        load_dependent -- determines if owned properties and metas should also be loaded
         """
         if ppool is None:
             ppool = PersistablePool.load(env)
@@ -47,7 +48,10 @@ class PersistableInstance(object):
 
         pi = PersistableInstance(env, identifier, version)
         if instance is None:
-            pi._fetch_contents(ppool, identifier, iname, version)
+            identifier, iname, meta_level, version, time, author, comment, contents_dict, property_inames_dict = \
+                pi._fetch_contents(ppool, identifier, iname, version)
+            from AdaptiveArtifacts.model import Instance
+            pi.instance = Instance.create_from_properties(ppool.pool, identifier, iname, meta_level, contents_dict, property_inames_dict, version, time, author, comment)
         else:
             #TODO: fix. something is deeply wrong here. version should not be kept by PIs
             pi.instance = instance
@@ -56,8 +60,10 @@ class PersistableInstance(object):
             #pi.author = author
             #pi.comment = comment
 
-        if load_owned:
+        if load_dependent:
             pi.load_properties(ppool)
+            if pi.instance.get_meta() is None:
+                PersistableInstance.load(env, identifier=pi.instance.get_id_meta(), ppool=ppool)
         return pi
 
     def load_properties(self, ppool):
@@ -152,9 +158,7 @@ class PersistableInstance(object):
         cursor.execute(query)
         property_inames_dict = dict(cursor.fetchall())
 
-        from AdaptiveArtifacts.model import Instance
-        #TODO: maybe we should probably get this directly from PersistablePool?
-        self.instance = Instance.create_from_properties(ppool.pool, identifier, iname, meta_level, contents_dict, property_inames_dict, int(version), from_utimestamp(time), author, comment)
+        return identifier, iname, meta_level, int(version), from_utimestamp(time), author, comment, contents_dict, property_inames_dict
 
     exists = property(fget=lambda self: self.version > 0)
 
@@ -185,7 +189,11 @@ class PersistableInstance(object):
 
         @with_transaction(env)
         def do_save(db):
-            new_version = self.version + 1
+            state = self.instance.get_state()
+            if not state.version is None:
+                raise ValueError("Instance is already saved.")
+
+            new_version = self.instance.get_highest_version_number() + 1
             cursor = db.cursor()
             cursor.execute("""
                 INSERT INTO asa_instance (id, iname, meta_level, version, time, author, ipnr, op_type, comment)
@@ -199,7 +207,11 @@ class PersistableInstance(object):
                     for v in value:
                         insert_property_value(cursor, self.instance.get_identifier(), new_version, property_ref, self.instance.get_property_iname(property_ref), v)
 
-            self.version += new_version
+            state.version = new_version
+            del self.instance._Instance__states[None]
+            self.instance._Instance__states[state.version] = state # ugly hack until proper refactoring
+
+
 
         self.author = author
         self.comment = comment
@@ -245,8 +257,9 @@ class PersistablePool(object):
             WHERE i.meta_level = 2
             GROUP BY id
             ORDER BY is_not_entity, i.iname""")
-        for id, version, dummy in rows.fetchall():
-            p_instances.append(PersistableInstance.load(env, id, version=version, ppool=self, load_owned=False))
+        results = rows.fetchall()
+        for id, version, dummy in results:
+            p_instances.append(PersistableInstance.load(env, id, version=version, ppool=self, load_dependent=False))
         return p_instances
 
     #TODO: check if the env param is really needed. there's already an env in self
@@ -273,6 +286,7 @@ class PersistablePool(object):
         @with_transaction(env)
         def do_save(db):
             for instance in self.pool.get_instances(meta_levels=meta_levels):
-                pi = PersistableInstance(self.env, instance.get_identifier(), 0)
-                pi.instance = instance
-                pi.save(env, "system", "", "")
+                if instance.get_state().is_uncommitted():
+                    pi = PersistableInstance(self.env, instance.get_identifier(), 0)
+                    pi.instance = instance
+                    pi.save(env, "system", "", "")
