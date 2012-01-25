@@ -236,104 +236,104 @@ class Instance(object):
         return instance
 
 
-class InstanceState(object):
+    class InstanceState(object):
 
-    def __init__(self, inames=None, contents=None, version=None, time=None, author='', comment = ''):
-        if inames is None:
-            inames = {}
-        if contents is None:
-            contents = {}
-        self.slots = contents # dict in which each key,value is of type unicodestring,arbitraryvalue
-        self.inames = inames # translation of uuids to internal names
+        def __init__(self, inames=None, contents=None, version=None, time=None, author='', comment = ''):
+            if inames is None:
+                inames = {}
+            if contents is None:
+                contents = {}
+            self.slots = contents # dict in which each key,value is of type unicodestring,arbitraryvalue
+            self.inames = inames # translation of uuids to internal names
 
-        self.version = version # version in which this state was created
-        self.time = time
-        self.author = author
-        self.comment = comment
+            self.version = version # version in which this state was created
+            self.time = time
+            self.author = author
+            self.comment = comment
 
-    def is_uncommitted(self):
-        return self.version is None
+        def is_uncommitted(self):
+            return self.version is None
 
-    def add_value(self, property_ref, value):
-        """
-        property_ref: can be either a private system reference, like '__meta', or a uuid identifier, if a reference to a Property
-        """
-        if not property_ref in self.slots:
-            self.slots[property_ref] = []
-        elif property_ref in self.slots and not isinstance(self.slots[property_ref], list):
-            val = self.slots[property_ref]
-            self.slots[property_ref] = [val]
-        self.slots[property_ref].append(value)
+        def add_value(self, property_ref, value):
+            """
+            property_ref: can be either a private system reference, like '__meta', or a uuid identifier, if a reference to a Property
+            """
+            if not property_ref in self.slots:
+                self.slots[property_ref] = []
+            elif property_ref in self.slots and not isinstance(self.slots[property_ref], list):
+                val = self.slots[property_ref]
+                self.slots[property_ref] = [val]
+            self.slots[property_ref].append(value)
 
-    def set_property_ref(self, iname, property_ref):
-        """
-        Sets the property_ref for a given iname.
-        """
-        value = self.get_value_by_iname(iname)
-        if not value is None:
-            self.set_value(iname, None)
+        def set_property_ref(self, iname, property_ref):
+            """
+            Sets the property_ref for a given iname.
+            """
+            value = self.get_value_by_iname(iname)
+            if not value is None:
+                self.set_value(iname, None)
+                self.set_value(property_ref, value)
+                if iname in self.inames.keys():
+                    del self.inames[iname]
+                self.inames[property_ref] = iname
+
+        def set_value(self, property_ref, value):
+            """
+            Sets the value for the specified property, overriding it if already exists.
+            """
+            if value is None:
+                if property_ref in self.slots:
+                    del self.slots[property_ref]
+            else:
+                self.slots[property_ref] = value
+
+        def set_value_by_iname(self, iname, value):
+            property_ref = self.get_property_ref_if_known(iname)
             self.set_value(property_ref, value)
-            if iname in self.inames.keys():
-                del self.inames[iname]
             self.inames[property_ref] = iname
 
-    def set_value(self, property_ref, value):
-        """
-        Sets the value for the specified property, overriding it if already exists.
-        """
-        if value is None:
-            if property_ref in self.slots:
-                del self.slots[property_ref]
-        else:
-            self.slots[property_ref] = value
+        def get_value(self, property_ref):
+            return self.get_slot_value(property_ref)
 
-    def set_value_by_iname(self, iname, value):
-        property_ref = self.get_property_ref_if_known(iname)
-        self.set_value(property_ref, value)
-        self.inames[property_ref] = iname
+        def get_value_by_iname(self, iname):
+            value = self.get_slot_value(iname)
+            if value is None:
+                value = self.get_slot_value(self.get_property_ref_if_known(iname))
+            return value
 
-    def get_value(self, property_ref):
-        return self.get_slot_value(property_ref)
+        def get_property_iname(self, property_ref):
+            if property_ref in self.inames:
+                return self.inames[property_ref]
+            return None
 
-    def get_value_by_iname(self, iname):
-        value = self.get_slot_value(iname)
-        if value is None:
-            value = self.get_slot_value(self.get_property_ref_if_known(iname))
-        return value
+        def get_property_ref_if_known(self, iname):
+            """
+            If property_ref is not know, returns the iname provided as input.
+            """
+            for property_ref_key, iname_value in self.inames.items():
+                if iname_value == iname:
+                    return property_ref_key
+            return iname
 
-    def get_property_iname(self, property_ref):
-        if property_ref in self.inames:
-            return self.inames[property_ref]
-        return None
+        def get_slot_value(self, property_ref):
+            if not property_ref is None and property_ref in self.slots:
+                return self.slots[property_ref]
+            return None
 
-    def get_property_ref_if_known(self, iname):
-        """
-        If property_ref is not know, returns the iname provided as input.
-        """
-        for property_ref_key, iname_value in self.inames.items():
-            if iname_value == iname:
-                return property_ref_key
-        return iname
+        def get_values(self, property_ref):
+            if not property_ref is None and property_ref in self.slots:
+                return self.slots[property_ref]
+            else:
+                return []
 
-    def get_slot_value(self, property_ref):
-        if not property_ref is None and property_ref in self.slots:
-            return self.slots[property_ref]
-        return None
+        #@classmethod
+        #def create_from_properties(cls, contents_dict, inames_dict, version, time, author, comment):
+        #    state = InstanceState(inames=inames_dict, version=version, time=time, author=author, comment=comment)
+        #    state.slots = contents_dict
+        #    return state
 
-    def get_values(self, property_ref):
-        if not property_ref is None and property_ref in self.slots:
-            return self.slots[property_ref]
-        else:
-            return []
-
-    #@classmethod
-    #def create_from_properties(cls, contents_dict, inames_dict, version, time, author, comment):
-    #    state = InstanceState(inames=inames_dict, version=version, time=time, author=author, comment=comment)
-    #    state.slots = contents_dict
-    #    return state
-
-    #def set_raw_contents(self, contents_dict):
-    #    self.slots = contents_dict
+        #def set_raw_contents(self, contents_dict):
+        #    self.slots = contents_dict
 
 
 class MetaElementInstance(Instance):
