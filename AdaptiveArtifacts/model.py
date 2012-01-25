@@ -326,15 +326,6 @@ class Instance(object):
             else:
                 return []
 
-        #@classmethod
-        #def create_from_properties(cls, contents_dict, inames_dict, version, time, author, comment):
-        #    state = InstanceState(inames=inames_dict, version=version, time=time, author=author, comment=comment)
-        #    state.slots = contents_dict
-        #    return state
-
-        #def set_raw_contents(self, contents_dict):
-        #    self.slots = contents_dict
-
 
 class MetaElementInstance(Instance):
     """
