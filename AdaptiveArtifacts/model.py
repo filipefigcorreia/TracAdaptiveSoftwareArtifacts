@@ -131,7 +131,7 @@ class Instance(object):
 
         if version is None and None in self.__states:
             raise ValueError("Only one uncommitted state allowed at a time. Please commit the currently uncommitted state first.")
-        state = InstanceState(inames=inames, contents=contents, version=version, time=time, author=author, comment=comment)
+        state = Instance.InstanceState(inames=inames, contents=contents, version=version, time=time, author=author, comment=comment)
         self.__states[state.version] = state
         return state
 
@@ -225,7 +225,7 @@ class Instance(object):
             raise ValueError("Instance already in the pool: %s" % (identifier,)) # The instance should not already exist in the pool. Ever. Instances are only if they don't yet exist in the pool
 
         # Create a state just for convenient "parsing" of it's contents
-        temp_state = InstanceState(property_inames_dict, contents_dict, version, time, author, comment)
+        temp_state = Instance.InstanceState(property_inames_dict, contents_dict, version, time, author, comment)
 
         id_meta = temp_state.get_value_by_iname('__meta')
         text_repr_expr = temp_state.get_value_by_iname('__text_repr_expr')
