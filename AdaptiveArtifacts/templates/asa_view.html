@@ -13,7 +13,7 @@
     <div id="content" class="asa">
         <ul>
             <li>Identifier: ${instance.get_identifier()}</li>
-            <li>Meta: ${instance.get_meta().get_name()}</li>
+            <li>Meta: <a href="${req.href.adaptiveartifacts(instance.get_meta().get_identifier(), action='view')}">${instance.get_meta().get_name()}</a></li>
             <py:if test="instance.is_instance('Entity')">
             <li>Name: ${instance.get_name()}</li>
             </py:if>
