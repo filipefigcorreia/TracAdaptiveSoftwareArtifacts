@@ -217,9 +217,8 @@ class PersistableInstance(object):
         self.comment = comment
         self.time = t
 
-    def get_history(self, db=None):
-        if not db:
-            db = self.env.get_db_cnx()
+    def get_history(self, env):
+        db = env.get_read_db()
         cursor = db.cursor()
         cursor.execute("SELECT version,time,author,comment,ipnr FROM asa_instance "
                        "WHERE id=%s AND version<=%s "
