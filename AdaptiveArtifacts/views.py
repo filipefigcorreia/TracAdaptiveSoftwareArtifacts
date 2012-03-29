@@ -27,7 +27,9 @@ def list_get(req, ppool, instance, resource):
         'entities': entities,
         'instances': instances,
     }
-    return 'asa_list.html', data, None
+    #TODO: return right template, depending if we're listing entities or instances
+    #TODO: go through all TODOs
+    return 'asa_list_instances.html', data, None
 
 
 def instantiate_get(req, ppool, instance, resource):

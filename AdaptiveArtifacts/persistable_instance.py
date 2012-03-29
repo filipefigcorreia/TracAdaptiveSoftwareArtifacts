@@ -211,8 +211,6 @@ class PersistableInstance(object):
             del self.instance._Instance__states[None]
             self.instance._Instance__states[state.version] = state # ugly hack until proper refactoring
 
-
-
         self.author = author
         self.comment = comment
         self.time = t
