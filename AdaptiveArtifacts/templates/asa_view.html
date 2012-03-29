@@ -17,7 +17,7 @@
             <py:if test="instance.is_instance('Entity')">
             <li>Name: ${instance.get_name()}</li>
             </py:if>
-            <li>Properties:
+            <li>Values:
                 <ul>
                     <li py:for="property in instance.get_meta().get_properties()">${property.get_name()}: ${instance.get_values(property.get_identifier())}</li>
                 </ul>
