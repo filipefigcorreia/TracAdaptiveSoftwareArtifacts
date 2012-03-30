@@ -76,7 +76,7 @@ class Instance(object):
                     value_list = [value] if type(value) != list else value
                     for value_item in value_list:
                         if type(value_item) != self.__class__.__get_all("types").get(attr):
-                            violations.append((attr, "Type violation. Expected '%s', got '%s'" % (self.__class__.types.get(attr), type(value_item))))
+                            violations.append((attr, "Type violation. Expected '%s', got '%s'" % (self.__class__.__get_all("types").get(attr), type(value_item))))
         return violations
 
 class Entity(type):
@@ -104,38 +104,50 @@ class Entity(type):
         cls.multiplicities = extra_kwargs.get('multiplicities', {})
         super(Entity, cls).__init__(name, bases, dct)
 
-#no constraint
-E1 = Entity(name="Car", attributes={"ndoors":"Number of Doors", "brand":"Brand"})
-i1 = E1(ndoors=5, brand="Volvo")
-print i1.get_meta_violations()
 
-# multiplicity & type from base class
-C = Entity(name="Car",
-        attributes={"ndoors":"Number of Doors", "brand":"Brand"},
-        multiplicities={"ndoors": 1},
-        types={"ndoors": int},
-    )
 
-EC = Entity(name="Electric Car", bases=(C,),
-        attributes={"tires_pressure": "Tires Pressure"},
-        multiplicities={"tires_pressure": 4}
-    )
-ec = EC(ndoors=3, brand="Ford", tires_pressure=[22,23,21,22])
-print ec.get_meta_violations()
+import unittest
 
-# multiplicity
-E2 = Entity(
-    name="Plane",
-    attributes={"tires_pressure": "Tires Pressure", "max_air_speed": "Maximum Air Speed"},
-    multiplicities={"tires_pressure": 3})
-i2 = E2(tires_pressure=[12,15,13])
-print i2.get_meta_violations()
+class TestModel(unittest.TestCase):
 
-# type
-E3 = Entity(name="Tank", types={"occupants_names": str})
-i3 = E3(occupants_names=["Jhon", "Jack"])
-print i3.get_meta_violations()
+    def setUp(self):
+        self.Vehicle = Entity(name="Vehicle",
+            attributes={"num_engines":"Number of Engines", "brand":"Brand"},
+            multiplicities={"brand":1},
+            types={"brand":str}
+        )
+        self.myvehicle = self.Vehicle(num_engines=2, brand="Volvo")
+        self.Car = Entity(name="Car", bases=(self.Vehicle,),
+                attributes={"ndoors":"Number of Doors"},
+                multiplicities={"ndoors":1},
+                types={"ndoors":int}
+        )
+        self.mycar = self.Car(ndoors=5, brand="Ford")
+        self.Plane = Entity(name="Plane", bases=(self.Vehicle,),
+                attributes={"wings_lengths":"Lengths of the Wings"},
+                multiplicities={"wings_lengths":(2,5)},
+                types={"wings_lengths":int}
+            )
+        self.my_plane_invalid_multiplicity = self.Plane(num_engines=4, brand="Airbus", wings_lengths=[120, 120, 20, 20, 10, 10])
+        self.my_plane_invalid_type = self.Plane(brand="Airbus", wings_lengths=[120, 120, 20, 20, "10"])
+        self.my_plane_invalid_multiplicity_inherited = self.Plane(wings_lengths=[120, 120, 20, 20, 10])
+        self.my_plane_invalid_type_inherited = self.Plane(brand=7, wings_lengths=[120, 120, 20, 20, 10])
 
-#no class
-i4 = Instance(name="Cenas", age=42, yo=[12,23,34])
-print i4.get_meta_violations()
+    def test_no_violations(self):
+        self.assertEqual(len(self.myvehicle.get_meta_violations()), 0)
+        self.assertEqual(len(self.mycar.get_meta_violations()), 0)
+
+    def test_multiplicity(self):
+        self.assertEqual(len(self.my_plane_invalid_multiplicity.get_meta_violations()), 1)
+
+    def test_type(self):
+        self.assertEqual(len(self.my_plane_invalid_type.get_meta_violations()), 1)
+
+    def test_inherited_multiplicity(self):
+        self.assertEqual(len(self.my_plane_invalid_multiplicity_inherited.get_meta_violations()), 1)
+
+    def test_inherited_type(self):
+        self.assertEqual(len(self.my_plane_invalid_type_inherited.get_meta_violations()), 1)
+
+if __name__ == '__main__':
+    unittest.main()
