@@ -24,7 +24,6 @@ class Instance(object):
     def __init__(self, *args, **kwargs):
         self.id = kwargs.pop('id', None)
         self.str_attr = kwargs.pop('str_attr', "id")
-        self.name = kwargs.pop('name', "An Entity")
         for key, value in kwargs.iteritems():
             setattr(self, key, value)
 
