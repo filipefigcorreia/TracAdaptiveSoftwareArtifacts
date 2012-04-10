@@ -36,11 +36,16 @@ class Instance(object):
             return repr(self)
 
     @classmethod
-    def __get_all(cls, attr_name):
+    def __get_all(cls, ex_attr_name):
+        """
+        Receives an attribute name that has the goal of extending the
+        python model (e.g., "multiplicities", "types") and collects
+        its values from the class' inheritance chain.
+        """
         merged_dict = {}
         for base in reversed(cls.mro()):
-            if hasattr(base, attr_name):
-                merged_dict = dict(merged_dict.items() + getattr(base, attr_name).items())
+            if hasattr(base, ex_attr_name):
+                merged_dict = dict(merged_dict.items() + getattr(base, ex_attr_name).items())
         return merged_dict
 
     def get_meta_violations(self):
