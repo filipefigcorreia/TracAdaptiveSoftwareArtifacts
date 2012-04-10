@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Goal is not to avoid reinventing the Wheel™, and try to use the python
+Goal is to avoid reinventing the Wheel™, and try to use the python
 language's mechanisms as much as possible, instead of implementing the
 Type-Square pattern from scratch.
 
