@@ -91,7 +91,9 @@ class Entity(type):
         We need it here because we want to pass extra params, to
         be picked up by __init__
         """
-        name = args[0] if len(args)>0 else kwargs.get('name', None)
+        name = Entity.__to_valid_identifier_name(
+            args[0] if len(args)>0 else kwargs.get('name', None)
+        )
         bases = args[1] if len(args)>1 else kwargs.get('bases', tuple())
         dct = args[2] if len(args)>2 else kwargs.get('dct', {})
         if len(bases) == 0:
@@ -100,13 +102,33 @@ class Entity(type):
 
     def __init__(cls, *args, **kwargs):
         extra_kwargs = dict(kwargs)
-        name = args[0] if len(args)>0 else extra_kwargs.pop('name', None)
+        cls.id = args[0] if len(args)>0 else extra_kwargs.pop('name', None)
+        name = Entity.__to_valid_identifier_name(cls.id)
         bases = args[1] if len(args)>1 else extra_kwargs.pop('bases', None)
         dct = args[2] if len(args)>2 else extra_kwargs.pop('dct', None)
         cls.attributes = extra_kwargs.get('attributes', {})
         cls.types = extra_kwargs.get('types', {})
         cls.multiplicities = extra_kwargs.get('multiplicities', {})
         super(Entity, cls).__init__(name, bases, dct)
+
+    @staticmethod
+    def __to_valid_identifier_name(name):
+        """
+        Uses name to create a valid identifier by removing illegal characters
+        http://docs.python.org/reference/lexical_analysis.html#identifiers
+        """
+        def gen_valid_identifier(seq):
+            itr = iter(seq)
+            # pull characters until we get a legal one for first in identifer
+            for ch in itr:
+                if ch == '_' or ch.isalpha():
+                    yield ch
+                    break
+            # pull remaining characters and yield legal ones for identifier
+            for ch in itr:
+                if ch == '_' or ch.isalpha() or ch.isdigit():
+                    yield ch
+        return ''.join(gen_valid_identifier(name))
 
 
 
