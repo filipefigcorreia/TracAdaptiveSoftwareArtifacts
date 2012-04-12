@@ -7,7 +7,7 @@
 # you should have received as part of this distribution.
 
 import uuid
-from util import is_uuid
+from AdaptiveArtifacts.util import is_uuid
 
 class Instance(object):
     """
