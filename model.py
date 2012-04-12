@@ -96,7 +96,7 @@ class Entity(type):
         )
         bases = args[1] if len(args)>1 else kwargs.get('bases', tuple())
         dct = args[2] if len(args)>2 else kwargs.get('dct', {})
-        if len(bases) == 0:
+        if len([b for b in bases if issubclass(b,Instance)]) == 0:
             bases = (Instance, )
         return super(Entity, mcs).__new__(mcs, name, bases, dct)
 
