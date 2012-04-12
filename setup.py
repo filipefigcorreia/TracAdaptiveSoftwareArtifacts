@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-PACKAGE = 'TracAdaptiveArtifacts'
+PACKAGE = 'AdaptiveArtifacts'
 VERSION = '0.1'
 
 setup(name=PACKAGE,
