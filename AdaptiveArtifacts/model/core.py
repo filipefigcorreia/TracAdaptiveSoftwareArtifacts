@@ -20,7 +20,46 @@ multiplicity and attribute types, sometimes extra work has to be done
 for convenient access (e.g., see the the __get_all() method)
 """
 
+class Util(object):
+    @staticmethod
+    def to_valid_identifier_name(name):
+        """
+        Uses "name" to create a valid python identifier by removing illegal
+        characters, as described in:
+        http://docs.python.org/reference/lexical_analysis.html#identifiers
+
+        Ultimately, the identifiers could be semantically opaque but, for
+        eased debugging, it's handy if they're not. As this process doesn't
+        produce identifiers that can be guaranteed to unique, we suffix it
+        with a hash to ensure it doesn't clash with other identifiers.
+        """
+        def gen_valid_identifier(seq):
+            itr = iter(seq)
+            # pull characters until we get a legal one for first in identifer
+            for ch in itr:
+                if ch == '_' or ch.isalpha():
+                    yield ch
+                    break
+            # pull remaining characters and yield legal ones for identifier
+            for ch in itr:
+                if ch == ' ':
+                    ch = '_'
+                if ch == '_' or ch.isalpha() or ch.isdigit():
+                    yield ch
+        import hashlib
+        return ''.join(gen_valid_identifier(name)) + "_" + hashlib.md5(name).hexdigest()
+
+
 class Instance(object):
+    id = '__Instance'
+    attributes = []
+
+    """
+    The metaclass of Instance should be Entity, at the very least because
+    we need to reference its id. Unfortunately, that would causes a
+    chicken-and-egg problem, so we just hardcode an id attribute.
+    """
+
     def __init__(self, *args, **kwargs):
         self.id = kwargs.pop('id', None)
         self.str_attr = kwargs.pop('str_attr', "id")
@@ -35,17 +74,16 @@ class Instance(object):
             return repr(self)
 
     @classmethod
-    def __get_all(cls, ex_attr_name):
+    def __get_attributes(cls):
         """
-        Receives an attribute name that has the goal of extending the
-        python model (e.g., "multiplicities", "types") and collects
-        its values from the class' inheritance chain.
+        Returns a list of the attributes of the instance, collected
+        through the class' inheritance chain.
         """
-        merged_dict = {}
+        merged_lst = []
         for base in reversed(cls.mro()):
-            if hasattr(base, ex_attr_name):
-                merged_dict = dict(merged_dict.items() + getattr(base, ex_attr_name).items())
-        return merged_dict
+            if hasattr(base, 'attributes'):
+                merged_lst += getattr(base, 'attributes')
+        return merged_lst
 
     def get_meta_violations(self):
         """
@@ -55,18 +93,21 @@ class Instance(object):
         violations = []
         if isinstance(self, Instance) and not self.__class__ is Instance: # if there's a meta other than "Instance"
             # are the multiplicities of all instance values ok?
-            for attr, multiplicity in self.__class__.__get_all("multiplicities").iteritems():
-                if type(multiplicity) == tuple:
-                    low, high = multiplicity
-                elif type(multiplicity) == int:
-                    low=high=multiplicity
+            for attr in self.__class__.__get_attributes():
+                if attr.multiplicity is None:
+                    continue
+                if type(attr.multiplicity) == tuple:
+                    low, high = attr.multiplicity # expects a tuple of 2 int values
+                elif type(attr.multiplicity) == int:
+                    low=high=attr.multiplicity
                 else:
-                    raise ValueError("Wrong type for multiplicity: '%s'" % type(multiplicity))
-                if not self.__dict__.has_key(attr):
+                    raise ValueError("Wrong type for multiplicity: '%s'" % type(attr.multiplicity))
+
+                if not self.__dict__.has_key(attr.short_id):
                     if low > 0:
                         violations.append((attr, "Lower bound violation. Expected at least '%s', got '0'" % low))
                     continue
-                val = self.__dict__.get(attr)
+                val = self.__dict__.get(attr.short_id)
                 amount = 1
                 if type(val) == list:
                     amount = len(val)
@@ -74,16 +115,41 @@ class Instance(object):
                     violations.append((attr, "Lower bound violation. Expected at least '%s', got '%s'" % (low, amount)))
                 if amount > high:
                     violations.append((attr, "Upper bound violation. Expected at most '%s', got '%s'" % (high, amount)))
+
             # is the type of all instance values ok?
-            for attr, value in self.__dict__.iteritems():
-                if self.__class__.__get_all("types").has_key(attr):
-                    value_list = [value] if type(value) != list else value
-                    for value_item in value_list:
-                        if type(value_item) != self.__class__.__get_all("types").get(attr):
-                            violations.append((attr, "Type violation. Expected '%s', got '%s'" % (self.__class__.__get_all("types").get(attr), type(value_item))))
+            for attr_self_id, value in self.__dict__.iteritems():
+                for attr_cls in self.__class__.__get_attributes():
+                    if attr_self_id==attr_cls.short_id:
+                        if attr_cls.type is None:
+                            continue
+                        value_list = [value] if type(value) != list else value
+                        for value_item in value_list:
+                            if type(value_item) != attr_cls.type:
+                                violations.append((attr_self_id, "Type violation. Expected '%s', got '%s'" % (attr_cls.type, type(value_item))))
         return violations
 
+
+class Attribute(object):
+    def __init__(self, name, multiplicity=None, type=None, short_id=None):
+        """
+        The short_id param should only be used for testing purposes. In the real
+        world, the id will always be (automatically) derived from the name.
+        """
+        self.name=name
+        self.multiplicity = multiplicity
+        self.type = type
+        self.short_id = short_id or Util.to_valid_identifier_name(self.name)
+
 class Entity(type):
+    id = '__Entity'
+    attributes = []
+
+    """
+    Entity should be its own metaclass, at the very least because
+    we need to reference its id. Unfortunately, that would causes a
+    chicken-and-egg problem, so we just hardcode an id attribute.
+    """
+
     def __new__(mcs, *args, **kwargs):
         """
         It's not very usual for __new__ to receive args and kwargs,
@@ -91,7 +157,7 @@ class Entity(type):
         We need it here because we want to pass extra params, to
         be picked up by __init__
         """
-        name = Entity.__to_valid_identifier_name(
+        name = Util.to_valid_identifier_name(
             args[0] if len(args)>0 else kwargs.get('name', None)
         )
         bases = args[1] if len(args)>1 else kwargs.get('bases', tuple())
@@ -103,34 +169,15 @@ class Entity(type):
     def __init__(cls, *args, **kwargs):
         extra_kwargs = dict(kwargs)
         cls.id = args[0] if len(args)>0 else extra_kwargs.pop('name', None)
-        name = Entity.__to_valid_identifier_name(cls.id)
+        name = Util.to_valid_identifier_name(cls.id)
         bases = args[1] if len(args)>1 else extra_kwargs.pop('bases', None)
         dct = args[2] if len(args)>2 else extra_kwargs.pop('dct', None)
-        cls.attributes = extra_kwargs.get('attributes', {})
-        cls.types = extra_kwargs.get('types', {})
-        cls.multiplicities = extra_kwargs.get('multiplicities', {})
+        cls.attributes = extra_kwargs.get('attributes', [])
+        cls.short_id = Util.to_valid_identifier_name(cls.id)
         super(Entity, cls).__init__(name, bases, dct)
 
-    @staticmethod
-    def __to_valid_identifier_name(name):
-        """
-        Uses name to create a valid identifier by removing illegal characters
-        http://docs.python.org/reference/lexical_analysis.html#identifiers
-        """
-        def gen_valid_identifier(seq):
-            itr = iter(seq)
-            # pull characters until we get a legal one for first in identifer
-            for ch in itr:
-                if ch == '_' or ch.isalpha():
-                    yield ch
-                    break
-            # pull remaining characters and yield legal ones for identifier
-            for ch in itr:
-                if ch == '_' or ch.isalpha() or ch.isdigit():
-                    yield ch
-        return ''.join(gen_valid_identifier(name))
-
-
+    def get_name(cls):
+        return cls.id
 
 import unittest
 
@@ -138,21 +185,22 @@ class TestModel(unittest.TestCase):
 
     def setUp(self):
         self.Vehicle = Entity(name="Vehicle",
-            attributes={"num_engines":"Number of Engines", "brand":"Brand"},
-            multiplicities={"brand":1},
-            types={"brand":str}
-        )
+                attributes=[
+                    Attribute(short_id="num_engines", name="Number of Engines"),
+                    Attribute(short_id="brand", name="Brand", multiplicity=1, type=str)
+                ]
+            )
         self.myvehicle = self.Vehicle(num_engines=2, brand="Volvo")
         self.Car = Entity(name="Car", bases=(self.Vehicle,),
-                attributes={"ndoors":"Number of Doors"},
-                multiplicities={"ndoors":1},
-                types={"ndoors":int}
+                attributes=[
+                    Attribute(short_id="ndoors", name="Number of Doors", multiplicity=1, type=int)
+                ]
         )
         self.mycar = self.Car(ndoors=5, brand="Ford")
         self.Plane = Entity(name="Plane", bases=(self.Vehicle,),
-                attributes={"wings_lengths":"Lengths of the Wings"},
-                multiplicities={"wings_lengths":(2,5)},
-                types={"wings_lengths":int}
+                attributes=[
+                    Attribute(short_id="wings_lengths", name="Lengths of the Wings", multiplicity=(2,5), type=int)
+                ]
             )
         self.my_plane_invalid_multiplicity = self.Plane(num_engines=4, brand="Airbus", wings_lengths=[120, 120, 20, 20, 10, 10])
         self.my_plane_invalid_type = self.Plane(brand="Airbus", wings_lengths=[120, 120, 20, 20, "10"])
@@ -160,20 +208,25 @@ class TestModel(unittest.TestCase):
         self.my_plane_invalid_type_inherited = self.Plane(brand=7, wings_lengths=[120, 120, 20, 20, 10])
 
     def test_no_violations(self):
-        self.assertEqual(len(self.myvehicle.get_meta_violations()), 0)
-        self.assertEqual(len(self.mycar.get_meta_violations()), 0)
+        vvs=self.myvehicle.get_meta_violations()
+        self.assertEqual(len(vvs), 0, vvs)
+        cvs=self.mycar.get_meta_violations()
+        self.assertEqual(len(cvs), 0, cvs)
 
     def test_multiplicity(self):
-        self.assertEqual(len(self.my_plane_invalid_multiplicity.get_meta_violations()), 1)
+        pvs = self.my_plane_invalid_multiplicity.get_meta_violations()
+        self.assertEqual(len(pvs), 1, pvs)
 
     def test_type(self):
         self.assertEqual(len(self.my_plane_invalid_type.get_meta_violations()), 1)
 
     def test_inherited_multiplicity(self):
-        self.assertEqual(len(self.my_plane_invalid_multiplicity_inherited.get_meta_violations()), 1)
+        pvs = self.my_plane_invalid_multiplicity_inherited.get_meta_violations()
+        self.assertEqual(len(pvs), 1, pvs)
 
     def test_inherited_type(self):
-        self.assertEqual(len(self.my_plane_invalid_type_inherited.get_meta_violations()), 1)
+        pvs = self.my_plane_invalid_type_inherited.get_meta_violations()
+        self.assertEqual(len(pvs), 1, pvs)
 
 if __name__ == '__main__':
     unittest.main()

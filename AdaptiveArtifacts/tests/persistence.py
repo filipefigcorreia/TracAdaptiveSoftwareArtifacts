@@ -12,7 +12,7 @@ import tempfile
 import unittest
 from trac.test import EnvironmentStub
 from AdaptiveArtifacts.db import Setup
-from AdaptiveArtifacts.model import Entity, Property, Instance
+from AdaptiveArtifacts.model import Entity, InstancePool
 from AdaptiveArtifacts.persistable_instance import PersistablePool
 
 class BasicEntityBehaviour(unittest.TestCase):
@@ -21,16 +21,19 @@ class BasicEntityBehaviour(unittest.TestCase):
         self.env.path = tempfile.mkdtemp()
         Setup(self.env).upgrade_environment(self.env.get_db_cnx())
 
-        ppool = PersistablePool.load(self.env)
-        self.car = Entity(ppool.pool, "Car")
-        self.wheels = Property(ppool.pool, "Wheels", self.car.get_identifier(), "string", "4", "4")
-        self.lightningMcQueen = Instance(ppool.pool, self.car.get_identifier())
-        self.lightningMcQueen.set_value(self.wheels.get_identifier(), 'front left wheel')
-        self.lightningMcQueen.add_value(self.wheels.get_identifier(), 'front right wheel')
-        self.lightningMcQueen.add_value(self.wheels.get_identifier(), 'rear left wheel')
-        self.lightningMcQueen.add_value(self.wheels.get_identifier(), 'rear right wheel')
-        ppool = PersistablePool(self.env, ppool.pool)
+        self.Car = Entity(name="Car",
+            attributes={"wheels":"Wheels"},
+            multiplicities={"wheels":4},
+            types={"wheels":str}
+        )
+        self.lightningMcQueen = self.Car(wheels=['front left wheel', 'front right wheel', 'rear left wheel', 'rear right wheel'])
+
+        pool = InstancePool()
+        pool.add(self.Car)
+        pool.add(self.lightningMcQueen)
+        ppool = PersistablePool(self.env, pool)
         ppool.save(self.env)
+
 
     def tearDown(self):
         shutil.rmtree(self.env.path)

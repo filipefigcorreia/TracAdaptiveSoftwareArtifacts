@@ -6,11 +6,93 @@
 # This software is licensed as described in the file license.txt, which
 # you should have received as part of this distribution.
 
+from trac.resource import Resource
 from trac.db import with_transaction
 from trac.util.datefmt import from_utimestamp, to_utimestamp, utc
+from AdaptiveArtifacts.model import Instance
+
+class AdaptiveArtifact(object):
+    """
+    Wraps an instance of model.Instance (new or existing) and implements the Proxy pattern.
+    It encapsulates Trac-specific concerns (like loading and saving instances from the
+    database) and forwards to the instance all the calls that it doesn't know.
+    """
+    realm = 'asa'
+
+    def __init__(self, env, id, version=None, db=None):
+        self.env = env
+        if isinstance(id, Resource): # when does this happen?
+            self.resource = id
+            id = self.resource.id
+        else:
+            if version:
+                version = int(version) # must be a number or None
+            self.resource = Resource('asa', id, version)
+        self.id = id
+        if id:
+            self._fetch(id, version, db)
+        else: # new instance?
+            self.instance = Instance(id=id)
+            self.version = 0
+            self.comment = self.author = ''
+            self.time = None
+            self.readonly = 0
+
+    def __getattr__(self, name):
+        return getattr(self.instance, name)
+
+    def _fetch(self, id, version=None, db=None):
+        if not db:
+            db = self.env.get_db_cnx()
+        cursor = db.cursor()
+        if version is not None:
+            cursor.execute("SELECT version,time,author,comment,readonly "
+                           "FROM ArtifactState "
+                           "WHERE id=%s AND version=%s",
+                           (id, int(version)))
+        else:
+            cursor.execute("SELECT version,time,author,comment,readonly "
+                           "FROM ArtifactState "
+                           "WHERE id=%s ORDER BY version DESC LIMIT 1",
+                           (id,))
+        row = cursor.fetchone()
+        if row:
+            version, time, author, comment, readonly = row
+            self.version = int(version)
+            self.author = author
+            self.time = from_utimestamp(time)
+            self.comment = comment
+            self.readonly = readonly and int(readonly) or 0
+        else:
+            self.version = 0
+            self.comment = self.author = ''
+            self.time = None
+            self.readonly = 0
+
+        # reset attributes
+        self.instance.attributes = {}
+        self.instance.types = {}
+        self.instance.multiplicities = {}
+
+        # get attributes
+        cursor.execute("SELECT attr_name, attr_value "
+                       "FROM ArtifactValue v ON v.id=s.id AND v.version=s.version "
+                       "WHERE id=%s AND version=%s",
+                       (id, int(version)))
+        for row in cursor.fetchall():
+            attr_name, attr_value = row
 
 
-class PersistableInstance(object):
+    def delete(self, version=None, db=None):
+        pass
+
+    def save(self, author, comment, remote_addr, t=None, db=None):
+        pass
+
+    def get_history(self, db=None):
+        pass
+
+class AdaptiveArtifact(object):
     """
     Wrapper of an instance of AdaptiveArtifacts.model.Instance (new or existing).
     This class provides behavior required by Trac's plugin architecture. Namely, behavior to deal with loading
@@ -46,7 +128,7 @@ class PersistableInstance(object):
         else:
             instance = ppool.pool.get_instance_by_iname(iname)
 
-        pi = PersistableInstance(env, identifier, version)
+        pi = AdaptiveArtifact(env, identifier, version)
         if instance is None:
             identifier, iname, meta_level, version, time, author, comment, contents_dict, property_inames_dict = \
                 pi._fetch_contents(ppool, identifier, iname, version)
@@ -63,7 +145,7 @@ class PersistableInstance(object):
         if load_dependent:
             pi.load_properties(ppool)
             if pi.instance.get_meta() is None:
-                PersistableInstance.load(env, identifier=pi.instance.get_id_meta(), ppool=ppool)
+                AdaptiveArtifact.load(env, identifier=pi.instance.get_id_meta(), ppool=ppool)
         return pi
 
     def load_properties(self, ppool):
@@ -87,7 +169,7 @@ class PersistableInstance(object):
             raise Exception("""Could not determine properties for instance.\n %s \n %s""" % (e.message, query))
 
         for id, version in property_ids.items():
-            PersistableInstance.load(self.env, identifier=id, version=version,ppool=ppool)
+            AdaptiveArtifact.load(self.env, identifier=id, version=version,ppool=ppool)
 
     @staticmethod
     def _aggregate_values(contents_list):
@@ -147,7 +229,7 @@ class PersistableInstance(object):
         
         cursor.execute(query)
         contents_list = cursor.fetchall()
-        contents_dict = PersistableInstance._aggregate_values(contents_list)
+        contents_dict = AdaptiveArtifact._aggregate_values(contents_list)
 
         query = """
                 SELECT DISTINCT property_instance_id, property_instance_iname
@@ -240,7 +322,7 @@ class PersistablePool(object):
 
     #TODO: check if the env param is really needed. there's already an env in self
     def get_instance(self, env, identifier=None, iname=None, version=None):
-        return PersistableInstance.load(env, identifier=identifier, iname=iname, version=version, ppool=self)
+        return AdaptiveArtifact.load(env, identifier=identifier, iname=iname, version=version, ppool=self)
 
     #TODO: check if the env param is really needed. there's already an env in self
     def get_metamodel_instances(self, env):
@@ -256,7 +338,7 @@ class PersistablePool(object):
             ORDER BY is_not_entity, i.iname""")
         results = rows.fetchall()
         for id, version, dummy in results:
-            p_instances.append(PersistableInstance.load(env, id, version=version, ppool=self, load_dependent=False))
+            p_instances.append(AdaptiveArtifact.load(env, id, version=version, ppool=self, load_dependent=False))
         return p_instances
 
     #TODO: check if the env param is really needed. there's already an env in self
@@ -275,15 +357,15 @@ class PersistablePool(object):
                     i.meta_level in (%s)
                 GROUP BY id""" % (id_meta, ",".join(["%s" % lvl for lvl in meta_levels])))
         for id, version in rows.fetchall():
-            p_instances.append(PersistableInstance.load(env, id, version=version, ppool=self))
+            p_instances.append(AdaptiveArtifact.load(env, id, version=version, ppool=self))
         return p_instances
 
     #TODO: check if the env param is really needed. there's already an env in self
-    def save(self, env, meta_levels=['0','1']):
+    def save(self, env):
         @with_transaction(env)
         def do_save(db):
-            for instance in self.pool.get_instances(meta_levels=meta_levels):
+            for instance in self.pool.get_instances():
                 if instance.get_state().is_uncommitted():
-                    pi = PersistableInstance(self.env, instance.get_identifier(), 0)
+                    pi = AdaptiveArtifact(self.env, instance.get_identifier(), 0)
                     pi.instance = instance
                     pi.save(env, "system", "", "")

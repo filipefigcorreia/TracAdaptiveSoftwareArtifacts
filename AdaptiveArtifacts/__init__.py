@@ -12,7 +12,7 @@ from trac.resource import IResourceManager, ResourceNotFound
 from trac.web.chrome import INavigationContributor, ITemplateProvider, add_javascript #, add_stylesheet
 from trac.web.main import IRequestHandler
 from trac.util import Markup
-from AdaptiveArtifacts.persistable_instance import PersistableInstance, PersistablePool
+from AdaptiveArtifacts.persistable_instance import AdaptiveArtifact, PersistablePool
 from util import is_uuid
 
 
@@ -106,11 +106,11 @@ class Core(Component):
         return href.asa_resource(resource.id)
 
     def get_resource_description(self, resource, format='default', context=None, **kwargs):
-        pi = PersistableInstance.load(self.env, identifier=resource.id, version=resource.version)
+        pi = AdaptiveArtifact.load(self.env, identifier=resource.id, version=resource.version)
         #TODO: instead of using the identifier, use the text_repr_expr property value, if it exists
         return "ASA: '" + pi.instance.get_identifier() + "'"
 
     def resource_exists(self, resource):
-        pi = PersistableInstance.load(self.env, identifier=resource.id, version=resource.version)
+        pi = AdaptiveArtifact.load(self.env, identifier=resource.id, version=resource.version)
         return not pi.instance is None
 
