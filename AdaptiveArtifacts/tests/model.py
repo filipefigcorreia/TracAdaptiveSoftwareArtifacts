@@ -12,57 +12,52 @@ from AdaptiveArtifacts.model import *
 
 class BasicEntityBehaviour(unittest.TestCase):
     def test_named_entity(self):
-        pool = InstancePool()
-        corsa = Entity(pool, "Opel Corsa")
+        corsa = Entity(name="Opel Corsa")
         self.assertEqual(corsa.get_name(), "Opel Corsa")
 
 class EntityInheritance(unittest.TestCase):
     def setUp(self):
-        self.pool = InstancePool()
-        self.car = Entity(self.pool, "Car")
-        self.corsa = Entity(self.pool, "Opel Corsa", self.car.get_identifier())
-        self.enjoy = Entity(self.pool, "Opel Corsa Enjoy", self.corsa.get_identifier())
-        self.myfirstcar = Instance(self.pool, self.corsa.get_identifier())
+        self.Car = Entity("Car")
+        self.Corsa = Entity("Opel Corsa", bases=(self.Car,))
+        self.Enjoy = Entity("Opel Corsa Enjoy", bases=(self.Corsa,))
+        self.MyFirstcar = self.Corsa()
 
     def test_inherited_entity_1level(self):
-        self.assertEqual(self.corsa.get_parent().get_name(), 'Car')
+        self.assertEqual(self.Corsa.__bases__[0], self.Car)
 
     def test_inherited_entity_2levels(self):
-        self.assertEqual(self.enjoy.get_parent().get_parent().get_name(), 'Car')
+        self.assertEqual(self.Enjoy.__bases__[0].__bases__[0], self.Car)
 
     def test_inheritance_hierarchy(self):
-        self.assertTrue(self.enjoy.is_subclass(self.car.get_name()))
-        self.assertFalse(self.car.is_subclass(self.enjoy.get_name()))
+        self.assertTrue(issubclass(self.Enjoy, self.Car))
+        self.assertFalse(issubclass(self.Car, self.Enjoy))
 
     def test_instantiation_hierarchy(self):
-        self.assertTrue(self.myfirstcar.is_instance(self.corsa.get_name()))
-        self.assertFalse(self.myfirstcar.is_instance(self.enjoy.get_name()))
-
+        self.assertTrue(isinstance(self.MyFirstcar, self.Corsa))
+        self.assertFalse(isinstance(self.MyFirstcar, self.Enjoy))
 
 
 class Properties(unittest.TestCase):
     def setUp(self):
-        self.pool = InstancePool(True)
-        self.car = Entity(self.pool, "Car")
-        self.wheels = Property(self.pool, "Wheels", self.car.get_identifier(), "string", "4", "4")
+        self.Car = Entity(name="Car",
+            attributes=[
+                    Attribute(py_id="wheels", name="Wheels", multiplicity=4, type=str)
+                ]
+            )
 
     def test_property(self):
-        self.assertEqual(len(self.car.get_properties()), 3) # wheels + meta + text_repr
-        self.assertEqual(self.car.get_properties()[0].get_name(), 'Wheels')
+        self.assertEqual(len(self.Car.attributes), 1)
+        self.assertEqual(self.Car.attributes[0].name, 'Wheels')
 
     def test_existing_property_values(self):
-        self.lightningMcQueen = Instance(self.pool, self.car.get_identifier())
-        self.lightningMcQueen.set_value(self.wheels.get_identifier(), 'front left wheel')
-        self.lightningMcQueen.add_value(self.wheels.get_identifier(), 'front right wheel')
-        self.lightningMcQueen.add_value(self.wheels.get_identifier(), 'rear left wheel')
-        self.lightningMcQueen.add_value(self.wheels.get_identifier(), 'front right wheel')
-        self.assertEqual(len(self.lightningMcQueen.get_values(self.wheels.get_identifier())), 4)
+        self.lightningMcQueen = self.Car(
+            wheels=['front left wheel', 'front right wheel', 'rear left wheel', 'front right wheel'])
+        self.assertEqual(len(self.lightningMcQueen.wheels), 4)
 
     def test_new_property_values(self):
-        contents = dict()
-        contents[self.wheels.get_identifier()] = ['front left wheel', 'front left wheel', 'rear left wheel', 'front right wheel']
-        self.lightningMcQueen = Instance(self.pool, self.car.get_identifier(), contents=contents)
-        self.assertEqual(len(self.lightningMcQueen.get_values(self.wheels.get_identifier())), 4)
+        self.lightningMcQueen = self.Car()
+        self.lightningMcQueen.__dict__['wheels'] = ['front left wheel', 'front right wheel', 'rear left wheel', 'front right wheel']
+        self.assertEqual(len(self.lightningMcQueen.wheels), 4)
 
     def test_new_instance_has_iname_translation(self):
         for key in self.car.get_state().slots.keys():
@@ -79,7 +74,7 @@ class MetaModelSanityCheck(unittest.TestCase):
         self.assertEqual(self.pool.get_instance_by_iname("__entity").get_meta().get_name(), "Entity")
 
     def test_data_to_code_translation(self):
-        self.assertEqual(Entity, self.pool.get_metamodel_python_class_by_id(Entity.id))
+        self.assertEqual(Entity, self.pool.get_metamodel_python_class_by_id(Entity.get_id()))
         self.assertEqual(Property, self.pool.get_metamodel_python_class_by_id(Property.id))
 
     def test_instance_properties(self):
@@ -169,41 +164,45 @@ class MetaModelSanityCheck(unittest.TestCase):
 
 class ModelInspection(unittest.TestCase):
     def setUp(self):
-        self.pool = InstancePool(True)
-        self.car = Entity(self.pool, "Car")
-        self.corsa = Entity(self.pool, "Opel Corsa", self.car.get_identifier())
-        self.enjoy = Entity(self.pool, "Opel Corsa Enjoy", self.corsa.get_identifier())
+        self.pool = InstancePool()
+        self.Car = Entity(name="Car")
+        self.Corsa = Entity(name="Opel Corsa", bases=(self.Car,))
+        self.Enjoy = Entity(name="Opel Corsa Enjoy", bases=(self.Corsa,))
+        self.pool.add(self.Car)
+        self.pool.add(self.Corsa)
+        self.pool.add(self.Enjoy)
 
     def test_model_instances(self):
-        entities = self.pool.get_model_instances()
+        entities = self.pool.get_entities()
         self.assertTrue(len(entities) == 3)
         for ent in entities:
-            self.assertEqual(ent.get_meta().get_identifier(), Entity.id)
-        self.assertTrue(len([ent for ent in entities if ent.get_identifier() == self.car.get_identifier()])==1)
-        self.assertTrue(len([ent for ent in entities if ent.get_identifier() == self.corsa.get_identifier()])==1)
-        self.assertTrue(len([ent for ent in entities if ent.get_identifier() == self.enjoy.get_identifier()])==1)
+            self.assertEqual(ent.__class__.name, Entity.get_id())
+        self.assertTrue(len([ent for ent in entities if ent.get_id() == self.Car.get_id()])==1)
+        self.assertTrue(len([ent for ent in entities if ent.get_id() == self.Corsa.get_id()])==1)
+        self.assertTrue(len([ent for ent in entities if ent.get_id() == self.Enjoy.get_id()])==1)
 
     def test_model_instances_names(self):
-        entities = self.pool.get_model_instances()
+        entities = self.pool.get_entities()
         for ent in entities:
-            self.assertEqual(ent.get_meta().get_name(), "Entity")
+            self.assertEqual(ent.__class__.__name__, "Entity")
         self.assertTrue(len([ent for ent in entities if ent.get_name() == "Car"])==1)
         self.assertTrue(len([ent for ent in entities if ent.get_name() == "Opel Corsa"])==1)
         self.assertTrue(len([ent for ent in entities if ent.get_name() == "Opel Corsa Enjoy"])==1)
 
 class Instantiation(unittest.TestCase):
     def test_instance_meta(self):
-        pool = InstancePool(True)
-        ent = Entity(pool, "Car")
-        inst = Instance(pool, ent.get_identifier())
-        self.assertEqual(ent.get_identifier(), inst.get_meta().get_identifier())
+        Car = Entity(name="Car")
+        car = Car()
+        self.assertEqual(Car.get_id(), car.__class__.get_id())
 
 class InstanceStates(unittest.TestCase):
     def setUp(self):
-        pool = InstancePool(True)
-        self.car = Entity(pool, "Car")
-        self.brand = Property(pool, "Brand", self.car.get_identifier(), "string", "1", "1")
-        self.lightningMcQueen = Instance(pool, self.car.get_identifier())
+        self.Car = Entity(name="Car",
+            attributes=[
+                    Attribute(py_id="brand", name="Brand", multiplicity=1, type=str)
+                ]
+            )
+        self.lightningMcQueen = self.Car()
 
     def test_change_uncommitted_state_version(self):
         self.assertEquals(self.lightningMcQueen.get_state().version, None)

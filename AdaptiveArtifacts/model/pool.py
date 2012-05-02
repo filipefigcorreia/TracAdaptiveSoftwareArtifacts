@@ -13,7 +13,7 @@ class InstancePool(object):
         self.instances = {}
 
     def add(self, instance):
-        self.instances[instance.id] = instance
+        self.instances[instance.get_id()] = instance
 
     def remove(self, identifier):
         del self.instances[identifier]
@@ -32,7 +32,7 @@ class InstancePool(object):
     def get_instances(self, meta_id=None):
         instances = []
         for id, instance in self.instances.items():
-            if not meta_id is None and instance.__class__.id != meta_id:
+            if not meta_id is None and instance.__class__.get_id() != meta_id:
                 continue
             instances.append(instance)
         return instances
@@ -40,6 +40,6 @@ class InstancePool(object):
     def get_possible_domains(self):
         pool = self
         possible_domains = {'string':'string'}
-        possible_domains.update(dict([(i.get_identifier(), i.get_name()) for i in pool.get_model_instances(Entity.id)]))
+        possible_domains.update(dict([(i.get_identifier(), i.get_name()) for i in pool.get_model_instances(Entity.get_id())]))
         return possible_domains
 

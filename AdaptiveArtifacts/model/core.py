@@ -49,6 +49,40 @@ class Util(object):
         import hashlib
         return ''.join(gen_valid_identifier(name)) + "_" + hashlib.md5(name).hexdigest()
 
+class classinstancemethod(object):
+    """
+    Acts like a class method when called from a class, like an
+    instance method when called by an instance.  The method should
+    take two arguments, 'self' and 'cls'. 'self' will be None if
+    called via class, but they will both have values if called via
+    instance. See http://stackoverflow.com/a/10413769/684253
+    """
+    def __init__(self, func):
+        self.func = func
+
+    def __get__(self, obj, type=None):
+        return _methodwrapper(self.func, obj=obj, type=type)
+
+class _methodwrapper(object):
+
+    def __init__(self, func, obj, type):
+        self.func = func
+        self.obj = obj
+        self.type = type
+
+    def __call__(self, *args, **kw):
+        assert 'self' not in kw and 'cls' not in kw, (
+            "You cannot use 'self' or 'cls' arguments to a "
+            "classinstancemethod")
+        return self.func(*((self.obj, self.type) + args), **kw)
+
+    def __repr__(self):
+        if self.obj is None:
+            return ('<bound class method %s.%s>'
+                    % (self.type.__name__, self.func.func_name))
+        else:
+            return ('<bound method %s.%s of %r>'
+                    % (self.type.__name__, self.func.func_name, self.obj))
 
 class Instance(object):
     id = '__Instance'
@@ -72,6 +106,13 @@ class Instance(object):
             return str_value
         else:
             return repr(self)
+
+    @classinstancemethod
+    def get_id(self, cls):
+        if self is None: # the Instance class
+            return cls.name
+        else: # a instance of the Instance class or one of its descendants
+            return self.id
 
     @classmethod
     def __get_attributes(cls):
@@ -103,11 +144,11 @@ class Instance(object):
                 else:
                     raise ValueError("Wrong type for multiplicity: '%s'" % type(attr.multiplicity))
 
-                if not self.__dict__.has_key(attr.short_id):
+                if not self.__dict__.has_key(attr.py_id):
                     if low > 0:
                         violations.append((attr, "Lower bound violation. Expected at least '%s', got '0'" % low))
                     continue
-                val = self.__dict__.get(attr.short_id)
+                val = self.__dict__.get(attr.py_id)
                 amount = 1
                 if type(val) == list:
                     amount = len(val)
@@ -119,7 +160,7 @@ class Instance(object):
             # is the type of all instance values ok?
             for attr_self_id, value in self.__dict__.iteritems():
                 for attr_cls in self.__class__.__get_attributes():
-                    if attr_self_id==attr_cls.short_id:
+                    if attr_self_id==attr_cls.py_id:
                         if attr_cls.type is None:
                             continue
                         value_list = [value] if type(value) != list else value
@@ -130,18 +171,18 @@ class Instance(object):
 
 
 class Attribute(object):
-    def __init__(self, name, multiplicity=None, type=None, short_id=None):
+    def __init__(self, name, multiplicity=None, type=None, py_id=None):
         """
-        The short_id param should only be used for testing purposes. In the real
+        The py_id param should only be used for testing purposes. In the real
         world, the id will always be (automatically) derived from the name.
         """
+        self.py_id = py_id or Util.to_valid_identifier_name(name)
         self.name=name
-        self.multiplicity = multiplicity
         self.type = type
-        self.short_id = short_id or Util.to_valid_identifier_name(self.name)
+        self.multiplicity = multiplicity
 
 class Entity(type):
-    id = '__Entity'
+    name = '__Entity'
     attributes = []
 
     """
@@ -168,16 +209,23 @@ class Entity(type):
 
     def __init__(cls, *args, **kwargs):
         extra_kwargs = dict(kwargs)
-        cls.id = args[0] if len(args)>0 else extra_kwargs.pop('name', None)
-        name = Util.to_valid_identifier_name(cls.id)
+        cls.name = args[0] if len(args)>0 else extra_kwargs.pop('name', None)
+        name = Util.to_valid_identifier_name(cls.name)
         bases = args[1] if len(args)>1 else extra_kwargs.pop('bases', None)
         dct = args[2] if len(args)>2 else extra_kwargs.pop('dct', None)
         cls.attributes = extra_kwargs.get('attributes', [])
-        cls.short_id = Util.to_valid_identifier_name(cls.id)
+        #cls.py_id = Util.to_valid_identifier_name(cls.id) # not needed as an extra attribute, it's already the class identifier!
         super(Entity, cls).__init__(name, bases, dct)
 
+    @classinstancemethod
+    def get_id(self, cls):
+        if self is None: # the Entity class
+            return cls.name
+        else: # a class, instance of the Entity class
+            return self.name
+
     def get_name(cls):
-        return cls.id
+        return cls.name
 
 import unittest
 
@@ -186,20 +234,20 @@ class TestModel(unittest.TestCase):
     def setUp(self):
         self.Vehicle = Entity(name="Vehicle",
                 attributes=[
-                    Attribute(short_id="num_engines", name="Number of Engines"),
-                    Attribute(short_id="brand", name="Brand", multiplicity=1, type=str)
+                    Attribute(py_id="num_engines", name="Number of Engines"),
+                    Attribute(py_id="brand", name="Brand", multiplicity=1, type=str)
                 ]
             )
         self.myvehicle = self.Vehicle(num_engines=2, brand="Volvo")
         self.Car = Entity(name="Car", bases=(self.Vehicle,),
                 attributes=[
-                    Attribute(short_id="ndoors", name="Number of Doors", multiplicity=1, type=int)
+                    Attribute(py_id="ndoors", name="Number of Doors", multiplicity=1, type=int)
                 ]
         )
         self.mycar = self.Car(ndoors=5, brand="Ford")
         self.Plane = Entity(name="Plane", bases=(self.Vehicle,),
                 attributes=[
-                    Attribute(short_id="wings_lengths", name="Lengths of the Wings", multiplicity=(2,5), type=int)
+                    Attribute(py_id="wings_lengths", name="Lengths of the Wings", multiplicity=(2,5), type=int)
                 ]
             )
         self.my_plane_invalid_multiplicity = self.Plane(num_engines=4, brand="Airbus", wings_lengths=[120, 120, 20, 20, 10, 10])
