@@ -202,13 +202,14 @@ class InstanceStates(unittest.TestCase):
             )
         self.lightningMcQueen = self.Car()
 
-    def test_change_uncommitted_state_version(self):
-        self.assertEquals(self.lightningMcQueen.version.id, None)
-        self.assertTrue(self.lightningMcQueen.version.is_uncommited())
+    def test_change_uncommitted_version(self):
+        self.assertEquals(self.lightningMcQueen.version, None)
+        self.assertTrue(self.lightningMcQueen.is_uncommitted())
 
         self.lightningMcQueen.set_value("Brand", 'Dodge')
-        self.assertEquals(self.lightningMcQueen.get_value(self.brand.get_identifier()), 'Dodge')
-        self.assertEquals(self.lightningMcQueen.get_state().version, None)
+        self.assertEquals(self.lightningMcQueen.get_value("Brand"), 'Dodge')
+        self.assertEquals(self.lightningMcQueen.version, None)
+        self.assertTrue(self.lightningMcQueen.is_uncommitted())
 
     def test_try_create_2nd_uncommitted_state_versions(self):
         self.assertRaises(ValueError, self.lightningMcQueen.create_empty_state)
