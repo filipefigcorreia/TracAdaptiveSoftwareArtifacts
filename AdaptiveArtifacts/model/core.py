@@ -48,9 +48,7 @@ class Instance(object):
         values = kwargs.pop('values', {})
         self.attr_identifiers = {}
         for name, value in values.iteritems():
-            py_identifier = util.to_valid_identifier_name(name)
-            self.attr_identifiers[name] = py_identifier
-            setattr(self, py_identifier, value)
+            self.set_value(name, value)
 
     def __str__(self):
         str_value = eval("self." + self.str_attr)
@@ -85,6 +83,22 @@ class Instance(object):
                 merged_lst += getattr(base, 'attributes')
         return merged_lst
 
+    def set_value(self, name, value):
+        """
+        Sets the value for the attribute with the specified name.
+        """
+        py_identifier = util.to_valid_identifier_name(name)
+        self.attr_identifiers[name] = py_identifier
+        setattr(self, py_identifier, value)
+
+    def get_value(self, name):
+            """
+            Returns the value for the attribute with the specified name.
+            """
+            if not self.attr_identifiers.has_key(name):
+                return None
+            return getattr(self, self.attr_identifiers[name], None)
+
     def get_meta_violations(self):
         """
         Compares an instance with it's meta, and returns a list of
@@ -103,11 +117,11 @@ class Instance(object):
                 else:
                     raise ValueError("Wrong type for multiplicity: '%s'" % type(attr_cls.multiplicity))
 
-                if not self.attr_identifiers.has_key(attr_cls.name) or not self.__dict__.has_key(self.attr_identifiers[attr_cls.name]):
+                val = self.get_value(attr_cls.name)
+                if val is None:
                     if low > 0:
                         violations.append((attr_cls, "Lower bound violation. Expected at least '%s', got '0'" % low))
                     continue
-                val = self.__dict__.get(self.attr_identifiers[attr_cls.name])
                 amount = 1
                 if type(val) == list:
                     amount = len(val)
@@ -122,7 +136,7 @@ class Instance(object):
                     if attr_self_name==attr_cls.name:
                         if attr_cls.type is None:
                             continue
-                        value = self.__dict__[util.to_valid_identifier_name(attr_self_name)]
+                        value = self.get_value(attr_self_name)
                         value_list = [value] if type(value) != list else value
                         for value_item in value_list:
                             if type(value_item) != attr_cls.type:

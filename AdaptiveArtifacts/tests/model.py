@@ -20,7 +20,7 @@ class EntityInheritance(unittest.TestCase):
         self.Car = Entity("Car")
         self.Corsa = Entity("Opel Corsa", bases=(self.Car,))
         self.Enjoy = Entity("Opel Corsa Enjoy", bases=(self.Corsa,))
-        self.MyFirstcar = self.Corsa()
+        self.my_corsa = self.Corsa()
 
     def test_inherited_entity_1level(self):
         self.assertEqual(self.Corsa.__bases__[0], self.Car)
@@ -33,15 +33,15 @@ class EntityInheritance(unittest.TestCase):
         self.assertFalse(issubclass(self.Car, self.Enjoy))
 
     def test_instantiation_hierarchy(self):
-        self.assertTrue(isinstance(self.MyFirstcar, self.Corsa))
-        self.assertFalse(isinstance(self.MyFirstcar, self.Enjoy))
+        self.assertTrue(isinstance(self.my_corsa, self.Corsa))
+        self.assertFalse(isinstance(self.my_corsa, self.Enjoy))
 
 
 class Properties(unittest.TestCase):
     def setUp(self):
         self.Car = Entity(name="Car",
             attributes=[
-                    Attribute(py_id="wheels", name="Wheels", multiplicity=4, type=str)
+                    Attribute(name="Wheels", multiplicity=4, type=str)
                 ]
             )
 
@@ -198,16 +198,15 @@ class Instantiation(unittest.TestCase):
 class InstanceStates(unittest.TestCase):
     def setUp(self):
         self.Car = Entity(name="Car",
-            attributes=[
-                    Attribute(py_id="brand", name="Brand", multiplicity=1, type=str)
-                ]
+            attributes=[Attribute(name="Brand", multiplicity=1, type=str)]
             )
         self.lightningMcQueen = self.Car()
 
     def test_change_uncommitted_state_version(self):
-        self.assertEquals(self.lightningMcQueen.get_state().version, None)
+        self.assertEquals(self.lightningMcQueen.version.id, None)
+        self.assertTrue(self.lightningMcQueen.version.is_uncommited())
 
-        self.lightningMcQueen.set_value(self.brand.get_identifier(), 'Dodge')
+        self.lightningMcQueen.set_value("Brand", 'Dodge')
         self.assertEquals(self.lightningMcQueen.get_value(self.brand.get_identifier()), 'Dodge')
         self.assertEquals(self.lightningMcQueen.get_state().version, None)
 
