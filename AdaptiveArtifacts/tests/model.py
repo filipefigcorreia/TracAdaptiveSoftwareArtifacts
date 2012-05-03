@@ -195,31 +195,22 @@ class Instantiation(unittest.TestCase):
         car = Car()
         self.assertEqual(Car.get_id(), car.__class__.get_id())
 
-class InstanceStates(unittest.TestCase):
+class InstanceVersions(unittest.TestCase):
     def setUp(self):
         self.Car = Entity(name="Car",
             attributes=[Attribute(name="Brand", multiplicity=1, type=str)]
             )
         self.lightningMcQueen = self.Car()
 
-    def test_change_uncommitted_version(self):
+    def test_change_uncommitted_instance(self):
         self.assertEquals(self.lightningMcQueen.version, None)
         self.assertTrue(self.lightningMcQueen.is_uncommitted())
 
         self.lightningMcQueen.set_value("Brand", 'Dodge')
+
         self.assertEquals(self.lightningMcQueen.get_value("Brand"), 'Dodge')
         self.assertEquals(self.lightningMcQueen.version, None)
         self.assertTrue(self.lightningMcQueen.is_uncommitted())
-
-    def test_try_create_2nd_uncommitted_state_versions(self):
-        self.assertRaises(ValueError, self.lightningMcQueen.create_empty_state)
-
-    def test_two_states(self):
-        self.lightningMcQueen.set_value(self.brand.get_identifier(), 'Dodge')
-        old_state = self.lightningMcQueen.create_state(self.lightningMcQueen.get_id_meta(), contents={self.brand.get_identifier(): 'Mazda'}, version=1)
-        self.assertEquals(self.lightningMcQueen.get_state(version=1), old_state)
-        self.assertEquals(self.lightningMcQueen.get_state().version, None)
-
 
 
 class PoolOperations(unittest.TestCase):
