@@ -66,16 +66,33 @@ class Properties(unittest.TestCase):
 
 class MetaModelSanityCheck(unittest.TestCase):
     def setUp(self):
-        self.pool = InstancePool(True)
-        self.expected_entity_prop_inames = ['__inherits', '__packageof','__name', '__text_repr_expr', '__meta']
-        self.expected_property_prop_inames = ['__owner', '__domain', '__lower_bound', '__upper_bound', '__order', '__name', '__text_repr_expr', '__meta']
+        self.pool = InstancePool()
+        self.Vehicle = Entity(name="Vehicle",
+                attributes=[
+                    Attribute(name="Number of Engines"),
+                    Attribute(name="Brand", multiplicity=1, type=str)
+                ]
+            )
+        self.myvehicle = self.Vehicle(values={"Number of Engines":2, "Brand":"Volvo"})
+        self.Car = Entity(name="Car", bases=(self.Vehicle,),
+                attributes=[
+                    Attribute(name="Number of Doors", multiplicity=1, type=int)
+                ]
+        )
+        self.mycar = self.Car(values={"Number of Engines":1, "Brand":"Ford", "Number of Doors":5})
 
-    def test_self_meta(self):
-        self.assertEqual(self.pool.get_instance_by_iname("__entity").get_meta().get_name(), "Entity")
+    def test_entities_are_instances_of_instance(self):
+        self.assertTrue(isinstance(self.Car, Entity))
+        self.assertTrue(isinstance(self.Vehicle, Entity))
 
-    def test_data_to_code_translation(self):
-        self.assertEqual(Entity, self.pool.get_metamodel_python_class_by_id(Entity.get_id()))
-        self.assertEqual(Property, self.pool.get_metamodel_python_class_by_id(Property.id))
+    def test_entities_are_subclasses_of_instance(self):
+        self.assertTrue(issubclass(self.Car, self.Vehicle))
+        self.assertTrue(issubclass(self.Vehicle, Instance))
+
+    def test_instances_are_instance_of_instance(self):
+        self.assertTrue(isinstance(self.mycar, self.Car))
+        self.assertTrue(isinstance(self.mycar, self.Vehicle))
+        self.assertTrue(isinstance(self.mycar, Instance))
 
     def test_instance_properties(self):
         instance_iname = "__instance"
