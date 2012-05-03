@@ -19,73 +19,19 @@ working with Instances and Entities). For "extra" features, like
 multiplicity and attribute types, sometimes extra work has to be done
 for convenient access (e.g., see the the __get_all() method)
 """
+from AdaptiveArtifacts.model import util
 
-class Util(object):
-    @staticmethod
-    def to_valid_identifier_name(name):
-        """
-        Uses "name" to create a valid python identifier by removing illegal
-        characters, as described in:
-        http://docs.python.org/reference/lexical_analysis.html#identifiers
-
-        Ultimately, the identifiers could be semantically opaque but, for
-        eased debugging, it's handy if they're not. As this process doesn't
-        produce identifiers that can be guaranteed to unique, we suffix it
-        with a hash to ensure it doesn't clash with other identifiers.
-        """
-        def gen_valid_identifier(seq):
-            itr = iter(seq)
-            # pull characters until we get a legal one for first in identifer
-            for ch in itr:
-                if ch == '_' or ch.isalpha():
-                    yield ch
-                    break
-            # pull remaining characters and yield legal ones for identifier
-            for ch in itr:
-                if ch == ' ':
-                    ch = '_'
-                if ch == '_' or ch.isalpha() or ch.isdigit():
-                    yield ch
-        import hashlib
-        return ''.join(gen_valid_identifier(name)) + "_" + hashlib.md5(name).hexdigest()
-
-class classinstancemethod(object):
-    """
-    Acts like a class method when called from a class, like an
-    instance method when called by an instance.  The method should
-    take two arguments, 'self' and 'cls'. 'self' will be None if
-    called via class, but they will both have values if called via
-    instance. See http://stackoverflow.com/a/10413769/684253
-    """
-    def __init__(self, func):
-        self.func = func
-
-    def __get__(self, obj, type=None):
-        return _methodwrapper(self.func, obj=obj, type=type)
-
-class _methodwrapper(object):
-
-    def __init__(self, func, obj, type):
-        self.func = func
-        self.obj = obj
-        self.type = type
-
-    def __call__(self, *args, **kw):
-        assert 'self' not in kw and 'cls' not in kw, (
-            "You cannot use 'self' or 'cls' arguments to a "
-            "classinstancemethod")
-        return self.func(*((self.obj, self.type) + args), **kw)
-
-    def __repr__(self):
-        if self.obj is None:
-            return ('<bound class method %s.%s>'
-                    % (self.type.__name__, self.func.func_name))
-        else:
-            return ('<bound method %s.%s of %r>'
-                    % (self.type.__name__, self.func.func_name, self.obj))
+class Version(object):
+    def __init__(self, id, comment, author, time, readonly):
+        self.id = id
+        self.comment = comment
+        self.author = author
+        self.time = time
+        self.readonly = readonly
 
 class Instance(object):
     id = '__Instance'
+    _is_new = False
     attributes = []
 
     """
@@ -96,9 +42,15 @@ class Instance(object):
 
     def __init__(self, *args, **kwargs):
         self.id = kwargs.pop('id', None)
+        self.version = kwargs.pop('version', None)
         self.str_attr = kwargs.pop('str_attr', "id")
-        for key, value in kwargs.iteritems():
-            setattr(self, key, value)
+        self._is_new = not kwargs.pop('persisted', False)
+        values = kwargs.pop('values', {})
+        self.attr_identifiers = {}
+        for name, value in values.iteritems():
+            py_identifier = util.to_valid_identifier_name(name)
+            self.attr_identifiers[name] = py_identifier
+            setattr(self, py_identifier, value)
 
     def __str__(self):
         str_value = eval("self." + self.str_attr)
@@ -107,12 +59,19 @@ class Instance(object):
         else:
             return repr(self)
 
-    @classinstancemethod
+    @util.classinstancemethod
     def get_id(self, cls):
         if self is None: # the Instance class
             return cls.name
         else: # a instance of the Instance class or one of its descendants
             return self.id
+
+    @util.classinstancemethod
+    def is_uncommitted(self, cls):
+        if self is None: # the Instance class
+            return cls._is_new
+        else: # a instance of the Instance class or one of its descendants
+            return self._is_new
 
     @classmethod
     def __get_attributes(cls):
@@ -134,49 +93,50 @@ class Instance(object):
         violations = []
         if isinstance(self, Instance) and not self.__class__ is Instance: # if there's a meta other than "Instance"
             # are the multiplicities of all instance values ok?
-            for attr in self.__class__.__get_attributes():
-                if attr.multiplicity is None:
+            for attr_cls in self.__class__.__get_attributes():
+                if attr_cls.multiplicity is None:
                     continue
-                if type(attr.multiplicity) == tuple:
-                    low, high = attr.multiplicity # expects a tuple of 2 int values
-                elif type(attr.multiplicity) == int:
-                    low=high=attr.multiplicity
+                if type(attr_cls.multiplicity) == tuple:
+                    low, high = attr_cls.multiplicity # expects a tuple of 2 int values
+                elif type(attr_cls.multiplicity) == int:
+                    low=high=attr_cls.multiplicity
                 else:
-                    raise ValueError("Wrong type for multiplicity: '%s'" % type(attr.multiplicity))
+                    raise ValueError("Wrong type for multiplicity: '%s'" % type(attr_cls.multiplicity))
 
-                if not self.__dict__.has_key(attr.py_id):
+                if not self.attr_identifiers.has_key(attr_cls.name) or not self.__dict__.has_key(self.attr_identifiers[attr_cls.name]):
                     if low > 0:
-                        violations.append((attr, "Lower bound violation. Expected at least '%s', got '0'" % low))
+                        violations.append((attr_cls, "Lower bound violation. Expected at least '%s', got '0'" % low))
                     continue
-                val = self.__dict__.get(attr.py_id)
+                val = self.__dict__.get(self.attr_identifiers[attr_cls.name])
                 amount = 1
                 if type(val) == list:
                     amount = len(val)
                 if amount < low:
-                    violations.append((attr, "Lower bound violation. Expected at least '%s', got '%s'" % (low, amount)))
+                    violations.append((attr_cls, "Lower bound violation. Expected at least '%s', got '%s'" % (low, amount)))
                 if amount > high:
-                    violations.append((attr, "Upper bound violation. Expected at most '%s', got '%s'" % (high, amount)))
+                    violations.append((attr_cls, "Upper bound violation. Expected at most '%s', got '%s'" % (high, amount)))
 
             # is the type of all instance values ok?
-            for attr_self_id, value in self.__dict__.iteritems():
+            for attr_self_name in self.attr_identifiers.keys():
                 for attr_cls in self.__class__.__get_attributes():
-                    if attr_self_id==attr_cls.py_id:
+                    if attr_self_name==attr_cls.name:
                         if attr_cls.type is None:
                             continue
+                        value = self.__dict__[util.to_valid_identifier_name(attr_self_name)]
                         value_list = [value] if type(value) != list else value
                         for value_item in value_list:
                             if type(value_item) != attr_cls.type:
-                                violations.append((attr_self_id, "Type violation. Expected '%s', got '%s'" % (attr_cls.type, type(value_item))))
+                                violations.append((attr_self_name, "Type violation. Expected '%s', got '%s'" % (attr_cls.type, type(value_item))))
         return violations
 
 
 class Attribute(object):
-    def __init__(self, name, multiplicity=None, type=None, py_id=None):
+    def __init__(self, name, multiplicity=None, type=None):
         """
         The py_id param should only be used for testing purposes. In the real
         world, the id will always be (automatically) derived from the name.
         """
-        self.py_id = py_id or Util.to_valid_identifier_name(name)
+        self.py_id = util.to_valid_identifier_name(name)
         self.name=name
         self.type = type
         self.multiplicity = multiplicity
@@ -198,7 +158,7 @@ class Entity(type):
         We need it here because we want to pass extra params, to
         be picked up by __init__
         """
-        name = Util.to_valid_identifier_name(
+        name = util.to_valid_identifier_name(
             args[0] if len(args)>0 else kwargs.get('name', None)
         )
         bases = args[1] if len(args)>1 else kwargs.get('bases', tuple())
@@ -210,14 +170,15 @@ class Entity(type):
     def __init__(cls, *args, **kwargs):
         extra_kwargs = dict(kwargs)
         cls.name = args[0] if len(args)>0 else extra_kwargs.pop('name', None)
-        name = Util.to_valid_identifier_name(cls.name)
+        name = util.to_valid_identifier_name(cls.name)
         bases = args[1] if len(args)>1 else extra_kwargs.pop('bases', None)
         dct = args[2] if len(args)>2 else extra_kwargs.pop('dct', None)
+        cls.version = extra_kwargs.get('version', None)
         cls.attributes = extra_kwargs.get('attributes', [])
-        #cls.py_id = Util.to_valid_identifier_name(cls.id) # not needed as an extra attribute, it's already the class identifier!
+        #cls.py_id = util.to_valid_identifier_name(cls.id) # not needed as an extra attribute, it's already the class identifier!
         super(Entity, cls).__init__(name, bases, dct)
 
-    @classinstancemethod
+    @util.classinstancemethod
     def get_id(self, cls):
         if self is None: # the Entity class
             return cls.name
@@ -234,26 +195,27 @@ class TestModel(unittest.TestCase):
     def setUp(self):
         self.Vehicle = Entity(name="Vehicle",
                 attributes=[
-                    Attribute(py_id="num_engines", name="Number of Engines"),
-                    Attribute(py_id="brand", name="Brand", multiplicity=1, type=str)
+                    Attribute(name="Number of Engines"),
+                    Attribute(name="Brand", multiplicity=1, type=str)
                 ]
             )
-        self.myvehicle = self.Vehicle(num_engines=2, brand="Volvo")
+        self.myvehicle = self.Vehicle(values={"Number of Engines":2, "Brand":"Volvo"})
         self.Car = Entity(name="Car", bases=(self.Vehicle,),
                 attributes=[
-                    Attribute(py_id="ndoors", name="Number of Doors", multiplicity=1, type=int)
+                    Attribute(name="Number of Doors", multiplicity=1, type=int)
                 ]
         )
-        self.mycar = self.Car(ndoors=5, brand="Ford")
+        self.mycar = self.Car(values={"Number of Doors":5, "Brand":"Ford"})
         self.Plane = Entity(name="Plane", bases=(self.Vehicle,),
                 attributes=[
-                    Attribute(py_id="wings_lengths", name="Lengths of the Wings", multiplicity=(2,5), type=int)
+                    Attribute(name="Lengths of the Wings", multiplicity=(2,5), type=int)
                 ]
             )
-        self.my_plane_invalid_multiplicity = self.Plane(num_engines=4, brand="Airbus", wings_lengths=[120, 120, 20, 20, 10, 10])
-        self.my_plane_invalid_type = self.Plane(brand="Airbus", wings_lengths=[120, 120, 20, 20, "10"])
-        self.my_plane_invalid_multiplicity_inherited = self.Plane(wings_lengths=[120, 120, 20, 20, 10])
-        self.my_plane_invalid_type_inherited = self.Plane(brand=7, wings_lengths=[120, 120, 20, 20, 10])
+
+        self.my_plane_invalid_multiplicity = self.Plane(values={"Number of Engines":4, "Brand":"Airbus", "Lengths of the Wings":[120, 120, 20, 20, 10, 10]})
+        self.my_plane_invalid_type = self.Plane(values={"Brand":"Airbus", "Lengths of the Wings":[120, 120, 20, 20, "10"]})
+        self.my_plane_invalid_multiplicity_inherited = self.Plane(values={"Lengths of the Wings":[120, 120, 20, 20, 10]})
+        self.my_plane_invalid_type_inherited = self.Plane(values={"Brand":7, "Lengths of the Wings":[120, 120, 20, 20, 10]})
 
     def test_no_violations(self):
         vvs=self.myvehicle.get_meta_violations()

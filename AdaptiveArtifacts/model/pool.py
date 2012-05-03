@@ -9,6 +9,10 @@
 from core import *
 
 class InstancePool(object):
+    """
+    Container for instances of Instance and Entity, that provides
+    some utility methods to search through them.
+    """
     def __init__(self):
         self.instances = {}
 

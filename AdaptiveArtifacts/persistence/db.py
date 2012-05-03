@@ -14,28 +14,41 @@ from trac.env import IEnvironmentSetupParticipant
 
 schema_version = 1
 schema = [
-    # Represents which instances exist and in which versions
-    Table('asa_instance', key=('id', 'version'))[
-        Column('id'),
-        Column('iname'),
-        Column('meta_level'),
-        Column('version', type='int64'),
-        Column('time', type='int64'),
-        Column('author'),
-        Column('ipnr'),
-        Column('op_type'), # 'C','U','D'
-        Column('comment'),
-        Index(['id', 'version'], unique=True),
+    Table('asa_version', key='id')[
+            Column('id', auto_increment=True),
+            Column('time', type='int64'),
+            Column('author'),
+            Column('ipnr'),
+            Column('comment'),
+            Column('readonly', type='int'),
+            Index(['id'], unique=True),
     ],
-    # Represents instance's property values. The absence of a key is deliberate as, depending
-    # on the multiplicity of each property, an instance may have several values for each property.
-    Table('asa_value')[
-        Column('instance_id'),
-        Column('instance_version', type='int64'),
-        Column('property_instance_id'), #uuid
-        Column('property_instance_iname'),
-        Column('value'),
-        Index(['instance_id', 'instance_version', 'property_instance_id']),
+    Table('asa_artifact', key=('id', 'version_id'))[
+        Column('id', auto_increment=True),
+        Column('version_id'),
+        Column('meta_class'),
+        Index(['id', 'version_id'], unique=True),
+    ],
+    Table('asa_artifact_value', key=('artifact_id', 'version_id'))[
+        Column('artifact_id'),
+        Column('version_id'),
+        Column('attr_name'),
+        Column('attr_value'),
+        Index(['artifact_id', 'version_id'], unique=True),
+    ],
+    Table('asa_spec', key=('name', 'version_id'))[
+        Column('name'),
+        Column('version_id'),
+        Column('base_class'),
+        Index(['name', 'version_id'], unique=True),
+    ],
+    Table('asa_spec_attribute', key=('artifact_id', 'version_id'))[
+        Column('spec_name'),
+        Column('version_id'),
+        Column('multplicity_low'),
+        Column('multplicity_high'),
+        Column('type'),
+        Index(['artifact_id', 'version_id'], unique=True),
     ],
 ]
 
@@ -67,7 +80,6 @@ class Setup(Component):
         try:
             if self.schema_version == self.default_version:
                 self._install_asa_support()
-                self._save_m2_bootstraped_pool()
 #           elif self.schema_version == 'XXXX':
 #                cursor = db.cursor()
 #                cursor.execute("UPDATE various stuff ...")
@@ -95,12 +107,6 @@ class Setup(Component):
 
         self.schema_version = self.running_version
 
-    def _save_m2_bootstraped_pool(self):
-        from persistable_instance import PersistablePool
-        from model import InstancePool
-
-        ppool = PersistablePool(self.env, InstancePool(True))
-        ppool.save(self.env, meta_levels=['2'])
 
     def _get_system_value(self, key):
         return self._get_scalar_value("SELECT value FROM system WHERE name=%s", 0, key)

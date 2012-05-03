@@ -10,10 +10,12 @@
 import shutil
 import tempfile
 import unittest
-from trac.test import EnvironmentStub
-from AdaptiveArtifacts.db import Setup
+from trac.test import EnvironmentStub, Mock
+from trac.util import get_reporter_id
+from trac.web.api import Request, RequestDone
+from AdaptiveArtifacts.persistence.db import Setup
+from AdaptiveArtifacts.persistence.data import DBPool
 from AdaptiveArtifacts.model import Entity, InstancePool
-from AdaptiveArtifacts.persistable_instance import PersistablePool
 
 class BasicEntityBehaviour(unittest.TestCase):
     def setUp(self):
@@ -31,16 +33,22 @@ class BasicEntityBehaviour(unittest.TestCase):
         pool = InstancePool()
         pool.add(self.Car)
         pool.add(self.lightningMcQueen)
-        ppool = PersistablePool(self.env, pool)
-        ppool.save(self.env)
-
+        dbp = DBPool(self.env, pool)
+        dbp.save('anonymous',"","120.0.0.1")
 
     def tearDown(self):
         shutil.rmtree(self.env.path)
 
+    def test_cenas(self):
+        pool = InstancePool()
+        dbp = DBPool(self.env, pool)
+        dbp.cenas()
+        raise Exception("Assert something")
+
+"""
     def test_properties(self):
-        ppool = PersistablePool.load(self.env)
-        pinstances = ppool.get_instances_of(self.env, ppool.pool.get_instance_by_iname('__property').get_identifier())
+        dbp = DBPool(self.env)
+        pinstances = dbp.load_instances_of(ppool.pool.get_instance_by_iname('__property').get_identifier())
         self.assertEqual(len(pinstances), 1, "Wrong number of properties. Expected %r. Got %r.")
         self.assertEqual(self.wheels.get_identifier(), pinstances[0].instance.get_identifier(), "Wrong property. Expected %r. Got %r.")
 
@@ -51,5 +59,5 @@ class BasicEntityBehaviour(unittest.TestCase):
         values = pi_a_car.instance.get_value(self.wheels.get_identifier())
         self.assertTrue(isinstance(values, list), "Expected values with multiplicity > 1 ('%s')" % (values,))
         self.assertEqual(4, len(values), "Wrong number of wheels. Expected %r. Got %r." % (4, len(values)))
-
+"""
 
