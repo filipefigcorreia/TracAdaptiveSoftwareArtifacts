@@ -94,10 +94,24 @@ class MetaModelSanityCheck(unittest.TestCase):
         self.assertTrue(isinstance(self.mycar, self.Vehicle))
         self.assertTrue(isinstance(self.mycar, Instance))
 
-    def test_instance_properties(self):
-        instance_iname = "__instance"
-        expected_prop_inames = ['__text_repr_expr', '__packageof','__name', '__meta'] # the "instance" Entity has no __inherits
-        self.assert_properties(instance_iname, expected_prop_inames, number_filled_slots=4)
+    def test_builtin_properties_of_entities(self):
+        for entity in [self.Vehicle, self.Car]:
+            self.assertTrue(hasattr(entity, 'name'))
+            self.assertTrue(hasattr(entity, 'version'))
+            self.assertTrue(hasattr(entity, 'attributes'))
+
+    def test_builtin_properties_of_instances(self):
+        for instance in [self.myvehicle, self.mycar]:
+            self.assertTrue(hasattr(instance, 'id'))
+            self.assertTrue(hasattr(instance, 'version'))
+            self.assertTrue(hasattr(instance, 'str_attr'))
+            self.assertTrue(hasattr(instance, 'attr_identifiers'))
+
+    def test_extra_properties_of_instances(self):
+        from AdaptiveArtifacts.model.util import to_valid_identifier_name
+        self.assertTrue(hasattr(self.myvehicle, to_valid_identifier_name("Number of Engines")))
+        self.assertTrue(hasattr(self.myvehicle, to_valid_identifier_name("Brand")))
+        self.assertTrue(hasattr(self.mycar, to_valid_identifier_name("Number of Doors")))
 
     def test_metaelement_properties(self):
         instance_iname = "__metaelement"
