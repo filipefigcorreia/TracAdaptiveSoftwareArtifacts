@@ -81,7 +81,7 @@ class MetaModelSanityCheck(unittest.TestCase):
         )
         self.mycar = self.Car(values={"Number of Engines":1, "Brand":"Ford", "Number of Doors":5})
 
-    def test_entities_are_instances_of_instance(self):
+    def test_entities_are_instances_of_entity(self):
         self.assertTrue(isinstance(self.Car, Entity))
         self.assertTrue(isinstance(self.Vehicle, Entity))
 
@@ -89,7 +89,7 @@ class MetaModelSanityCheck(unittest.TestCase):
         self.assertTrue(issubclass(self.Car, self.Vehicle))
         self.assertTrue(issubclass(self.Vehicle, Instance))
 
-    def test_instances_are_instance_of_instance(self):
+    def test_instances_are_instances_of_instance(self):
         self.assertTrue(isinstance(self.mycar, self.Car))
         self.assertTrue(isinstance(self.mycar, self.Vehicle))
         self.assertTrue(isinstance(self.mycar, Instance))
