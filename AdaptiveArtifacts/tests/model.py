@@ -45,23 +45,22 @@ class Properties(unittest.TestCase):
                 ]
             )
 
-    def test_property(self):
+    def test_property_construction(self):
         self.assertEqual(len(self.Car.attributes), 1)
         self.assertEqual(self.Car.attributes[0].name, 'Wheels')
+        self.assertEqual(self.Car.attributes[0].multiplicity, 4)
+        self.assertEqual(self.Car.attributes[0].type, str)
 
     def test_existing_property_values(self):
         self.lightningMcQueen = self.Car(
-            wheels=['front left wheel', 'front right wheel', 'rear left wheel', 'front right wheel'])
-        self.assertEqual(len(self.lightningMcQueen.wheels), 4)
+            values={"Wheels": ['front left wheel', 'front right wheel', 'rear left wheel', 'front right wheel']}
+            )
+        self.assertEqual(len(self.lightningMcQueen.get_value("Wheels")), 4)
 
     def test_new_property_values(self):
         self.lightningMcQueen = self.Car()
-        self.lightningMcQueen.__dict__['wheels'] = ['front left wheel', 'front right wheel', 'rear left wheel', 'front right wheel']
-        self.assertEqual(len(self.lightningMcQueen.wheels), 4)
-
-    def test_new_instance_has_iname_translation(self):
-        for key in self.car.get_state().slots.keys():
-            self.assertTrue(not key.startswith('__'), "Found a iname ('%s') where a uuid was expected." % key)
+        self.lightningMcQueen.set_value('Wheels', ['front left wheel', 'front right wheel', 'rear left wheel', 'front right wheel'])
+        self.assertEqual(len(self.lightningMcQueen.get_value("Wheels")), 4)
 
 
 class MetaModelSanityCheck(unittest.TestCase):
