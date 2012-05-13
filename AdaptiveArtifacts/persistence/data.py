@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+#
+# This software is licensed as described in the file license.txt, which
+# you should have received as part of this distribution.
+
 from trac.db import with_transaction
 from trac.util.datefmt import from_utimestamp, to_utimestamp, utc
 from AdaptiveArtifacts.model.core import Instance

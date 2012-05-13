@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+#
+# This software is licensed as described in the file license.txt, which
+# you should have received as part of this distribution.
+
 def to_valid_identifier_name(name):
     """
     Uses "name" to create a valid python identifier by removing illegal
