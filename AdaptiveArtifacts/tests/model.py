@@ -6,27 +6,6 @@
 import unittest
 from AdaptiveArtifacts.model import *
 
-class EntityInheritance(unittest.TestCase):
-    def setUp(self):
-        self.Car = Entity("Car")
-        self.Corsa = Entity("Opel Corsa", bases=(self.Car,))
-        self.Enjoy = Entity("Opel Corsa Enjoy", bases=(self.Corsa,))
-        self.my_corsa = self.Corsa()
-
-    def test_inherited_entity_1level(self):
-        self.assertEqual(self.Corsa.__bases__[0], self.Car)
-
-    def test_inherited_entity_2levels(self):
-        self.assertEqual(self.Enjoy.__bases__[0].__bases__[0], self.Car)
-
-    def test_inheritance_hierarchy(self):
-        self.assertTrue(issubclass(self.Enjoy, self.Car))
-        self.assertFalse(issubclass(self.Car, self.Enjoy))
-
-    def test_instantiation_hierarchy(self):
-        self.assertTrue(isinstance(self.my_corsa, self.Corsa))
-        self.assertFalse(isinstance(self.my_corsa, self.Enjoy))
-
 class SimpleTwoLevelInheritanceWithTwoInstancesScenario(unittest.TestCase):
     def setUp(self):
         self.Vehicle = Entity(name="Vehicle",
@@ -40,11 +19,12 @@ class SimpleTwoLevelInheritanceWithTwoInstancesScenario(unittest.TestCase):
                     Attribute(name="Number of Doors", multiplicity=1, type=int)
                 ]
             )
+        self.Corsa = Entity(name="Opel Corsa", bases=(self.Car,))
 
         self.myvehicle = self.Vehicle(values={"Number of Engines":2, "Brand":"Volvo"})
         self.mycar = self.Car(values={"Number of Engines":1, "Brand":"Ford", "Number of Doors":5})
 
-class MetaModelRules(SimpleTwoLevelInheritanceWithTwoInstancesScenario):
+class MetaModelInstancesStructure(SimpleTwoLevelInheritanceWithTwoInstancesScenario):
     """
     Tests if the rules defined at the meta-model level for the construction
     of entities and instances are producing the right results.
@@ -91,12 +71,25 @@ class MetaModelRules(SimpleTwoLevelInheritanceWithTwoInstancesScenario):
         self.assertTrue(hasattr(self.mycar, 'attr_identifiers'))
         self.assertEqual(len(getattr(self.mycar, 'attr_identifiers')), 3)
 
-
-class ModelRules(SimpleTwoLevelInheritanceWithTwoInstancesScenario):
+class ModelInstancesStructure(SimpleTwoLevelInheritanceWithTwoInstancesScenario):
     """
     Tests if the rules defined at the model level for the construction
     of instances are producing the right results.
     """
+    def test_inherited_entity_1level(self):
+        self.assertEqual(self.Corsa.__bases__[0], self.Car)
+
+    def test_inherited_entity_2levels(self):
+        self.assertEqual(self.Corsa.__bases__[0].__bases__[0], self.Vehicle)
+
+    def test_inheritance_hierarchy(self):
+        self.assertTrue(issubclass(self.Corsa, self.Car))
+        self.assertFalse(issubclass(self.Car, self.Corsa))
+
+    def test_instantiation_hierarchy(self):
+        self.assertTrue(isinstance(self.mycar, self.Car))
+        self.assertFalse(isinstance(self.mycar, self.Corsa))
+
     def test_entity_attributes(self):
         self.assertEqual(len(self.Car.attributes), 1)
         self.assertEqual(self.Car.attributes[0].name, 'Number of Doors')
