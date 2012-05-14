@@ -150,12 +150,6 @@ class ModelInspection(unittest.TestCase):
         self.assertTrue(len([ent for ent in entities if ent.get_name() == "Opel Corsa"])==1)
         self.assertTrue(len([ent for ent in entities if ent.get_name() == "Opel Corsa Enjoy"])==1)
 
-class Instantiation(unittest.TestCase):
-    def test_instance_meta(self):
-        Car = Entity(name="Car")
-        car = Car()
-        self.assertEqual(Car.get_id(), car.__class__.get_id())
-
 class InstanceVersions(unittest.TestCase):
     def setUp(self):
         self.Car = Entity(name="Car",
