@@ -6,11 +6,6 @@
 import unittest
 from AdaptiveArtifacts.model import *
 
-class BasicEntityBehaviour(unittest.TestCase):
-    def test_named_entity(self):
-        corsa = Entity(name="Opel Corsa")
-        self.assertEqual(corsa.get_name(), "Opel Corsa")
-
 class EntityInheritance(unittest.TestCase):
     def setUp(self):
         self.Car = Entity("Car")
@@ -31,32 +26,6 @@ class EntityInheritance(unittest.TestCase):
     def test_instantiation_hierarchy(self):
         self.assertTrue(isinstance(self.my_corsa, self.Corsa))
         self.assertFalse(isinstance(self.my_corsa, self.Enjoy))
-
-
-class Properties(unittest.TestCase):
-    def setUp(self):
-        self.Car = Entity(name="Car",
-            attributes=[
-                    Attribute(name="Wheels", multiplicity=4, type=str)
-                ]
-            )
-
-    def test_entity_attributes(self):
-        self.assertEqual(len(self.Car.attributes), 1)
-        self.assertEqual(self.Car.attributes[0].name, 'Wheels')
-        self.assertEqual(self.Car.attributes[0].multiplicity, 4)
-        self.assertEqual(self.Car.attributes[0].type, str)
-
-    def test_existing_attribute_values(self):
-        self.lightningMcQueen = self.Car(
-            values={"Wheels": ['front left wheel', 'front right wheel', 'rear left wheel', 'front right wheel']}
-            )
-        self.assertEqual(len(self.lightningMcQueen.get_value("Wheels")), 4)
-
-    def test_new_attribute_values(self):
-        self.lightningMcQueen = self.Car()
-        self.lightningMcQueen.set_value('Wheels', ['front left wheel', 'front right wheel', 'rear left wheel', 'front right wheel'])
-        self.assertEqual(len(self.lightningMcQueen.get_value("Wheels")), 4)
 
 class SimpleTwoLevelInheritanceWithTwoInstancesScenario(unittest.TestCase):
     def setUp(self):
@@ -92,6 +61,9 @@ class MetaModelRules(SimpleTwoLevelInheritanceWithTwoInstancesScenario):
         self.assertTrue(isinstance(self.mycar, self.Car))
         self.assertTrue(isinstance(self.mycar, self.Vehicle))
         self.assertTrue(isinstance(self.mycar, Instance))
+
+    def test_entities_name(self):
+        self.assertEqual(self.Car.get_name(), "Car")
 
     def test_entities_attributes(self):
         for attr, val in {'name': "Vehicle", 'version': None}.iteritems():
