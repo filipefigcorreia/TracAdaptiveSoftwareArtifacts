@@ -112,6 +112,54 @@ class ModelInstancesStructure(SimpleTwoLevelInheritanceWithTwoInstancesScenario)
         self.lightningMcQueen.set_value('Wheels', ['front left wheel', 'front right wheel', 'rear left wheel', 'front right wheel'])
         self.assertEqual(len(self.lightningMcQueen.get_value("Wheels")), 4)
 
+class ModelComplianceValidation(unittest.TestCase):
+
+    def setUp(self):
+        self.Vehicle = Entity(name="Vehicle",
+                attributes=[
+                    Attribute(name="Number of Engines"),
+                    Attribute(name="Brand", multiplicity=1, type=str)
+                ]
+            )
+        self.myvehicle = self.Vehicle(values={"Number of Engines":2, "Brand":"Volvo"})
+        self.Car = Entity(name="Car", bases=(self.Vehicle,),
+                attributes=[
+                    Attribute(name="Number of Doors", multiplicity=1, type=int)
+                ]
+        )
+        self.mycar = self.Car(values={"Number of Doors":5, "Brand":"Ford"})
+        self.Plane = Entity(name="Plane", bases=(self.Vehicle,),
+                attributes=[
+                    Attribute(name="Lengths of the Wings", multiplicity=(2,5), type=int)
+                ]
+            )
+
+        self.my_plane_invalid_multiplicity = self.Plane(values={"Number of Engines":4, "Brand":"Airbus", "Lengths of the Wings":[120, 120, 20, 20, 10, 10]})
+        self.my_plane_invalid_type = self.Plane(values={"Brand":"Airbus", "Lengths of the Wings":[120, 120, 20, 20, "10"]})
+        self.my_plane_invalid_multiplicity_inherited = self.Plane(values={"Lengths of the Wings":[120, 120, 20, 20, 10]})
+        self.my_plane_invalid_type_inherited = self.Plane(values={"Brand":7, "Lengths of the Wings":[120, 120, 20, 20, 10]})
+
+    def test_no_violations(self):
+        vvs=self.myvehicle.get_meta_violations()
+        self.assertEqual(len(vvs), 0, vvs)
+        cvs=self.mycar.get_meta_violations()
+        self.assertEqual(len(cvs), 0, cvs)
+
+    def test_multiplicity(self):
+        pvs = self.my_plane_invalid_multiplicity.get_meta_violations()
+        self.assertEqual(len(pvs), 1, pvs)
+
+    def test_type(self):
+        self.assertEqual(len(self.my_plane_invalid_type.get_meta_violations()), 1)
+
+    def test_inherited_multiplicity(self):
+        pvs = self.my_plane_invalid_multiplicity_inherited.get_meta_violations()
+        self.assertEqual(len(pvs), 1, pvs)
+
+    def test_inherited_type(self):
+        pvs = self.my_plane_invalid_type_inherited.get_meta_violations()
+        self.assertEqual(len(pvs), 1, pvs)
+
 class PoolOperations(unittest.TestCase):
     def setUp(self):
         self.pool = InstancePool()
