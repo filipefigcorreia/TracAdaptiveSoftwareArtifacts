@@ -93,37 +93,61 @@ class MetaModelRules(SimpleTwoLevelInheritanceWithTwoInstancesScenario):
         self.assertTrue(isinstance(self.mycar, self.Vehicle))
         self.assertTrue(isinstance(self.mycar, Instance))
 
-    def test_builtin_properties_of_entities(self):
-        for entity in [self.Vehicle, self.Car]:
-            self.assertTrue(hasattr(entity, 'name'))
-            self.assertTrue(hasattr(entity, 'version'))
-            self.assertTrue(hasattr(entity, 'attributes'))
+    def test_entities_attributes(self):
+        for attr, val in {'name': "Vehicle", 'version': None}.iteritems():
+            self.assertTrue(hasattr(self.Vehicle, attr))
+            self.assertEqual(getattr(self.Vehicle, attr), val)
+        for attr, val in {'name': "Car", 'version': None}.iteritems():
+            self.assertTrue(hasattr(self.Car, attr))
+            self.assertEqual(getattr(self.Car, attr), val)
 
-    def test_builtin_properties_of_instances(self):
-        for instance in [self.myvehicle, self.mycar]:
-            self.assertTrue(hasattr(instance, 'id'))
-            self.assertTrue(hasattr(instance, 'version'))
-            self.assertTrue(hasattr(instance, 'str_attr'))
-            self.assertTrue(hasattr(instance, 'attr_identifiers'))
+    def test_entities_extra_attributes(self):
+        self.assertTrue(hasattr(self.Vehicle, 'attributes'))
+        self.assertEqual(len(self.Vehicle.attributes), 2)
+        self.assertTrue(hasattr(self.Car, 'attributes'))
+        self.assertEqual(len(self.Car.attributes), 1)
 
-    def test_extra_properties_of_instances(self):
-        from AdaptiveArtifacts.model.util import to_valid_identifier_name
-        self.assertTrue(hasattr(self.myvehicle, to_valid_identifier_name("Number of Engines")))
-        self.assertTrue(hasattr(self.myvehicle, to_valid_identifier_name("Brand")))
-        self.assertTrue(hasattr(self.mycar, to_valid_identifier_name("Number of Doors")))
+    def test_instances_attributes(self):
+        for attr, val in {'id': None, 'version': None, 'str_attr': 'id'}.iteritems():
+            self.assertTrue(hasattr(self.myvehicle, attr))
+            self.assertEqual(getattr(self.myvehicle, attr), val)
+        self.assertTrue(hasattr(self.myvehicle, 'attr_identifiers'))
+        self.assertEqual(len(getattr(self.myvehicle, 'attr_identifiers')), 2)
+        for attr, val in {'id': None, 'version': None, 'str_attr': 'id'}.iteritems():
+            self.assertTrue(hasattr(self.mycar, attr))
+            self.assertEqual(getattr(self.mycar, attr), val)
+        self.assertTrue(hasattr(self.mycar, 'attr_identifiers'))
+        self.assertEqual(len(getattr(self.mycar, 'attr_identifiers')), 3)
+
 
 class ModelRules(SimpleTwoLevelInheritanceWithTwoInstancesScenario):
     """
     Tests if the rules defined at the model level for the construction
     of instances are producing the right results.
     """
-    def test_extra_properties_of_instances(self):
-        from AdaptiveArtifacts.model.util import to_valid_identifier_name
-        self.assertTrue(hasattr(self.myvehicle, to_valid_identifier_name("Number of Engines")))
-        self.assertTrue(hasattr(self.myvehicle, to_valid_identifier_name("Brand")))
-        self.assertTrue(hasattr(self.mycar, to_valid_identifier_name("Number of Doors")))
+    def test_entity_attributes(self):
+        self.assertEqual(len(self.Car.attributes), 1)
+        self.assertEqual(self.Car.attributes[0].name, 'Number of Doors')
+        self.assertEqual(self.Car.attributes[0].multiplicity, 1)
+        self.assertEqual(self.Car.attributes[0].type, int)
 
-class ModelInspection(unittest.TestCase):
+    def test_instance_extra_attributes(self):
+        self.assertEquals(self.mycar.get_value("Number of Engines"), 1)
+        self.assertEquals(self.mycar.get_value("Brand"), "Ford")
+        self.assertEquals(self.mycar.get_value("Number of Doors"), 5)
+
+    def test_instance_existing_attribute_values(self):
+        self.lightningMcQueen = self.Car(
+            values={"Wheels": ['front left wheel', 'front right wheel', 'rear left wheel', 'front right wheel']}
+            )
+        self.assertEqual(len(self.lightningMcQueen.get_value("Wheels")), 4)
+
+    def test_instance_new_attribute_values(self):
+        self.lightningMcQueen = self.Car()
+        self.lightningMcQueen.set_value('Wheels', ['front left wheel', 'front right wheel', 'rear left wheel', 'front right wheel'])
+        self.assertEqual(len(self.lightningMcQueen.get_value("Wheels")), 4)
+
+class PoolOperations(unittest.TestCase):
     def setUp(self):
         self.pool = InstancePool()
         self.Car = Entity(name="Car")
@@ -133,7 +157,7 @@ class ModelInspection(unittest.TestCase):
         self.pool.add(self.Corsa)
         self.pool.add(self.Enjoy)
 
-    def test_model_instances(self):
+    def test_pool_items_identities(self):
         entities = self.pool.get_entities()
         self.assertTrue(len(entities) == 3)
         for ent in entities:
@@ -142,13 +166,8 @@ class ModelInspection(unittest.TestCase):
         self.assertTrue(len([ent for ent in entities if ent.get_id() == self.Corsa.get_id()])==1)
         self.assertTrue(len([ent for ent in entities if ent.get_id() == self.Enjoy.get_id()])==1)
 
-    def test_model_instances_names(self):
-        entities = self.pool.get_entities()
-        for ent in entities:
-            self.assertEqual(ent.__class__.__name__, "Entity")
-        self.assertTrue(len([ent for ent in entities if ent.get_name() == "Car"])==1)
-        self.assertTrue(len([ent for ent in entities if ent.get_name() == "Opel Corsa"])==1)
-        self.assertTrue(len([ent for ent in entities if ent.get_name() == "Opel Corsa Enjoy"])==1)
+    def test_inexistent_instance(self):
+            self.assertTrue(self.pool.get_instance(id="somerandomid") is None)
 
 class InstanceVersions(unittest.TestCase):
     def setUp(self):
@@ -166,12 +185,6 @@ class InstanceVersions(unittest.TestCase):
         self.assertEquals(self.lightningMcQueen.get_value("Brand"), 'Dodge')
         self.assertEquals(self.lightningMcQueen.version, None)
         self.assertTrue(self.lightningMcQueen.is_uncommitted())
-
-
-class PoolOperations(unittest.TestCase):
-    def test_inexistent_instance(self):
-        pool = InstancePool()
-        self.assertTrue(pool.get_instance(id="somerandomid") is None)
 
 if __name__ == "__main__":
     unittest.main()
