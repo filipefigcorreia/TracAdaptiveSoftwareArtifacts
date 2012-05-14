@@ -41,41 +41,45 @@ class Properties(unittest.TestCase):
                 ]
             )
 
-    def test_property_construction(self):
+    def test_entity_attributes(self):
         self.assertEqual(len(self.Car.attributes), 1)
         self.assertEqual(self.Car.attributes[0].name, 'Wheels')
         self.assertEqual(self.Car.attributes[0].multiplicity, 4)
         self.assertEqual(self.Car.attributes[0].type, str)
 
-    def test_existing_property_values(self):
+    def test_existing_attribute_values(self):
         self.lightningMcQueen = self.Car(
             values={"Wheels": ['front left wheel', 'front right wheel', 'rear left wheel', 'front right wheel']}
             )
         self.assertEqual(len(self.lightningMcQueen.get_value("Wheels")), 4)
 
-    def test_new_property_values(self):
+    def test_new_attribute_values(self):
         self.lightningMcQueen = self.Car()
         self.lightningMcQueen.set_value('Wheels', ['front left wheel', 'front right wheel', 'rear left wheel', 'front right wheel'])
         self.assertEqual(len(self.lightningMcQueen.get_value("Wheels")), 4)
 
-
-class MetaModelSanityCheck(unittest.TestCase):
+class SimpleTwoLevelInheritanceWithTwoInstancesScenario(unittest.TestCase):
     def setUp(self):
-        self.pool = InstancePool()
         self.Vehicle = Entity(name="Vehicle",
                 attributes=[
                     Attribute(name="Number of Engines"),
                     Attribute(name="Brand", multiplicity=1, type=str)
                 ]
             )
-        self.myvehicle = self.Vehicle(values={"Number of Engines":2, "Brand":"Volvo"})
         self.Car = Entity(name="Car", bases=(self.Vehicle,),
                 attributes=[
                     Attribute(name="Number of Doors", multiplicity=1, type=int)
                 ]
-        )
+            )
+
+        self.myvehicle = self.Vehicle(values={"Number of Engines":2, "Brand":"Volvo"})
         self.mycar = self.Car(values={"Number of Engines":1, "Brand":"Ford", "Number of Doors":5})
 
+class MetaModelRules(SimpleTwoLevelInheritanceWithTwoInstancesScenario):
+    """
+    Tests if the rules defined at the meta-model level for the construction
+    of entities and instances are producing the right results.
+    """
     def test_entities_are_instances_of_entity(self):
         self.assertTrue(isinstance(self.Car, Entity))
         self.assertTrue(isinstance(self.Vehicle, Entity))
@@ -108,6 +112,16 @@ class MetaModelSanityCheck(unittest.TestCase):
         self.assertTrue(hasattr(self.myvehicle, to_valid_identifier_name("Brand")))
         self.assertTrue(hasattr(self.mycar, to_valid_identifier_name("Number of Doors")))
 
+class ModelRules(SimpleTwoLevelInheritanceWithTwoInstancesScenario):
+    """
+    Tests if the rules defined at the model level for the construction
+    of instances are producing the right results.
+    """
+    def test_extra_properties_of_instances(self):
+        from AdaptiveArtifacts.model.util import to_valid_identifier_name
+        self.assertTrue(hasattr(self.myvehicle, to_valid_identifier_name("Number of Engines")))
+        self.assertTrue(hasattr(self.myvehicle, to_valid_identifier_name("Brand")))
+        self.assertTrue(hasattr(self.mycar, to_valid_identifier_name("Number of Doors")))
 
 class ModelInspection(unittest.TestCase):
     def setUp(self):
