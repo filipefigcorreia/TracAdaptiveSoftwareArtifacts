@@ -179,7 +179,7 @@ class Attribute(object):
         self.type = type
         if isinstance(multiplicity, int):
             self.multiplicity = (multiplicity, multiplicity)
-        elif isinstance(multiplicity, tuple) and len(multiplicity)==2:
+        elif (isinstance(multiplicity, tuple) and len(multiplicity)==2) or multiplicity is None:
             self.multiplicity = multiplicity
         else:
             raise ValueError("The value provided for multiplicity os not valid: %s" % (multiplicity,))

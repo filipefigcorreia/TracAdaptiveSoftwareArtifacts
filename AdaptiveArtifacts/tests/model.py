@@ -93,7 +93,8 @@ class ModelInstancesStructure(SimpleTwoLevelInheritanceWithTwoInstancesScenario)
     def test_entity_attributes(self):
         self.assertEqual(len(self.Car.attributes), 1)
         self.assertEqual(self.Car.attributes[0].name, 'Number of Doors')
-        self.assertEqual(self.Car.attributes[0].multiplicity, 1)
+        self.assertEqual(self.Car.attributes[0].multiplicity[0], 1)
+        self.assertEqual(self.Car.attributes[0].multiplicity[1], 1)
         self.assertEqual(self.Car.attributes[0].type, int)
 
     def test_instance_extra_attributes(self):
