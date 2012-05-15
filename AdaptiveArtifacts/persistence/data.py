@@ -101,17 +101,16 @@ class DBPool(object):
                             VALUES (%s,%s,%s,%s)
                             """, (instance.get_id(), version_id, attr_name, attr_name, getattr(instance, instance.attr_identifiers[attr_name])))
 
-    def delete(self, db=None):
+    def delete(self, object, db=None):
         if not db:
             db = self.env.get_db_cnx()
         # ...  remove from pool and delete from DB
         return ()
 
-    @classmethod
-    def get_history(cls, id, db=None):
+    def get_history(cls, object, db=None):
         if not db:
             db = self.env.get_db_cnx()
-        # ... returns list of versions for the specified id
+        # ... returns list of versions for the specified object
         return ()
 
 
