@@ -33,7 +33,7 @@ class Version(object):
         self.readonly = readonly
 
 class Instance(object):
-    id = '__Instance'
+    name = '__Instance'
     _is_new = False
     attributes = []
 
@@ -75,6 +75,10 @@ class Instance(object):
             return self._is_new
 
     @classmethod
+    def get_name(cls):
+        return cls.name
+
+    @classmethod
     def __get_attributes(cls):
         """
         Returns a list of the attributes of the instance, collected
@@ -93,6 +97,23 @@ class Instance(object):
         py_identifier = util.to_valid_identifier_name(name)
         self.attr_identifiers[name] = py_identifier
         setattr(self, py_identifier, value)
+
+    def add_values(self, values_list):
+        """
+        values_list: A list of tuples (attr_name, attr_value)
+        """
+        for name, value in values_list:
+            py_identifier = util.to_valid_identifier_name(name)
+            self.attr_identifiers[name] = py_identifier
+            if not hasattr(self, py_identifier):
+                setattr(self, py_identifier, value)
+            else:
+                old_val = getattr(self, py_identifier)
+                if type(old_val)==list:
+                    old_val.append(value)
+                    setattr(self, py_identifier, old_val)
+                else:
+                    setattr(self, py_identifier, [old_val, value])
 
     def get_value(self, name):
             """
@@ -156,7 +177,12 @@ class Attribute(object):
         self.py_id = util.to_valid_identifier_name(name)
         self.name=name
         self.type = type
-        self.multiplicity = multiplicity
+        if isinstance(multiplicity, int):
+            self.multiplicity = (multiplicity, multiplicity)
+        elif isinstance(multiplicity, tuple) and len(multiplicity)==2:
+            self.multiplicity = multiplicity
+        else:
+            raise ValueError("The value provided for multiplicity os not valid: %s" % (multiplicity,))
 
 class Entity(type):
     name = '__Entity'
@@ -191,6 +217,7 @@ class Entity(type):
         bases = args[1] if len(args)>1 else extra_kwargs.pop('bases', None)
         dct = args[2] if len(args)>2 else extra_kwargs.pop('dct', None)
         cls.version = extra_kwargs.get('version', None)
+        cls._is_new = not kwargs.pop('persisted', False)
         cls.attributes = extra_kwargs.get('attributes', [])
         #cls.py_id = util.to_valid_identifier_name(cls.id) # not needed as an extra attribute, it's already the class identifier!
         super(Entity, cls).__init__(name, bases, dct)
@@ -202,5 +229,9 @@ class Entity(type):
         else: # a class, instance of the Entity class
             return self.name
 
-    def get_name(cls):
-        return cls.name
+    @util.classinstancemethod
+    def get_name(self, cls):
+        if self is None: # the Entity class
+            return cls.name
+        else: # a class, instance of the Entity class
+            return self.name

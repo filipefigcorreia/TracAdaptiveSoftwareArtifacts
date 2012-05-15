@@ -28,7 +28,7 @@ def to_valid_identifier_name(name):
             if ch == '_' or ch.isalpha() or ch.isdigit():
                 yield ch
     import hashlib
-    return ''.join(gen_valid_identifier(name)) + "_" + hashlib.md5(name).hexdigest()
+    return str(''.join(gen_valid_identifier(name)) + "_" + hashlib.md5(name).hexdigest())
 
 class classinstancemethod(object):
     """

@@ -12,40 +12,41 @@ from trac.env import IEnvironmentSetupParticipant
 schema_version = 1
 schema = [
     Table('asa_version', key='id')[
-            Column('id', auto_increment=True),
+            Column('id', type='int64', auto_increment=True),
             Column('time', type='int64'),
             Column('author'),
             Column('ipnr'),
             Column('comment'),
-            Column('readonly', type='int'),
+            Column('readonly',  type='int'),
             Index(['id'], unique=True),
     ],
     Table('asa_artifact', key=('id', 'version_id'))[
-        Column('id', auto_increment=True),
-        Column('version_id'),
+        Column('id', type='int64', auto_increment=True),
+        Column('version_id', type='int64'),
         Column('meta_class'),
         Index(['id', 'version_id'], unique=True),
     ],
-    Table('asa_artifact_value', key=('artifact_id', 'version_id'))[
-        Column('artifact_id'),
-        Column('version_id'),
+    Table('asa_artifact_value')[
+        Column('artifact_id', type='int64'),
+        Column('version_id', type='int64'),
         Column('attr_name'),
         Column('attr_value'),
-        Index(['artifact_id', 'version_id'], unique=True),
+        Index(['artifact_id', 'version_id']),
     ],
     Table('asa_spec', key=('name', 'version_id'))[
         Column('name'),
-        Column('version_id'),
+        Column('version_id', type='int64'),
         Column('base_class'),
         Index(['name', 'version_id'], unique=True),
     ],
-    Table('asa_spec_attribute', key=('artifact_id', 'version_id'))[
+    Table('asa_spec_attribute', key=('spec_name', 'version_id', 'name'))[
         Column('spec_name'),
-        Column('version_id'),
+        Column('version_id', type='int64'),
+        Column('name'),
         Column('multplicity_low'),
         Column('multplicity_high'),
         Column('type'),
-        Index(['artifact_id', 'version_id'], unique=True),
+        Index(['spec_name', 'version_id'], unique=True),
     ],
 ]
 
