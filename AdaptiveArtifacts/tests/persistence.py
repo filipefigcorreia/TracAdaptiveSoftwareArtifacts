@@ -16,7 +16,6 @@ from AdaptiveArtifacts.model import Entity, InstancePool, Attribute
 class BasicEntityBehaviour(unittest.TestCase):
     def setUp(self):
         self.env = EnvironmentStub(enable=['trac.*', 'AdaptiveArtifacts.*', 'AdaptiveArtifacts.db.*'])
-        #self.env.path = tempfile.mkdtemp()
         Setup(self.env).upgrade_environment(self.env.get_db_cnx())
 
         self.Car = Entity(name="Car",
@@ -31,10 +30,6 @@ class BasicEntityBehaviour(unittest.TestCase):
         pool.add(self.lightningMcQueen)
         dbp = DBPool(self.env, pool)
         dbp.save('anonymous',"","120.0.0.1")
-
-    def tearDown(self):
-        pass
-        #shutil.rmtree(self.env.path)
 
     def test_load_one(self):
         pool = InstancePool()
