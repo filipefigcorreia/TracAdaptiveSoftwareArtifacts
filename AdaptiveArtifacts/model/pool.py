@@ -27,9 +27,6 @@ class InstancePool(object):
     def get_instances_of(self, meta_id):
         return self.get_instances(meta_id=meta_id)
 
-    def get_entities(self):
-        return self.get_instances_of(meta_id='__Entity')
-
     def get_instances(self, meta_id=None):
         instances = []
         for id, instance in self.instances.items():

@@ -172,7 +172,7 @@ class PoolOperations(unittest.TestCase):
         self.pool.add(self.Enjoy)
 
     def test_pool_items_identities(self):
-        entities = self.pool.get_entities()
+        entities = self.pool.get_instances_of(Entity.get_id())
         self.assertTrue(len(entities) == 3)
         for ent in entities:
             self.assertEqual(ent.__class__.name, Entity.get_id())
