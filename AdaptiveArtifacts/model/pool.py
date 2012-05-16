@@ -19,21 +19,20 @@ class InstancePool(object):
     def remove(self, identifier):
         del self.instances[identifier]
 
-    def get_instance(self, id=None):
+    def get_instance(self, id):
         if not id in self.instances:
             return None
         return self.instances[id]
 
     def get_instances_of(self, meta_id):
-        return self.get_instances(meta_id=meta_id)
-
-    def get_instances(self, meta_id=None):
         instances = []
         for id, instance in self.instances.items():
-            if not meta_id is None and instance.__class__.get_id() != meta_id:
-                continue
-            instances.append(instance)
+            if instance.__class__.get_id() == meta_id:
+                instances.append(instance)
         return instances
+
+    def get_instances(self):
+        return self.instances.values()
 
     def get_possible_domains(self):
         pool = self
