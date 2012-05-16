@@ -132,26 +132,19 @@ class Instance(object):
         if isinstance(self, Instance) and not self.__class__ is Instance: # if there's a meta other than "Instance"
             # are the multiplicities of all instance values ok?
             for attr_cls in self.__class__.__get_attributes():
-                if attr_cls.multiplicity is None:
-                    continue
-                if type(attr_cls.multiplicity) == tuple:
-                    low, high = attr_cls.multiplicity # expects a tuple of 2 int values
-                elif type(attr_cls.multiplicity) == int:
-                    low=high=attr_cls.multiplicity
-                else:
-                    raise ValueError("Wrong type for multiplicity: '%s'" % type(attr_cls.multiplicity))
+                low, high = attr_cls.multiplicity
 
                 val = self.get_value(attr_cls.name)
                 if val is None:
-                    if low > 0:
+                    if not low is None and low > 0:
                         violations.append((attr_cls, "Lower bound violation. Expected at least '%s', got '0'" % low))
                     continue
                 amount = 1
                 if type(val) == list:
                     amount = len(val)
-                if amount < low:
+                if not low is None and amount < low:
                     violations.append((attr_cls, "Lower bound violation. Expected at least '%s', got '%s'" % (low, amount)))
-                if amount > high:
+                if not high is None and amount > high:
                     violations.append((attr_cls, "Upper bound violation. Expected at most '%s', got '%s'" % (high, amount)))
 
             # is the type of all instance values ok?
@@ -177,9 +170,11 @@ class Attribute(object):
         self.py_id = util.to_valid_identifier_name(name)
         self.name=name
         self.type = type
-        if isinstance(multiplicity, int):
+        if multiplicity is None:
+            self.multiplicity = (None, None)
+        elif isinstance(multiplicity, int):
             self.multiplicity = (multiplicity, multiplicity)
-        elif (isinstance(multiplicity, tuple) and len(multiplicity)==2) or multiplicity is None:
+        elif (isinstance(multiplicity, tuple) and len(multiplicity)==2):
             self.multiplicity = multiplicity
         else:
             raise ValueError("The value provided for multiplicity os not valid: %s" % (multiplicity,))
