@@ -78,6 +78,6 @@ class MetaModelInstancesStructureAfterLoad(MetaModelInstancesStructure):
 
     def test_instances_attributes(self):
         self._assert_instance_attributes(
-                myvehicle_expectations = {'id': None, 'version': None, 'str_attr': 'id'},
-                mycar_expectations = {'id': 1, 'version': None, 'str_attr': 'id'}
+                myvehicle_expectations = {'id': 1, 'version': None, 'str_attr': 'id'},
+                mycar_expectations = {'id': 2, 'version': None, 'str_attr': 'id'}
             )
