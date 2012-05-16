@@ -11,28 +11,27 @@ class InstancePool(object):
     some utility methods to search through them.
     """
     def __init__(self):
-        self.instances = {}
+        self._items = []
 
     def add(self, instance):
-        self.instances[instance.get_id()] = instance
+        self._items.append(instance)
 
-    def remove(self, identifier):
-        del self.instances[identifier]
+    def remove(self, item):
+        self._items.remove(item)
 
-    def get_instance(self, id):
-        if not id in self.instances:
-            return None
-        return self.instances[id]
+    def get_item(self, id):
+        assert(not id is None)
+        for item in self._items:
+            if item.get_id() == id:
+                return item
+        return None
+
+    def get_items(self):
+        return self._items
 
     def get_instances_of(self, meta_id):
-        instances = []
-        for id, instance in self.instances.items():
-            if instance.__class__.get_id() == meta_id:
-                instances.append(instance)
-        return instances
-
-    def get_instances(self):
-        return self.instances.values()
+        assert(not meta_id is None)
+        return [item for item in self._items if item.__class__.get_id() == meta_id]
 
     def get_possible_domains(self):
         pool = self

@@ -15,7 +15,6 @@ from AdaptiveArtifacts.model.core import Instance, Entity, Attribute
 from AdaptiveArtifacts.model.pool import InstancePool
 from AdaptiveArtifacts.tests.model import MetaModelInstancesStructure, ModelInstancesStructure, ModelComplianceValidation
 
-
 class BasicEntityBehaviour(unittest.TestCase):
     def setUp(self):
         self.env = EnvironmentStub(enable=['trac.*', 'AdaptiveArtifacts.*', 'AdaptiveArtifacts.db.*'])
@@ -38,7 +37,7 @@ class BasicEntityBehaviour(unittest.TestCase):
         pool = InstancePool()
         dbp = DBPool(self.env, pool)
         dbp.load_artifact(self.lightningMcQueen.get_id())
-        lightningMcQueen = pool.get_instance(self.lightningMcQueen.get_id())
+        lightningMcQueen = pool.get_item(self.lightningMcQueen.get_id())
         self.assertEqual(lightningMcQueen.get_id(), self.lightningMcQueen.get_id())
         self.assertEqual(len(lightningMcQueen.get_value("Wheels")), 4)
 

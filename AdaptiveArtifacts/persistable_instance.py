@@ -121,7 +121,7 @@ class AdaptiveArtifact(object):
             ppool = PersistablePool.load(env)
 
         if not identifier is None:
-            instance = ppool.pool.get_instance(identifier)
+            instance = ppool.pool.get_item(identifier)
         else:
             instance = ppool.pool.get_instance_by_iname(iname)
 
@@ -361,7 +361,7 @@ class PersistablePool(object):
     def save(self, env):
         @with_transaction(env)
         def do_save(db):
-            for instance in self.pool.get_instances():
+            for instance in self.pool.get_items():
                 if instance.get_state().is_uncommitted():
                     pi = AdaptiveArtifact(self.env, instance.get_identifier(), 0)
                     pi.instance = instance

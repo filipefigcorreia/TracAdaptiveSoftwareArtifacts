@@ -43,7 +43,7 @@ class DBPool(object):
             raise ValueError("No artifact found with id '%d'" % (id,))
         meta_class_name = meta_class_name[0]
         self.load_spec(meta_class_name, db)
-        meta_class = self.pool.get_instance(meta_class_name)
+        meta_class = self.pool.get_item(meta_class_name)
 
         # get the values
         values={}
@@ -83,7 +83,7 @@ class DBPool(object):
                 base_class = Instance
             else:
                 self.load_spec(base_class_name, db)
-                base_class = self.pool.get_instance(base_class_name)
+                base_class = self.pool.get_item(base_class_name)
         bases = (base_class,) if not base_class is None else tuple()
 
         # get the attributes
@@ -152,7 +152,7 @@ class DBPool(object):
     def save(self, author, comment, remote_addr, t=None):
         @with_transaction(self.env)
         def do_save(db):
-            uncommitted_items = [i for i in self.pool.get_instances() if i.is_uncommitted()]
+            uncommitted_items = [i for i in self.pool.get_items() if i.is_uncommitted()]
             if len(uncommitted_items) > 0:
                 cursor = db.cursor()
                 cursor.execute("""

@@ -31,7 +31,7 @@ class PresentableProperty(Proxy):
         if domain in ('string', 'python'):
             return domain
         else:
-            type_instance = self.property.pool.get_instance(domain)
+            type_instance = self.property.pool.get_item(domain)
             if not type_instance is None:
                 return type_instance.get_name()
             else:

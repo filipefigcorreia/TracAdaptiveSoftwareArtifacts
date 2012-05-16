@@ -198,7 +198,7 @@ class PoolOperations(unittest.TestCase):
         self.assertTrue(len([ent for ent in entities if ent.get_id() == self.Enjoy.get_id()])==1)
 
     def test_inexistent_instance(self):
-            self.assertTrue(self.pool.get_instance(id="somerandomid") is None)
+            self.assertTrue(self.pool.get_item(id="somerandomid") is None)
 
 class InstanceVersions(unittest.TestCase):
     def setUp(self):
