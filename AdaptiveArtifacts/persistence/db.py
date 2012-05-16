@@ -39,14 +39,14 @@ schema = [
         Column('base_class'),
         Index(['name', 'version_id'], unique=True),
     ],
-    Table('asa_spec_attribute', key=('spec_name', 'version_id', 'name'))[
+    Table('asa_spec_attribute')[
         Column('spec_name'),
         Column('version_id', type='int64'),
         Column('name'),
         Column('multplicity_low'),
         Column('multplicity_high'),
         Column('type'),
-        Index(['spec_name', 'version_id'], unique=True),
+        Index(['spec_name', 'version_id']),
     ],
 ]
 

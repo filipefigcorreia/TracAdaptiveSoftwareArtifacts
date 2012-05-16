@@ -95,7 +95,7 @@ class DBPool(object):
                 WHERE spec_name='%s' AND version_id='%d'""" % (name, version))
         for row in rows.fetchall():
             try:
-                type = getattr(sys.modules['__builtin__'], row[3])
+                type = getattr(sys.modules['__builtin__'], str(row[3]))
             except ValueError:
                 type = row[3]
             attributes.append(Attribute(name=row[0], multiplicity=(row[1], row[2]), type=type))
@@ -118,7 +118,7 @@ class DBPool(object):
         query += """GROUP BY id"""
         rows = cursor.execute(query)
         row = rows.fetchone()
-        return row[0] if len(row)>0 else None
+        return row[0] if not row is None and len(row)>0 else None
 
     def _get_latest_spec_version(self, name, db=None):
         if not db:
@@ -133,7 +133,7 @@ class DBPool(object):
         query += """GROUP BY name"""
         rows = cursor.execute(query)
         row = rows.fetchone()
-        return row[0] if len(row)>0 else None
+        return row[0] if not row is None and len(row)>0 else None
 
     def load_instances_of(self, id_meta, db=None):
         if not db:

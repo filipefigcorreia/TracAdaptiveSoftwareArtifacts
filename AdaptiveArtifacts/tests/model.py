@@ -24,6 +24,17 @@ class SimpleTwoLevelInheritanceWithTwoInstancesScenario(unittest.TestCase):
         self.myvehicle = self.Vehicle(values={"Number of Engines":2, "Brand":"Volvo"})
         self.mycar = self.Car(values={"Number of Engines":1, "Brand":"Ford", "Number of Doors":5})
 
+        # The pool is not used by this test case but by the ones in the
+        # "persistence" module. Despite that, it's defined here because it
+        # needs to be updated if we create more entities/instances in this
+        # setUp, and having it here makes it easier to be aware of that
+        self.pool = InstancePool()
+        self.pool.add(self.Vehicle)
+        self.pool.add(self.Car)
+        self.pool.add(self.Corsa)
+        self.pool.add(self.myvehicle)
+        self.pool.add(self.mycar)
+
 class MetaModelInstancesStructure(SimpleTwoLevelInheritanceWithTwoInstancesScenario):
     """
     Tests if the rules defined at the meta-model level for the construction
@@ -60,12 +71,18 @@ class MetaModelInstancesStructure(SimpleTwoLevelInheritanceWithTwoInstancesScena
         self.assertEqual(len(self.Car.attributes), 1)
 
     def test_instances_attributes(self):
-        for attr, val in {'id': None, 'version': None, 'str_attr': 'id'}.iteritems():
+        self._assert_instance_attributes(
+                myvehicle_expectations = {'id': None, 'version': None, 'str_attr': 'id'},
+                mycar_expectations = {'id': None, 'version': None, 'str_attr': 'id'}
+            )
+
+    def _assert_instance_attributes(self, myvehicle_expectations, mycar_expectations):
+        for attr, val in myvehicle_expectations.iteritems():
             self.assertTrue(hasattr(self.myvehicle, attr))
             self.assertEqual(getattr(self.myvehicle, attr), val)
         self.assertTrue(hasattr(self.myvehicle, 'attr_identifiers'))
         self.assertEqual(len(getattr(self.myvehicle, 'attr_identifiers')), 2)
-        for attr, val in {'id': None, 'version': None, 'str_attr': 'id'}.iteritems():
+        for attr, val in mycar_expectations.iteritems():
             self.assertTrue(hasattr(self.mycar, attr))
             self.assertEqual(getattr(self.mycar, attr), val)
         self.assertTrue(hasattr(self.mycar, 'attr_identifiers'))

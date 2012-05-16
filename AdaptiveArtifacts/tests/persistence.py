@@ -11,7 +11,10 @@ from trac.util import get_reporter_id
 from trac.web.api import Request, RequestDone
 from AdaptiveArtifacts.persistence.db import Setup
 from AdaptiveArtifacts.persistence.data import DBPool
-from AdaptiveArtifacts.model import Entity, InstancePool, Attribute
+from AdaptiveArtifacts.model.core import Instance, Entity, Attribute
+from AdaptiveArtifacts.model.pool import InstancePool
+from AdaptiveArtifacts.tests.model import MetaModelInstancesStructure, ModelInstancesStructure, ModelComplianceValidation
+
 
 class BasicEntityBehaviour(unittest.TestCase):
     def setUp(self):
@@ -55,3 +58,27 @@ class BasicEntityBehaviour(unittest.TestCase):
         self.assertEqual(4, len(values), "Wrong number of wheels. Expected %r. Got %r." % (4, len(values)))
 """
 
+class MetaModelInstancesStructureAfterLoad(MetaModelInstancesStructure):
+    def setUp(self):
+        self.env = EnvironmentStub(enable=['trac.*', 'AdaptiveArtifacts.*', 'AdaptiveArtifacts.db.*'])
+        Setup(self.env).upgrade_environment(self.env.get_db_cnx())
+
+        super(MetaModelInstancesStructureAfterLoad, self).setUp()
+
+        dbp = DBPool(self.env, self.pool)
+        dbp.save('anonymous',"","120.0.0.1")
+
+        new_pool = InstancePool()
+        new_dbp = DBPool(self.env, new_pool)
+        for instance in self.pool.get_instances_of(Instance.get_id()):
+            new_dbp.load_artifact(instance.get_id())
+        for entity in self.pool.get_instances_of(Entity.get_id()):
+            new_dbp.load_spec(entity.get_name())
+
+        self.pool = new_pool
+
+    def test_instances_attributes(self):
+        self._assert_instance_attributes(
+                myvehicle_expectations = {'id': None, 'version': None, 'str_attr': 'id'},
+                mycar_expectations = {'id': 1, 'version': None, 'str_attr': 'id'}
+            )
