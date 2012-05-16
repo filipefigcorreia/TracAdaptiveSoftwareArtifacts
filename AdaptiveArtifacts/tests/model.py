@@ -216,6 +216,3 @@ class InstanceVersions(unittest.TestCase):
         self.assertEquals(self.lightningMcQueen.get_value("Brand"), 'Dodge')
         self.assertEquals(self.lightningMcQueen.version, None)
         self.assertTrue(self.lightningMcQueen.is_uncommitted())
-
-if __name__ == "__main__":
-    unittest.main()
