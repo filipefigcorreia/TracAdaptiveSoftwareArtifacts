@@ -72,14 +72,8 @@ class TestModelInstancesStructureAfterLoad(ModelInstancesStructure, unittest.Tes
     def setUp(self):
         Scenarios.build_saved_and_reloaded_pool(self)
 
-class TestModelComplianceValidationAfterLoad(ModelComplianceValidation, unittest.TestCase):
-    def setUp(self):
-        ModelComplianceValidation.setUp(self)
+class TestModelComplianceValidationAfterLoad(ModelComplianceValidation, unittest.TestCase): pass
 
-class TestPoolOperationsAfterLoad(PoolOperations, unittest.TestCase):
-    def setUp(self):
-        PoolOperations.setUp(self)
+class TestPoolOperationsAfterLoad(PoolOperations, unittest.TestCase): pass
 
-class TestInstanceVersionsAfterLoad(InstanceVersions, unittest.TestCase):
-    def setUp(self):
-        InstanceVersions.setUp(self)
+class TestInstanceVersionsAfterLoad(InstanceVersions, unittest.TestCase): pass
