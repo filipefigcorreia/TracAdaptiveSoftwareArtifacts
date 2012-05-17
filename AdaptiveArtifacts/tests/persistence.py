@@ -11,7 +11,7 @@ from AdaptiveArtifacts.model.core import Instance, Entity, Attribute
 from AdaptiveArtifacts.model.pool import InstancePool
 from AdaptiveArtifacts.tests.model import MetaModelInstancesStructure, ModelInstancesStructure, ModelComplianceValidation, PoolOperations, InstanceVersions
 
-class BasicEntityBehaviour(unittest.TestCase):
+class TestBasicEntityBehaviour(unittest.TestCase):
     def setUp(self):
         self.env = EnvironmentStub(enable=['trac.*', 'AdaptiveArtifacts.*', 'AdaptiveArtifacts.db.*'])
         Setup(self.env).upgrade_environment(self.env.get_db_cnx())
@@ -36,6 +36,31 @@ class BasicEntityBehaviour(unittest.TestCase):
         lightningMcQueen = pool.get_item(self.lightningMcQueen.get_id())
         self.assertEqual(lightningMcQueen.get_id(), self.lightningMcQueen.get_id())
         self.assertEqual(len(lightningMcQueen.get_value("Wheels")), 4)
+
+    def test_load_related(self):
+        # are base classes automatically loaded?
+        self.assertTrue(False)
+
+    def test_delete_new(self):
+        pool = InstancePool()
+        dbp = DBPool(self.env, pool)
+        dbp.load_artifact(self.lightningMcQueen.get_id())
+        lightningMcQueen = pool.get_item(self.lightningMcQueen.get_id())
+        dbp.delete(lightningMcQueen)
+        self.assertTrue(pool.get_item(lightningMcQueen.get_id()) is None)
+
+        pool2 = InstancePool()
+        dbp2 = DBPool(self.env, pool2)
+        self.assertRaises(ValueError, dbp2.load_artifact, self.lightningMcQueen.get_id())
+        self.assertTrue(pool2.get_item(self.lightningMcQueen.get_id()) is None)
+
+    def test_delete_unmodified(self):
+        self.assertTrue(False)
+
+    def test_delete_changed(self):
+        self.assertTrue(False)
+
+
 
 class Scenarios(object):
     @staticmethod
@@ -77,3 +102,4 @@ class TestModelComplianceValidationAfterLoad(ModelComplianceValidation, unittest
 class TestPoolOperationsAfterLoad(PoolOperations, unittest.TestCase): pass
 
 class TestInstanceVersionsAfterLoad(InstanceVersions, unittest.TestCase): pass
+

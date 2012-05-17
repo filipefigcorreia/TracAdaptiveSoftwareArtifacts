@@ -179,16 +179,52 @@ class DBPool(object):
                                     """, (art_id, version_id, attr_name, value))
                         item.id=art_id
 
-    def delete(self, object, db=None):
-        if not db:
-            db = self.env.get_db_cnx()
-        # ...  remove from pool and delete from DB
-        return ()
+    def delete(self, item, db=None):
+        if not item in self.pool.get_items():
+            raise Exception("Item not in pool")
 
-    def get_history(cls, object, db=None):
-        if not db:
+        if item.is_uncommitted():
+            return
+
+        @with_transaction(self.env)
+        def do_delete(db):
+            cursor = db.cursor()
+            if isinstance(item, Entity): # it's a spec
+                cursor.execute("DELETE FROM asa_spec_attribute WHERE spec_name=%s", (item.get_name(),))
+                cursor.execute("DELETE FROM asa_spec WHERE name=%s", (item.get_name(),))
+            else: # it's an artifact
+                cursor.execute("DELETE FROM asa_artifact_value WHERE artifact_id=%s", (item.get_id(),))
+                cursor.execute("DELETE FROM asa_artifact WHERE id=%s", (item.get_id(),))
+            self.pool.remove(item)
+            self.env.log.info("Deleted item '%s'" % item.get_id())
+
+    def get_history(self, item, db=None):
+        if not item in self.pool.get_items():
+            raise Exception("Item not in pool")
+
+        if item.is_uncommited():
+            return
+
+        if db is None:
             db = self.env.get_db_cnx()
-        # ... returns list of versions for the specified object
-        return ()
+
+        cursor = db.cursor()
+        query = """
+                SELECT v.id, v.time, v.author, v.ipnr, v.comment
+                FROM asa_version v"""
+        if isinstance(item, Entity): # it's a spec
+            query += """
+                    INNER JOIN asa_spec a ON a.version_id=v.id
+                    WHERE a.name=%s""" % (item.get_name())
+        else: # it's an artifact
+            query += """
+                    INNER JOIN asa_artifact a ON a.version_id=v.id
+                    WHERE a.id=%d""" % (item.get_id())
+        query += """
+                AND v.id <= %s
+                ORDER BY v.id DESC""" % (self.version,)
+        cursor.execute(query)
+        for version, ts, author, ipnr, comment in cursor:
+            yield version, from_utimestamp(ts), author, ipnr, comment
 
 
