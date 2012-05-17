@@ -14,16 +14,6 @@ class DBPool(object):
         self.pool = pool
         self.version = None # default is latest version
 
-    def cenas(self):
-        db = self.env.get_read_db()
-        cursor = db.cursor()
-        rows = cursor.execute("""
-                SELECT *
-                FROM asa_artifact
-                """)
-        for r in rows.fetchall():
-            print r
-
     def load_artifact(self, id, db=None):
         if not db:
             db = self.env.get_read_db()
