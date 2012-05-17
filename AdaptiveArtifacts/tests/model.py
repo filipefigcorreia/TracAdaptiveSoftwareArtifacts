@@ -6,40 +6,44 @@
 import unittest
 from AdaptiveArtifacts.model import *
 
-class SimpleTwoLevelInheritanceWithTwoInstancesScenario(unittest.TestCase):
-    def setUp(self):
-        self.Vehicle = Entity(name="Vehicle",
+class SimpleTwoLevelInheritanceWithTwoInstancesScenario(object):
+    @staticmethod
+    def setUp(testecase):
+        testecase.Vehicle = Entity(name="Vehicle",
                 attributes=[
                     Attribute(name="Number of Engines"),
                     Attribute(name="Brand", multiplicity=1, type=str)
                 ]
             )
-        self.Car = Entity(name="Car", bases=(self.Vehicle,),
+        testecase.Car = Entity(name="Car", bases=(testecase.Vehicle,),
                 attributes=[
                     Attribute(name="Number of Doors", multiplicity=1, type=int)
                 ]
             )
-        self.Corsa = Entity(name="Opel Corsa", bases=(self.Car,))
+        testecase.Corsa = Entity(name="Opel Corsa", bases=(testecase.Car,))
 
-        self.myvehicle = self.Vehicle(values={"Number of Engines":2, "Brand":"Volvo"})
-        self.mycar = self.Car(values={"Number of Engines":1, "Brand":"Ford", "Number of Doors":5})
+        testecase.myvehicle = testecase.Vehicle(values={"Number of Engines":2, "Brand":"Volvo"})
+        testecase.mycar = testecase.Car(values={"Number of Engines":1, "Brand":"Ford", "Number of Doors":5})
 
         # The pool is not used by this test case but by the ones in the
         # "persistence" module. Despite that, it's defined here because it
         # needs to be updated if we create more entities/instances in this
         # setUp, and having it here makes it easier to be aware of that
-        self.pool = InstancePool()
-        self.pool.add(self.Vehicle)
-        self.pool.add(self.Car)
-        self.pool.add(self.Corsa)
-        self.pool.add(self.myvehicle)
-        self.pool.add(self.mycar)
+        testecase.pool = InstancePool()
+        testecase.pool.add(testecase.Vehicle)
+        testecase.pool.add(testecase.Car)
+        testecase.pool.add(testecase.Corsa)
+        testecase.pool.add(testecase.myvehicle)
+        testecase.pool.add(testecase.mycar)
 
-class MetaModelInstancesStructure(SimpleTwoLevelInheritanceWithTwoInstancesScenario):
+class MetaModelInstancesStructure(unittest.TestCase):
     """
     Tests if the rules defined at the meta-model level for the construction
     of entities and instances are producing the right results.
     """
+    def setUp(self):
+        SimpleTwoLevelInheritanceWithTwoInstancesScenario.setUp(self)
+
     def test_entities_are_instances_of_entity(self):
         self.assertTrue(isinstance(self.Car, Entity))
         self.assertTrue(isinstance(self.Vehicle, Entity))
@@ -93,6 +97,9 @@ class ModelInstancesStructure(SimpleTwoLevelInheritanceWithTwoInstancesScenario)
     Tests if the rules defined at the model level for the construction
     of instances are producing the right results.
     """
+    def setUp(self):
+        SimpleTwoLevelInheritanceWithTwoInstancesScenario.setUp(self)
+
     def test_inherited_entity_1level(self):
         self.assertEqual(self.Corsa.__bases__[0], self.Car)
 

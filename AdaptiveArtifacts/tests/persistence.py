@@ -57,27 +57,38 @@ class BasicEntityBehaviour(unittest.TestCase):
         self.assertEqual(4, len(values), "Wrong number of wheels. Expected %r. Got %r." % (4, len(values)))
 """
 
-class MetaModelInstancesStructureAfterLoad(MetaModelInstancesStructure):
-    def setUp(self):
-        self.env = EnvironmentStub(enable=['trac.*', 'AdaptiveArtifacts.*', 'AdaptiveArtifacts.db.*'])
-        Setup(self.env).upgrade_environment(self.env.get_db_cnx())
+class SaveAndReloadPoolScenario(object):
+    @staticmethod
+    def setUp(testcase):
+        testcase.env = EnvironmentStub(enable=['trac.*', 'AdaptiveArtifacts.*', 'AdaptiveArtifacts.db.*'])
+        Setup(testcase.env).upgrade_environment(testcase.env.get_db_cnx())
 
-        super(MetaModelInstancesStructureAfterLoad, self).setUp()
+        # this works as far as no one descends from MetaModelInstancesStructureAfterLoad and ModelInstancesStructureAfterLoad
+        super(testcase.__class__, testcase).setUp()
 
-        dbp = DBPool(self.env, self.pool)
+        dbp = DBPool(testcase.env, testcase.pool)
         dbp.save('anonymous',"","120.0.0.1")
 
         new_pool = InstancePool()
-        new_dbp = DBPool(self.env, new_pool)
-        for instance in self.pool.get_instances_of(Instance.get_id()):
+        new_dbp = DBPool(testcase.env, new_pool)
+        for instance in testcase.pool.get_instances_of(Instance.get_id()):
             new_dbp.load_artifact(instance.get_id())
-        for entity in self.pool.get_instances_of(Entity.get_id()):
+        for entity in testcase.pool.get_instances_of(Entity.get_id()):
             new_dbp.load_spec(entity.get_name())
 
-        self.pool = new_pool
+        testcase.pool = new_pool
+
+class MetaModelInstancesStructureAfterLoad(MetaModelInstancesStructure):
+    def setUp(self):
+        SaveAndReloadPoolScenario.setUp(self)
 
     def test_instances_attributes(self):
         self._assert_instance_attributes(
                 myvehicle_expectations = {'id': 1, 'version': None, 'str_attr': 'id'},
                 mycar_expectations = {'id': 2, 'version': None, 'str_attr': 'id'}
             )
+
+class ModelInstancesStructureAfterLoad(ModelInstancesStructure):
+    def setUp(self):
+        SaveAndReloadPoolScenario.setUp(self)
+
