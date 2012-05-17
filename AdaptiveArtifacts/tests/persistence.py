@@ -13,7 +13,7 @@ from AdaptiveArtifacts.persistence.db import Setup
 from AdaptiveArtifacts.persistence.data import DBPool
 from AdaptiveArtifacts.model.core import Instance, Entity, Attribute
 from AdaptiveArtifacts.model.pool import InstancePool
-from AdaptiveArtifacts.tests.model import MetaModelInstancesStructure, ModelInstancesStructure, ModelComplianceValidation
+from AdaptiveArtifacts.tests.model import MetaModelInstancesStructure, ModelInstancesStructure, ModelComplianceValidation, PoolOperations, InstanceVersions
 
 class BasicEntityBehaviour(unittest.TestCase):
     def setUp(self):
@@ -57,13 +57,13 @@ class BasicEntityBehaviour(unittest.TestCase):
         self.assertEqual(4, len(values), "Wrong number of wheels. Expected %r. Got %r." % (4, len(values)))
 """
 
-class SaveAndReloadPoolScenario(object):
+class Scenarios(object):
     @staticmethod
-    def setUp(testcase):
+    def build_saved_and_reloaded_pool(testcase):
         testcase.env = EnvironmentStub(enable=['trac.*', 'AdaptiveArtifacts.*', 'AdaptiveArtifacts.db.*'])
         Setup(testcase.env).upgrade_environment(testcase.env.get_db_cnx())
 
-        # this works as far as no one descends from MetaModelInstancesStructureAfterLoad and ModelInstancesStructureAfterLoad
+        # this works as far as no one inherits from MetaModelInstancesStructureAfterLoad and ModelInstancesStructureAfterLoad
         super(testcase.__class__, testcase).setUp()
 
         dbp = DBPool(testcase.env, testcase.pool)
@@ -78,9 +78,9 @@ class SaveAndReloadPoolScenario(object):
 
         testcase.pool = new_pool
 
-class MetaModelInstancesStructureAfterLoad(MetaModelInstancesStructure):
+class TestMetaModelInstancesStructureAfterLoad(MetaModelInstancesStructure, unittest.TestCase):
     def setUp(self):
-        SaveAndReloadPoolScenario.setUp(self)
+        Scenarios.build_saved_and_reloaded_pool(self)
 
     def test_instances_attributes(self):
         self._assert_instance_attributes(
@@ -88,7 +88,18 @@ class MetaModelInstancesStructureAfterLoad(MetaModelInstancesStructure):
                 mycar_expectations = {'id': 2, 'version': None, 'str_attr': 'id'}
             )
 
-class ModelInstancesStructureAfterLoad(ModelInstancesStructure):
+class TestModelInstancesStructureAfterLoad(ModelInstancesStructure, unittest.TestCase):
     def setUp(self):
-        SaveAndReloadPoolScenario.setUp(self)
+        Scenarios.build_saved_and_reloaded_pool(self)
 
+class TestModelComplianceValidationAfterLoad(ModelComplianceValidation, unittest.TestCase):
+    def setUp(self):
+        ModelComplianceValidation.setUp(self)
+
+class TestPoolOperationsAfterLoad(PoolOperations, unittest.TestCase):
+    def setUp(self):
+        PoolOperations.setUp(self)
+
+class TestInstanceVersionsAfterLoad(InstanceVersions, unittest.TestCase):
+    def setUp(self):
+        InstanceVersions.setUp(self)
