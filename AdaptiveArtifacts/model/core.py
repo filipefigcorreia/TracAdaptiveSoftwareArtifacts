@@ -4,9 +4,10 @@
 # you should have received as part of this distribution.
 
 """
-Goal is to avoid reinventing the Wheel™, and try to use the python
-language's mechanisms as much as possible, instead of implementing the
-Type-Square pattern from scratch.
+The approach taken here is similar in goal to the Adaptive Object-Model
+architectural panel, but instead of implementing the Type-Square pattern
+from scratch, we shall try to use the python language's mechanisms as
+much as possible, hence minimizing accidental complexity.
 
 Entity is a metaclass. It descends from "type", and adds some extra data
 to the class during its initialization. That data is used to "extend" the
@@ -20,7 +21,7 @@ The meta/instantiation and the inheritance mechanisms are python's
 (i.e., all system calls that depend on these features work normally when
 working with Instances and Entities). For "extra" features, like
 multiplicity and attribute types, sometimes extra work has to be done
-for convenient access (e.g., see the the __get_all() method)
+for convenient access (e.g., see the __get_all() method)
 """
 from AdaptiveArtifacts.model import util
 
@@ -33,15 +34,15 @@ class Version(object):
         self.readonly = readonly
 
 class Instance(object):
+    """
+    The metaclass of Instance should be Entity, at the very least because
+    we need to reference its name. Unfortunately, that would cause a
+    chicken-and-egg problem, so we just hardcode a name attribute.
+    """
+
     name = '__Instance'
     _is_new = False
     attributes = []
-
-    """
-    The metaclass of Instance should be Entity, at the very least because
-    we need to reference its id. Unfortunately, that would causes a
-    chicken-and-egg problem, so we just hardcode an id attribute.
-    """
 
     def __init__(self, *args, **kwargs):
         self.id = kwargs.pop('id', None)
@@ -163,10 +164,6 @@ class Instance(object):
 
 class Attribute(object):
     def __init__(self, name, multiplicity=None, type=None):
-        """
-        The py_id param should only be used for testing purposes. In the real
-        world, the id will always be (automatically) derived from the name.
-        """
         self.py_id = util.to_valid_identifier_name(name)
         self.name=name
         self.type = type
@@ -180,14 +177,13 @@ class Attribute(object):
             raise ValueError("The value provided for multiplicity os not valid: %s" % (multiplicity,))
 
 class Entity(type):
-    name = '__Entity'
-    attributes = []
-
     """
     Entity should be its own metaclass, at the very least because
-    we need to reference its id. Unfortunately, that would causes a
-    chicken-and-egg problem, so we just hardcode an id attribute.
+    we need to reference its name. Unfortunately, that would cause a
+    chicken-and-egg problem, so we just hardcode a name attribute.
     """
+    name = '__Entity'
+    attributes = []
 
     def __new__(mcs, *args, **kwargs):
         """

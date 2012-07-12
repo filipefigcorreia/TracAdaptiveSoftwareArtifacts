@@ -11,12 +11,12 @@ def to_valid_identifier_name(name):
 
     Ultimately, the identifiers could be semantically opaque but, for
     eased debugging, it's handy if they're not. As this process doesn't
-    produce identifiers that can be guaranteed to unique, we suffix it
-    with a hash to ensure it doesn't clash with other identifiers.
+    produce identifiers that can be guaranteed to be unique, we suffix
+    them with a hash to ensure they don't clash with other identifiers.
     """
     def gen_valid_identifier(seq):
         itr = iter(seq)
-        # pull characters until we get a legal one for first in identifer
+        # pull characters until we get a legal one for first in identifier
         for ch in itr:
             if ch == '_' or ch.isalpha():
                 yield ch
@@ -32,11 +32,12 @@ def to_valid_identifier_name(name):
 
 class classinstancemethod(object):
     """
-    Acts like a class method when called from a class, like an
-    instance method when called by an instance.  The method should
-    take two arguments, 'self' and 'cls'. 'self' will be None if
-    called via class, but they will both have values if called via
-    instance. See http://stackoverflow.com/a/10413769/684253
+    Decorator that makes a given method act like a class method when
+    called for a class, and like an instance method when called for
+    an instance. The method should take two arguments, 'self' and
+    'cls'. 'self' will be None if called via class, but they will
+    both have values if called via instance.
+    See http://stackoverflow.com/a/10413769/684253
     """
     def __init__(self, func):
         self.func = func
