@@ -47,7 +47,7 @@ class TestBasicEntityBehaviour(unittest.TestCase):
         self.assertTrue(not pool.get_item(self.Car.get_id()) is None)
         self.assertTrue(not pool.get_item(self.Vehicle.get_id()) is None)
 
-    def test_delete_new(self):
+    def test_delete_unmodified(self):
         pool = InstancePool()
         dbp = DBPool(self.env, pool)
         dbp.load_artifact(self.lightningMcQueen.get_id())
@@ -60,8 +60,15 @@ class TestBasicEntityBehaviour(unittest.TestCase):
         self.assertRaises(ValueError, dbp2.load_artifact, self.lightningMcQueen.get_id())
         self.assertTrue(pool2.get_item(self.lightningMcQueen.get_id()) is None)
 
-    def test_delete_unmodified(self):
-        self.assertTrue(False)
+    def test_delete_new(self):
+        pool = InstancePool()
+        sallyCarrera = self.Car()
+        pool.add(sallyCarrera)
+
+        dbp = DBPool(self.env, pool)
+        dbp.delete(sallyCarrera)
+        self.assertEqual(0, len(dbp.pool.get_items()))
+
 
     def test_delete_changed(self):
         self.assertTrue(False)

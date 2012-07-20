@@ -185,6 +185,8 @@ class DBPool(object):
             raise Exception("Item not in pool")
 
         if item.is_uncommitted():
+            self.pool.remove(item)
+            self.env.log.info("Deleted item '%s' (uncommitted item)" % item.get_id())
             return
 
         @with_transaction(self.env)
