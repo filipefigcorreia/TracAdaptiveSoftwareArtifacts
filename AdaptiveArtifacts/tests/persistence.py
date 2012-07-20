@@ -16,7 +16,8 @@ class TestBasicEntityBehaviour(unittest.TestCase):
         self.env = EnvironmentStub(enable=['trac.*', 'AdaptiveArtifacts.*', 'AdaptiveArtifacts.db.*'])
         Setup(self.env).upgrade_environment(self.env.get_db_cnx())
 
-        self.Car = Entity(name="Car",
+        self.Vehicle = Entity(name="Vehicle")
+        self.Car = Entity(name="Car", bases=(self.Vehicle,),
                 attributes=[Attribute(name="Wheels", multiplicity=4, type=str)]
             )
         self.lightningMcQueen = self.Car(
@@ -24,6 +25,7 @@ class TestBasicEntityBehaviour(unittest.TestCase):
             )
 
         pool = InstancePool()
+        pool.add(self.Vehicle)
         pool.add(self.Car)
         pool.add(self.lightningMcQueen)
         dbp = DBPool(self.env, pool)
@@ -38,8 +40,12 @@ class TestBasicEntityBehaviour(unittest.TestCase):
         self.assertEqual(len(lightningMcQueen.get_value("Wheels")), 4)
 
     def test_load_related(self):
-        # are base classes automatically loaded?
-        self.assertTrue(False)
+        pool = InstancePool()
+        dbp = DBPool(self.env, pool)
+        dbp.load_artifact(self.lightningMcQueen.get_id())
+        lightningMcQueen = pool.get_item(self.lightningMcQueen.get_id())
+        self.assertTrue(not pool.get_item(self.Car.get_id()) is None)
+        self.assertTrue(not pool.get_item(self.Vehicle.get_id()) is None)
 
     def test_delete_new(self):
         pool = InstancePool()
