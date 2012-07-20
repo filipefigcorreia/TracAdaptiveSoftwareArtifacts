@@ -105,5 +105,4 @@ class TestPoolOperationsAfterLoad(PoolOperations, unittest.TestCase):
     def setUp(self):
         Scenarios.build_saved_and_reloaded_pool(self)
 
-class TestInstanceVersionsAfterLoad(InstanceVersions, unittest.TestCase): pass
 
