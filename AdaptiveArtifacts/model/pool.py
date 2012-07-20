@@ -14,6 +14,11 @@ class InstancePool(object):
         self._items = []
 
     def add(self, instance):
+        id = instance.get_id()
+        if not id is None and not self.get_item(id) is None:
+            # raising an exception is an option. an alternative would be to silently replace the instance with the one
+            # being loaded, but there may be implications when working with multiple versions of a same instance
+            raise Exception("Instance with id '%s' already exists in the pool" % (instance.get_id(),))
         self._items.append(instance)
 
     def remove(self, item):

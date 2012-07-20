@@ -93,7 +93,8 @@ class DBPool(object):
         # create the entity
         spec = Entity(name=name, bases=bases, version=version, persisted=True, attributes=attributes)
 
-        self.pool.add(spec)
+        if self.pool.get_item(spec.get_id()) is None:
+            self.pool.add(spec)
 
     def _get_latest_artifact_version(self, id, db=None):
         if not db:
