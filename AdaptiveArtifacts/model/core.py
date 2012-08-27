@@ -174,7 +174,7 @@ class Attribute(object):
         elif (isinstance(multiplicity, tuple) and len(multiplicity)==2):
             self.multiplicity = multiplicity
         else:
-            raise ValueError("The value provided for multiplicity os not valid: %s" % (multiplicity,))
+            raise ValueError("The value provided for multiplicity is not valid: %s" % (multiplicity,))
 
 class Entity(type):
     """
