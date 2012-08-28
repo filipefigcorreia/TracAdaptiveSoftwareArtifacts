@@ -7,31 +7,31 @@
       xmlns:xi="http://www.w3.org/2001/XInclude">
   <xi:include href="layout.html" />
   <head>
-    <title>${instance.get_id_meta()}</title>
+    <title>${instance.__class__.get_id()}</title>
   </head>
   <body>
     <div id="content" class="asa">
         <ul>
-            <li>Identifier: ${instance.get_identifier()}</li>
-            <li>Meta: <a href="${req.href.adaptiveartifacts(instance.get_meta().get_identifier(), action='view')}">${instance.get_meta().get_name()}</a></li>
-            <py:if test="instance.is_instance('Entity')">
+            <li>Identifier: ${instance.get_id()}</li>
+            <li>Meta: <a href="${req.href.adaptiveartifacts(instance.__class__.get_id(), action='view')}">${instance.__class__.get_name()}</a></li>
+            <py:if test="instance.__class__.__name__ == 'Entity'">
             <li>Name: ${instance.get_name()}</li>
             </py:if>
             <li>Values:
                 <ul>
-                    <li py:for="property in instance.get_meta().get_properties()">${property.get_name()}: ${instance.get_values(property.get_identifier())}</li>
+                    <li py:for="attribute in instance.__class__.get_attributes()">${attribute.name}: ${instance.get_value(attribute.name)}</li>
                 </ul>
             </li>
-            <py:if test="instance.is_instance('Entity')">
+            <py:if test="instance.__class__.__name__ == 'Entity'">
             <li>Properties:
                 <ul>
-                    <li py:for="property in instance.get_properties()">${property.get_name()}</li>
+                    <li py:for="attribute in instance.get_attributes()">${attribute.name}</li>
                 </ul>
             </li>
             </py:if>
         </ul>
-        <py:if test="instance.is_instance('Entity')">
-        <a href="${req.href.adaptiveartifacts(instance.get_identifier(), action='list')}">See Instances</a>
+        <py:if test="instance.__class__.__name__ == 'Entity'">
+        <a href="${req.href.adaptiveartifacts(instance.get_id(), action='list')}">See Instances</a>
         </py:if>
     </div>
   </body>

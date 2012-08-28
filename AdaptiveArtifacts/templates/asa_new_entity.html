@@ -1,0 +1,94 @@
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:i18n="http://genshi.edgewall.org/i18n"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include href="layout.html" />
+  <head>
+    <title></title>
+    <script type="text/javascript">
+      $(document).ready(function(){
+          $("a.addproperty").click(function(){
+            var newid = uuid.v4()
+            var copy = $("div.property:last").clone(true)
+            copy.removeClass('prototype')
+            name_input = copy.find("input[name^='property-name-']")
+            name_input.attr("name", "property-name-" + newid)
+            name_input.attr("value", "")
+            domain_input = copy.find("select[name^='property-domain-']")
+            domain_input.attr("name", "property-domain-" + newid)
+            $("div.properties").append(copy)
+          });
+
+          $("a.delproperty").click(function(){
+              $(this).parent().remove()
+          });
+      });
+    </script>
+    <style>
+        #content.asa {
+            width: 58em;
+            max-width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #content.asa label{
+            width: 20%;
+            margin-right: 0.5em;
+            text-align: right;
+            display: inline-block;
+        }
+
+        #content.asa input, #content.asa select{
+            width: 17em;
+            display: inline-block;
+        }
+
+        .prototype{
+            display: none;
+        }
+    </style>
+  </head>
+  <body>
+      <div id="content" class="asa">
+      <h1>New Artifact Specification</h1>
+      <form method="post" action="${href.adaptiveartifacts(instance_meta.get_id())}">
+          <label>Name:</label> <input type="text" name="name" value="" /><br/>
+          <label>Inherits:</label>
+          <py:if test="instance_meta.get_parent() is None">
+              <input type="text" name="parent" value="" />
+          </py:if>
+          <py:if test="not instance_meta.get_parent() is None">
+              <input type="text" name="parent" value="${instance_meta.get_parent().get_name()}" />
+          </py:if><br/>
+          <label>Attributes:</label>
+          <table>
+              <tr><th>Name</th><th>Type</th><th>Multiplicity</th></tr>
+              <tr>
+              <td><input type="text" name="attr_name" value="" /></td>
+              <td>
+                  <select name="attr_type">
+                      <option value=""></option>
+                      <option value="str">str</option>
+                  </select>
+              </td>
+                  <td>
+                      <select name="attr_multiplicity">
+                          <option value=""></option>
+                          <option value="1">1</option>
+                      </select>
+                  </td>
+              </tr>
+          </table>
+
+          <br/>
+          <input type="hidden" name="action" value="new" />
+          <input type="submit" value="Create" />
+          <br/><br/>
+      </form>
+      </div>
+  </body>
+</html>

@@ -10,8 +10,11 @@ from trac.web.chrome import INavigationContributor, ITemplateProvider, add_javas
 from trac.web.main import IRequestHandler
 from trac.util import Markup
 from AdaptiveArtifacts.persistable_instance import AdaptiveArtifact, PersistablePool
+from AdaptiveArtifacts.persistence.data import DBPool
+from AdaptiveArtifacts.model.pool import InstancePool
+from AdaptiveArtifacts.model.pool import Entity, Instance
 from util import is_uuid
-
+from AdaptiveArtifacts.persistence.db import *
 
 class Core(Component):
     """Core module of the plugin. Provides the Adaptive-Artifacts themselves."""
@@ -39,27 +42,31 @@ class Core(Component):
             return False
 
     def process_request(self, req):
-        action = req.args.get('action', None) # view, edit, list, instantiate
-        asa_resource_name = req.args.get('asa_resource', 'entity')
+        action = req.args.get('action', None) # view, edit, list, index, new
+        asa_resource_name = req.args.get('asa_resource', None)
         version = req.args.get('version')
         #old_version = req.args.get('old_version')
 
-        if asa_resource_name.endswith('/'):
+        if not asa_resource_name is None and asa_resource_name.endswith('/'):
             req.redirect(req.href.adaptiveartifacts(asa_resource_name.strip('/')))
 
-        ppool = PersistablePool.load(self.env)
-        pi = None
-        if is_uuid(asa_resource_name):
-            pi = ppool.get_instance(self.env, identifier=asa_resource_name, version=version)
-            if pi is None:
-                raise ResourceNotFound("No resource found with identifier '%s'" % asa_resource_name)
+        dbp = DBPool(self.env, InstancePool())
+
+        if asa_resource_name is None or asa_resource_name == Entity.get_name():
+            inst = Entity
+        elif asa_resource_name == 'instance':
+            inst = Instance
         else:
-            pi = ppool.get_instance(self.env, iname="__"+asa_resource_name, version=version)
-            if pi is None:
-                raise ResourceNotFound("No resource goes by the iname of '%s'" % asa_resource_name)
+            #dbp.load_artifact(asa_resource_name)
+            dbp.load_spec(asa_resource_name) # TODO: only one of these calls should be here
+            inst = dbp.pool.get_item(asa_resource_name)
+            if inst is None:
+                raise ResourceNotFound("No resource found with identifier '%s'" % asa_resource_name)
 
         if action is None: # default action depends on the instance's meta-level
-            if pi.instance.get_meta_level() > 0:
+            if inst is Entity:
+                action = 'index'
+            elif isinstance(inst, type):
                 action = 'list'
             else:
                 action = 'view'
@@ -67,7 +74,8 @@ class Core(Component):
         add_javascript(req, 'adaptiveartifacts/js/uuid.js')
         view = Core._resolve_view(action, req.method)
         if not view is None:
-            return view(req, ppool, pi.instance, Core._get_resource(pi.instance))
+            res = Core._get_resource(inst) if not inst in (Entity, Instance) else None
+            return view(req, dbp, inst, res)
         else:
             return None # Something's very wrong
 
@@ -84,7 +92,7 @@ class Core(Component):
     @staticmethod
     def _get_resource(instance):
         from trac.resource import Resource
-        return Resource('asa', instance.get_identifier(), instance.get_state().version)
+        return Resource('asa', instance.get_id(), instance.version)
 
     # ITemplateProvider methods
     def get_templates_dirs(self):

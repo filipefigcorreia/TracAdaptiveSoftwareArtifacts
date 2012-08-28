@@ -19,7 +19,7 @@ class DBPool(object):
             db = self.env.get_read_db()
         version = self._get_latest_artifact_version(id, db)
         if version is None:
-            raise ValueError("No version found for artifact with id '%d'" % (id,))
+            raise ValueError("No version found for artifact with id '%s'" % (id,))
 
         # get the metaclass
         cursor = db.cursor()
@@ -126,17 +126,19 @@ class DBPool(object):
         row = rows.fetchone()
         return row[0] if not row is None and len(row)>0 else None
 
-    def load_instances_of(self, id_meta, db=None):
+    def load_instances_of(self, id_spec, db=None):
         if not db:
             db = self.env.get_read_db()
         cursor = db.cursor()
-        rows = cursor.execute("""
-                SELECT id, max(version) version
-                FROM asa_instance i
-                    INNER JOIN asa_value v_idm ON v_idm.instance_id=i.id
-                WHERE
-                    v_idm.property_instance_iname='__meta' AND v_idm.value='%s'
-                GROUP BY id""" % (id_meta, self.version))
+        query = """
+                SELECT id, max(version_id) version
+                FROM asa_artifact a
+                WHERE meta_class = '%s'
+                """ % (id_spec,)
+        if not self.version is None:
+            query += 'AND version_id <= %s '  % (self.version,)
+        query += """GROUP BY id"""
+        rows = cursor.execute(query)
         for id, version in rows.fetchall():
             self.pool.add(self.load_artifact(id))
 

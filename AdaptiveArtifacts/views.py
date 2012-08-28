@@ -9,27 +9,39 @@ from util import is_uuid
 
 #All the methods here should return a `(template_name, data, content_type)` tuple
 
-def view_get(req, ppool, instance, resource):
-    data = {
-        'context': Context.from_request(req, resource),
-        'action': 'view',
-        'instance': instance,
-        'dir': dir(instance),
-        'type': type(instance),
-        'repr': type(instance),
-        'version': instance.get_state().version,
-    }
-    return 'asa_view.html', data, None
-
-def list_get(req, ppool, instance, resource):
-    entities = [pi.instance for pi in ppool.get_instances_of(ppool.env, instance.get_identifier(), [1])]
-    instances = [pi.instance for pi in ppool.get_instances_of(ppool.env, instance.get_identifier(), [0])]
+def index_get(req, dbp, inst, resource):
+    dbp.load_instances_of(inst.get_id())
+    instances = dbp.pool.get_instances_of(inst.get_id())
 
     data = {
         'context': Context.from_request(req, resource),
         'action': 'list',
-        'context_instance': instance,
-        'entities': entities,
+        'context_instance': inst,
+        'instances': instances,
+    }
+    return 'asa_index.html', data, None
+
+
+def view_get(req, dbp, inst, resource):
+    data = {
+        'context': Context.from_request(req, resource),
+        'action': 'view',
+        'instance': inst,
+        'dir': dir(inst),
+        'type': type(inst),
+        'repr': type(inst),
+        'version': inst.version,
+    }
+    return 'asa_view.html', data, None
+
+def list_get(req, dbp, inst, resource):
+    dbp.load_instances_of(inst.get_id())
+    instances = dbp.pool.get_instances_of(inst.get_id())
+
+    data = {
+        'context': Context.from_request(req, resource),
+        'action': 'list',
+        'context_instance': inst,
         'instances': instances,
     }
     #TODO: return right template, depending if we're listing entities or instances
@@ -37,71 +49,43 @@ def list_get(req, ppool, instance, resource):
     return 'asa_list_instances.html', data, None
 
 
-def instantiate_get(req, ppool, instance, resource):
-    from model import InstancePool, Package, Property, Entity
-    from presentable_instance import PresentableInstance
+def new_get(req, dbp, inst, resource):
+    from model import Instance, Entity
 
-    a_m2_class = InstancePool.get_metamodel_python_class_by_id(instance.get_identifier())
-    if not a_m2_class is None:
-        if not a_m2_class in [Package, Property, Entity]:
-            raise Exception("Trying to instanciate a not instantiatable instance '%s'." % a_m2_class)
-
-        new_instance = a_m2_class.get_new_default_instance(pool=ppool.pool, name="A New " + instance.get_name())
-    else: # we're instantiating a model (M1) instance, not a metamodel (M2) instance
-        a_m2_class = Entity
-        new_instance = a_m2_class.get_new_default_instance(pool=ppool.pool, name="A New " + instance.get_name(), id_meta=instance.get_identifier())
-
-    Property(ppool.pool, "A New Property", owner=new_instance.get_identifier())
+    if not inst in [Instance, Entity]:
+        raise Exception("Trying to instanciate something that is not instantiatable '%s'." % inst)
 
     data = {
         'context': Context.from_request(req, resource),
         'action': 'list',
-        'instance_meta': PresentableInstance(instance),
-        'instance': PresentableInstance(new_instance),
+        'instance_meta': inst,
     }
-    return 'asa_edit.html', data, None
+    return 'asa_new_entity.html' if inst is Entity else 'asa_new_instance.html', data, None
 
 
-def instantiate_post(req, ppool, instance, resource):
-    from model import InstancePool, Package, Property, Entity, Instance
+def new_post(req, dbp, inst, resource):
+    from model import InstancePool, Entity, Instance, Attribute
 
-    meta = instance
-    a_m2_class = InstancePool.get_metamodel_python_class_by_id(instance.get_identifier())
-    if not a_m2_class is None:
-        if not a_m2_class in [Package, Property, Entity]:
-            raise Exception("Trying to instanciate a not instantiatable instance '%s'." % a_m2_class)
-
-        brand_new_instance = a_m2_class.get_new_default_instance(pool=ppool.pool, name="A New " + instance.get_name())
-    else: # we're instantiating a model (M1) instance, not a metamodel (M2) instance
-        if instance.get_meta_level() == '2':
-            a_m2_class = Entity
+    meta = inst
+    if meta is Entity: #creating a m1
+        name = req.args.get('name')
+        parent_name = req.args.get('parent')
+        attributes = [
+            Attribute(req.args.get('attr_name'), req.args.get('attr_multiplicity'), req.args.get('attr_type'))
+        ]
+        if parent_name:
+            dbp.load_spec(parent_name)
+            bases = (dbp.pool.get_item(parent_name),)
         else:
-            a_m2_class = Instance
-        brand_new_instance = a_m2_class.get_new_default_instance(pool=ppool.pool, name="A New " + instance.get_name(), id_meta=instance.get_identifier())
+            bases = tuple()
+        brand_new_inst = Entity(name=name, attributes=attributes, bases=bases)
+    elif meta is Instance: #creating a m0
+        brand_new_inst = meta(values=req.args)
+    else:
+        raise Exception("Trying to instanciate a not instantiatable instance '%s'." % meta)
 
-    for key in req.args.keys(): # go through submitted values
-        value = req.args.get(key)
-        if is_uuid(key): # it's a property of meta
-            ref = key
-            prop = meta.get_property(ref)
-            if prop is None: # let's retrieve it from meta, just to make sure
-                raise Exception("Property '%s' was not found in meta '%s'." % (ref, meta.get_identifier()))
-            if not prop.is_valid_value(value):
-                raise Exception("Not a valid value for property '%s': '%s'" % (prop.get_name(), value))
-            brand_new_instance.set_value(key, value)
-        elif key.startswith('property-name-'): # it's a property of the instance (it's name, to be precise)
-            ref = key.lstrip('property-name-')
-            if not is_uuid(ref):
-                continue # probably a html prototype
-            name = req.args.get(key, '')
-            domain = req.args.get('property-domain-' + ref, '')
-            Property(ppool.pool, name, owner=brand_new_instance.get_identifier(), domain = domain)
-        elif key.startswith('property-domain-'): # it's a property of the instance. ignore, as these properties are already handled when their names are found
-            pass
-        else: # something else that we don't care about
-            pass
-    ppool.save(ppool.env)
+    dbp.pool.add(brand_new_inst)
+    dbp.save('author', 'comment', 'address')
     add_notice(req, 'Your changes have been saved.')
-    id = brand_new_instance.get_identifier()
-    url = req.href.adaptiveartifacts(id, action='view')
+    url = req.href.adaptiveartifacts(brand_new_inst.get_id(), action='view')
     req.redirect(url)

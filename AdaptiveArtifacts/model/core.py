@@ -80,7 +80,7 @@ class Instance(object):
         return cls.name
 
     @classmethod
-    def __get_attributes(cls):
+    def get_attributes(cls):
         """
         Returns a list of the attributes of the instance, collected
         through the class' inheritance chain.
@@ -132,7 +132,7 @@ class Instance(object):
         violations = []
         if isinstance(self, Instance) and not self.__class__ is Instance: # if there's a meta other than "Instance"
             # are the multiplicities of all instance values ok?
-            for attr_cls in self.__class__.__get_attributes():
+            for attr_cls in self.__class__.get_attributes():
                 low, high = attr_cls.multiplicity
 
                 val = self.get_value(attr_cls.name)
@@ -150,7 +150,7 @@ class Instance(object):
 
             # is the type of all instance values ok?
             for attr_self_name in self.attr_identifiers.keys():
-                for attr_cls in self.__class__.__get_attributes():
+                for attr_cls in self.__class__.get_attributes():
                     if attr_self_name==attr_cls.name:
                         if attr_cls.type is None:
                             continue
@@ -167,11 +167,11 @@ class Attribute(object):
         self.py_id = util.to_valid_identifier_name(name)
         self.name=name
         self.type = type
-        if multiplicity is None:
+        if not multiplicity:
             self.multiplicity = (None, None)
         elif isinstance(multiplicity, int):
             self.multiplicity = (multiplicity, multiplicity)
-        elif (isinstance(multiplicity, tuple) and len(multiplicity)==2):
+        elif isinstance(multiplicity, tuple) and len(multiplicity)==2:
             self.multiplicity = multiplicity
         else:
             raise ValueError("The value provided for multiplicity is not valid: %s" % (multiplicity,))
@@ -192,6 +192,7 @@ class Entity(type):
         We need it here because we want to pass extra params, to
         be picked up by __init__
         """
+        assert 'name' in kwargs
         name = util.to_valid_identifier_name(
             args[0] if len(args)>0 else kwargs.get('name', None)
         )
@@ -226,3 +227,14 @@ class Entity(type):
             return cls.name
         else: # a class, instance of the Entity class
             return self.name
+
+    @util.classinstancemethod
+    def get_parent(self, cls):
+        if self is None: # the Entity class
+            return None
+        else: # a class, instance of the Entity class
+                return self.__bases__[0] if len(self.__bases__) > 0 and not self.__bases__[0] in (type, Instance) else None
+
+    @classmethod
+    def get_attributes(mcs):
+        return []

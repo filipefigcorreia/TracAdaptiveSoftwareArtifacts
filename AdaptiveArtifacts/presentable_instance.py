@@ -4,6 +4,7 @@
 # you should have received as part of this distribution.
 
 from util import Proxy
+from AdaptiveArtifacts.model.core import Entity, Instance
 
 class PresentableInstance(Proxy):
     """
@@ -14,7 +15,6 @@ class PresentableInstance(Proxy):
         super(PresentableInstance, self).__init__(instance)
         self.instance = instance
 
-    # shadowing the instance function
     def get_properties(self):
         return [PresentableProperty(prop) for prop in self.instance.get_properties() if int(prop.get_order() or "1") > 0]
 

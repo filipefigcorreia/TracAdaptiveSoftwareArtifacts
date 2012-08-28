@@ -55,7 +55,7 @@
   <body>
       <div id="content" class="asa">
       <h1>Create new ${instance_meta.get_name()} <py:if test="not instance_meta.get_parent() is None"><small>(inherits ${instance_meta.get_parent().get_name()})</small></py:if></h1>
-      <form method="post" action="${href.adaptiveartifacts(instance_meta.get_identifier())}?action=instantiate">
+      <form method="post" action="${href.adaptiveartifacts(instance_meta.get_id())}?action=new">
           <fieldset id="basics">
           <legend>Basics</legend>
           <py:for each="property in instance_meta.get_properties()">
