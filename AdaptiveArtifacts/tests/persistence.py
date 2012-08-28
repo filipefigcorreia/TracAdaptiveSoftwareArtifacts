@@ -88,6 +88,8 @@ class TestBasicEntityBehaviour(unittest.TestCase):
         self.assertRaises(ValueError, dbp2.load_artifact, self.lightningMcQueen.get_id())
         self.assertTrue(pool2.get_item(self.lightningMcQueen.get_id()) is None)
 
+    def test_retrieve_history(self):
+        self.assertTrue(False)
 
 
 class Scenarios(object):
