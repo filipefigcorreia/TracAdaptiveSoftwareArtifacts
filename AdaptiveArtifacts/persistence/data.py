@@ -144,6 +144,18 @@ class DBPool(object):
         row = rows.fetchone()
         return row[0] if not row is None and len(row)>0 else None
 
+    def load_specs(self, db=None):
+        if not db:
+            db = self.env.get_read_db()
+
+        cursor = db.cursor()
+        rows = cursor.execute("""
+                SELECT DISTINCT name
+                FROM asa_spec;""")
+        for row in rows.fetchall():
+            self.load_spec(row[0])
+
+
     def load_instances_of(self, id_spec, db=None):
         if not db:
             db = self.env.get_read_db()
