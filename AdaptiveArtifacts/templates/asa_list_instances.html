@@ -16,7 +16,7 @@
           <li py:for="instance in instances"><a href="${req.href.adaptiveartifacts(instance.get_id(), action='view')}">${instance.get_id()}</a></li>
       </ul>
       <form method="get" action="${href.adaptiveartifacts(context_instance.get_id())}" id="modifypage">
-          <input type="hidden" name="action" value="instantiate" />
+          <input type="hidden" name="action" value="new" />
           <input type="submit" value="Create new" />
       </form>
       <br/>

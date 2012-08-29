@@ -11,14 +11,18 @@ from AdaptiveArtifacts.model.core import Entity, Instance
 #All the methods here should return a `(template_name, data, content_type)` tuple
 
 def index_get(req, dbp, inst, resource):
+    # Load *everything* TODO: make more efficient
     dbp.load_specs()
     dbp.load_instances_of(Instance.get_id())
-    instances = dbp.pool.get_items((0,1))
+
+    specs = []
+    for spec in dbp.pool.get_items((1,)):
+        specs.append((spec, len(dbp.pool.get_instances_of(spec.get_name()))))
 
     data = {
         'context': Context.from_request(req, resource),
         'action': 'list',
-        'instances': instances,
+        'specs': specs,
     }
     return 'asa_index.html', data, None
 
@@ -53,7 +57,7 @@ def list_get(req, dbp, inst, resource):
 def new_get(req, dbp, inst, resource):
     from model import Instance, Entity
 
-    if not inst in [Instance, Entity]:
+    if not inst is Instance and not isinstance(inst, Entity):
         raise Exception("Trying to instanciate something that is not instantiatable '%s'." % inst)
 
     data = {
@@ -80,7 +84,7 @@ def new_post(req, dbp, inst, resource):
         else:
             bases = tuple()
         brand_new_inst = Entity(name=name, attributes=attributes, bases=bases)
-    elif meta is Instance: #creating a m0
+    elif issubclass(meta, Instance): #creating a m0
         values = {
             'spec_name': req.args['spec_name'],
             'attr_name': req.args['attr_name'],
