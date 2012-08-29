@@ -13,6 +13,11 @@ class InstancePool(object):
     def __init__(self):
         self._items = []
 
+        # Handle special case of the top-most classes of the instantiation chain (Entity and Instance).
+        # They are not loaded explicitly, and are always available from any pool.
+        self.add(Entity)
+        self.add(Instance)
+
     def add(self, instance):
         id = instance.get_id()
         if not id is None and not self.get_item(id) is None:
@@ -36,7 +41,7 @@ class InstancePool(object):
 
     def get_instances_of(self, meta_id):
         assert(not meta_id is None)
-        return [item for item in self._items if item.__class__.get_id() == meta_id]
+        return [item for item in self._items if hasattr(item.__class__, 'get_id') and item.__class__.get_id() == meta_id]
 
     def get_possible_domains(self):
         pool = self

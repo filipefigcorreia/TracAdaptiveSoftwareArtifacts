@@ -51,6 +51,12 @@ class DBPool(object):
         self.pool.add(artifact)
 
     def load_spec(self, name, db=None):
+
+        # Ignore requests to load the top-most classes of the instantiation chain (Entity and Instance),
+        # as these will not be persisted to the database and will be always available from the pool.
+        if name in (Entity.get_name(), Instance.get_name()):
+            return
+
         if not db:
             db = self.env.get_read_db()
         version = self._get_latest_spec_version(name, db)

@@ -238,3 +238,8 @@ class Entity(type):
     @classmethod
     def get_attributes(mcs):
         return []
+
+    @classmethod
+    def is_uncommitted(mcs):
+        return False # report the "Entity" class as always committed as it's not even changeable...
+
