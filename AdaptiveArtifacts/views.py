@@ -6,17 +6,18 @@
 from trac.mimeview.api import Context
 from trac.web.chrome import add_notice
 from util import is_uuid
+from AdaptiveArtifacts.model.core import Entity, Instance
 
 #All the methods here should return a `(template_name, data, content_type)` tuple
 
 def index_get(req, dbp, inst, resource):
-    dbp.load_instances_of(inst.get_id())
-    instances = dbp.pool.get_instances_of(inst.get_id())
+    dbp.load_specs()
+    dbp.load_instances_of(Instance.get_id())
+    instances = dbp.pool.get_items((0,1))
 
     data = {
         'context': Context.from_request(req, resource),
         'action': 'list',
-        'context_instance': inst,
         'instances': instances,
     }
     return 'asa_index.html', data, None

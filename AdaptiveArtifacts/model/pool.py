@@ -36,8 +36,14 @@ class InstancePool(object):
                 return item
         return None
 
-    def get_items(self):
-        return self._items
+    def get_items(self, levels=(0,1,2)):
+        if levels == (0,1,2):
+            return self._items
+        else:
+            return [item for item in self._items if
+                    isinstance(item, Instance) and 0 in levels or
+                    isinstance(item, Entity) and 1 in levels or
+                    item in (Entity, Instance) and 2 in levels]
 
     def get_instances_of(self, meta_id):
         assert(not meta_id is None)
