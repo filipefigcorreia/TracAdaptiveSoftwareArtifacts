@@ -70,7 +70,7 @@ class TestBasicEntityBehaviour(unittest.TestCase):
 
         dbp = DBPool(self.env, pool)
         dbp.delete(sallyCarrera)
-        self.assertEqual(3, len(dbp.pool.get_items()))
+        self.assertEqual(3, len(dbp.pool.get_items((0,1))))
 
 
     def test_delete_changed(self):
@@ -81,7 +81,7 @@ class TestBasicEntityBehaviour(unittest.TestCase):
         self.lightningMcQueen.set_value('Wheels', ['front middle wheel', 'rear left wheel', 'front right wheel'])
         dbp.delete(lightningMcQueen)
         self.assertTrue(pool.get_item(lightningMcQueen.get_id()) is None)
-        self.assertEqual(2, len(dbp.pool.get_items()))
+        self.assertEqual(2, len(dbp.pool.get_items((0,1))))
 
         pool2 = InstancePool()
         dbp2 = DBPool(self.env, pool2)
