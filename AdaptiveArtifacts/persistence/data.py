@@ -14,6 +14,18 @@ class DBPool(object):
         self.pool = pool
         self.version = None # default is latest version
 
+    def load_item(self, id, db=None):
+        is_spec = False
+        try:
+            long(id)
+        except ValueError:
+            is_spec = True
+
+        if not is_spec:
+            self.load_artifact(id)
+        else:
+            self.load_spec(id)
+
     def load_artifact(self, id, db=None):
         if not db:
             db = self.env.get_read_db()
@@ -146,7 +158,7 @@ class DBPool(object):
         query += """GROUP BY id"""
         rows = cursor.execute(query)
         for id, version in rows.fetchall():
-            self.pool.add(self.load_artifact(id))
+            self.load_item(id)
 
     def save(self, author, comment, remote_addr, t=None):
         @with_transaction(self.env)

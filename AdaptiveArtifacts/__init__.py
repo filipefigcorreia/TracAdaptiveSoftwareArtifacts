@@ -57,16 +57,7 @@ class Core(Component):
         elif asa_resource_name == Instance.get_name():
             inst = Instance
         else:
-            is_spec = False
-            try:
-                long(asa_resource_name)
-            except ValueError:
-                is_spec = True
-
-            if not is_spec:
-                dbp.load_artifact(asa_resource_name)
-            else:
-                dbp.load_spec(asa_resource_name)
+            dbp.load_item(asa_resource_name)
             inst = dbp.pool.get_item(asa_resource_name)
             if inst is None:
                 raise ResourceNotFound("No resource found with identifier '%s'" % asa_resource_name)
