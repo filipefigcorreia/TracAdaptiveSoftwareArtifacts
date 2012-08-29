@@ -80,7 +80,12 @@ def new_post(req, dbp, inst, resource):
             bases = tuple()
         brand_new_inst = Entity(name=name, attributes=attributes, bases=bases)
     elif meta is Instance: #creating a m0
-        brand_new_inst = meta(values=req.args)
+        values = {
+            'spec_name': req.args['spec_name'],
+            'attr_name': req.args['attr_name'],
+            'attr_value': req.args['attr_value']
+            }
+        brand_new_inst = meta(values=values)
     else:
         raise Exception("Trying to instanciate a not instantiatable instance '%s'." % meta)
 

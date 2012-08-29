@@ -26,7 +26,7 @@ class DBPool(object):
         rows = cursor.execute("""
                 SELECT meta_class
                 FROM asa_artifact
-                WHERE id='%d' AND version_id='%d'
+                WHERE id='%s' AND version_id='%d'
                 GROUP BY id""" % (id, version))
         meta_class_name = rows.fetchone()
         if meta_class_name is None or len(meta_class_name) == 0:
@@ -41,7 +41,7 @@ class DBPool(object):
         rows = cursor.execute("""
                 SELECT attr_name, attr_value
                 FROM asa_artifact_value
-                WHERE artifact_id='%d' AND version_id='%d'""" % (id, version))
+                WHERE artifact_id='%s' AND version_id='%d'""" % (id, version))
         values = rows.fetchall()
 
         # create the instance
