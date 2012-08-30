@@ -11,7 +11,7 @@
   </head>
   <body>
       <ul>
-          <li py:for="instance in instances"><a href="${req.href.adaptiveartifacts(instance.get_id(), action='view')}">${instance.get_id()}</a></li>
+          <li py:for="spec,count in specs"><a href="">+</a> <a href="${req.href.adaptiveartifacts(spec.get_id(), action='view')}">${spec.get_name()}</a> (${count})</li>
       </ul>
       <form method="get" action="${href.adaptiveartifacts('__Entity')}" id="modifypage">
           <input type="hidden" name="action" value="new" />

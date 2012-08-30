@@ -36,18 +36,31 @@ class InstancePool(object):
                 return item
         return None
 
-    def get_items(self, levels=(0,1,2)):
-        if levels == (0,1,2):
-            return self._items
-        else:
-            return [item for item in self._items if
+    def get_items(self, levels=(0,1,2), base_name=None):
+        result = self._items
+        if not levels == (0,1,2):
+            result = [item for item in result if
                     isinstance(item, Instance) and 0 in levels or
                     isinstance(item, Entity) and 1 in levels or
                     item in (Entity, Instance) and 2 in levels]
+        if not base_name is None:
+            base = self.get_item(base_name)
+            result = [item for item in result if isinstance(item, Entity) and len(item.__bases__) > 0 and item.__bases__[0] is base]
+        return result
 
     def get_instances_of(self, meta_id):
         assert(not meta_id is None)
-        return [item for item in self._items if hasattr(item.__class__, 'get_id') and item.__class__.get_id() == meta_id]
+        return [item for item in self._items if item.__class__ in self.get_spec_and_child_specs(meta_id)]
+
+    def get_spec_and_child_specs(self, id_spec):
+        inh_chain = current = [self.get_item(id_spec)]
+        while True:
+            childs = [self.get_items(base_name=spec.get_name()) for spec in current]
+            current = [child for sublist in childs for child in sublist]
+            if len(current) == 0:
+                break
+            inh_chain.extend(current)
+        return inh_chain
 
     def get_possible_domains(self):
         pool = self

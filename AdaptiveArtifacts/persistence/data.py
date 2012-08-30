@@ -155,16 +155,59 @@ class DBPool(object):
         for row in rows.fetchall():
             self.load_spec(row[0])
 
+    def _get_filter(self, items):
+        filter = "("
+        for item in items:
+            if len(filter) > 1:
+                filter += ","
+            filter += "'%s'" % (item,)
+        filter += ")"
+        return filter
+
+    def _load_spec_and_child_specs(self, id_spec, db=None):
+        """
+        Loads the specified spec and discovers and loads all the specs that inherit from it
+        """
+        if not db:
+            db = self.env.get_read_db()
+        cursor = db.cursor()
+
+        self.load_spec(id_spec, db)
+        current_specs = [id_spec]
+        while True:
+            filter = self._get_filter(current_specs)
+            query = """
+                SELECT name, max(version_id) version
+                FROM asa_spec
+                WHERE base_class in %s
+                """ % (filter,)
+            if not self.version is None:
+                query += 'AND version_id <= %s ' % (self.version,)
+            query += """GROUP BY name"""
+            rows = cursor.execute(query)
+            current_specs = []
+            result = rows.fetchall()
+            if len(result) == 0:
+                break
+            for name, version in result:
+                self.load_spec(name)
+                current_specs.append(name)
 
     def load_instances_of(self, id_spec, db=None):
         if not db:
             db = self.env.get_read_db()
         cursor = db.cursor()
+
+        self._load_spec_and_child_specs(id_spec, db)
+        specs = self.pool.get_spec_and_child_specs(id_spec)
+        filter = self._get_filter([spec.get_id() for spec in specs])
+
+        # load artifacts of these specs
         query = """
                 SELECT id, max(version_id) version
-                FROM asa_artifact a
-                WHERE meta_class = '%s'
-                """ % (id_spec,)
+                FROM asa_artifact
+                WHERE meta_class in %s
+                """ % (filter,)
         if not self.version is None:
             query += 'AND version_id <= %s '  % (self.version,)
         query += """GROUP BY id"""
