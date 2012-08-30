@@ -57,7 +57,7 @@ def list_get(req, dbp, inst, resource):
 def new_get(req, dbp, inst, resource):
     from model import Instance, Entity
 
-    if not inst is Instance and not isinstance(inst, Entity):
+    if not inst is Instance and not inst is Entity and not isinstance(inst, Entity):
         raise Exception("Trying to instanciate something that is not instantiatable '%s'." % inst)
 
     data = {
@@ -85,11 +85,16 @@ def new_post(req, dbp, inst, resource):
             bases = tuple()
         brand_new_inst = Entity(name=name, attributes=attributes, bases=bases)
     elif issubclass(meta, Instance): #creating a m0
-        values = {
-            'spec_name': req.args['spec_name'],
-            'attr_name': req.args['attr_name'],
-            'attr_value': req.args['attr_value']
-            }
+        # group posted values into a dict of attr_name:attr_value
+        # {'attr_name_1':'Age', 'attr_value_1':'42'} -> {'Age':'42'}
+        values = {}
+        for key in req.args.keys():
+            if key[0:9] == 'attr_name':
+                idx = key[10:]
+                attr_name = req.args[key]
+                values[attr_name] = req.args['attr_value_'+idx]
+                if 'attr_default_'+idx in req.args:
+                    values['str_attr'] = attr_name
         brand_new_inst = meta(values=values)
     else:
         raise Exception("Trying to instanciate a not instantiatable instance '%s'." % meta)
