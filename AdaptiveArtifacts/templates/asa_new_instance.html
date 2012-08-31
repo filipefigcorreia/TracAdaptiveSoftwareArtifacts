@@ -6,24 +6,35 @@
       xmlns:i18n="http://genshi.edgewall.org/i18n"
       xmlns:xi="http://www.w3.org/2001/XInclude">
   <xi:include href="layout.html" />
+
+  <py:def function="attr_value_markup(value_idx=None, attr_name=None, attr_value=None)">
+      <td><a class="delvalue" href="#">[-]</a></td>
+      <td><input type="text" name="attr-name-${value_idx}" value="${attr_name}" /></td>
+      <td><input type="text" name="attr-value-${value_idx}" value="${attr_value}" /></td>
+      <td>
+          <input type="radio" name="default" value="attr-default-${value_idx}" />
+      </td>
+  </py:def>
+
   <head>
     <title></title>
     <script type="text/javascript">
       $(document).ready(function(){
-          $("a.addproperty").click(function(){
-            var newid = uuid.v4()
-            var copy = $("div.property:last").clone(true)
-            copy.removeClass('prototype')
-            name_input = copy.find("input[name^='property-name-']")
-            name_input.attr("name", "property-name-" + newid)
-            name_input.attr("value", "")
-            domain_input = copy.find("select[name^='property-domain-']")
-            domain_input.attr("name", "property-domain-" + newid)
-            $("div.properties").append(copy)
+          $("a.addvalue").click(function(){
+              var newid = uuid.v4()
+              var copy = $("tr.attribute:last").clone(true)
+              copy.removeClass('prototype')
+              name_input = copy.find("input[name^='attr-name-']")
+              name_input.attr("name", "attr-name-" + newid)
+              name_input.attr("value", "")
+              value_input = copy.find("input[name^='attr-value-']")
+              value_input.attr("name", "attr-value-" + newid)
+              value_input.attr("value", "")
+            $("table.attributes").append(copy)
           });
 
-          $("a.delproperty").click(function(){
-              $(this).parent().remove()
+          $("a.delvalue").click(function(){
+              $(this).parent().parent().remove()
           });
       });
     </script>
@@ -58,17 +69,13 @@
       <form method="post" action="${href.adaptiveartifacts(instance_meta.get_name())}">
           <label>Spec:</label> <input type="text" name="spec_name" value="${instance_meta.get_name()}" /><br/>
           <label>Attributes:</label>
-          <table>
-              <tr><th>Name</th><th>Value</th><th>Default</th></tr>
-              <tr>
-              <td><input type="text" name="attr_name_1" value="" /></td>
-              <td><input type="text" name="attr_value_1" value="" /></td>
-                  <td>
-                      <input type="radio" name="attr_default_1" value="thisone" />
-                  </td>
+          <table class="attributes">
+              <tr><th></th><th>Name</th><th>Value</th><th>Default</th></tr>
+              <tr class="attribute prototype">
+                  ${attr_value_markup(value_idx="X", attr_name="", attr_value="")}
               </tr>
           </table>
-
+          <a href="#" class="addvalue" title="Add one more value" style="margin-left: 12.5em;">[+]</a>
           <br/>
           <input type="hidden" name="action" value="new" />
           <input type="submit" value="Create" />
@@ -77,3 +84,4 @@
       </div>
   </body>
 </html>
+

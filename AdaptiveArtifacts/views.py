@@ -89,12 +89,12 @@ def new_post(req, dbp, inst, resource):
         # {'attr_name_1':'Age', 'attr_value_1':'42'} -> {'Age':'42'}
         values = {}
         for key in req.args.keys():
-            if key[0:9] == 'attr_name':
+            if key[0:9] == 'attr-name':
                 idx = key[10:]
                 attr_name = req.args[key]
-                values[attr_name] = req.args['attr_value_'+idx]
-                if 'attr_default_'+idx in req.args:
-                    values['str_attr'] = attr_name
+                values[attr_name] = req.args['attr-value-'+idx]
+                if 'attr-default_'+idx in req.args:
+                    values['str-attr'] = attr_name
         brand_new_inst = meta(values=values)
     else:
         raise Exception("Trying to instanciate a not instantiatable instance '%s'." % meta)
