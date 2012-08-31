@@ -89,7 +89,7 @@ def new_post(req, dbp, inst, resource):
         # {'attr_name_1':'Age', 'attr_value_1':'42'} -> {'Age':'42'}
         values = {}
         for key in req.args.keys():
-            if key[0:9] == 'attr-name':
+            if key[0:9] == 'attr-name' and len(req.args[key]) > 0 and key[10:] != 'X':
                 idx = key[10:]
                 attr_name = req.args[key]
                 values[attr_name] = req.args['attr-value-'+idx]
