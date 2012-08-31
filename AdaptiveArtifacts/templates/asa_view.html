@@ -19,7 +19,7 @@
             </py:if>
             <li>Values:
                 <ul>
-                    <li py:for="attribute in instance.__class__.get_attributes()">${attribute.name}: ${instance.get_value(attribute.name)}</li>
+                    <li py:for="name, value in instance.get_values()"><py:choose test=""><py:when test="name in [attribute.name for attribute in instance.__class__.get_attributes()]"><strong>${name}</strong></py:when><py:otherwise>${name}</py:otherwise></py:choose>: ${value}</li>
                 </ul>
             </li>
             <py:if test="instance.__class__.__name__ == 'Entity'">

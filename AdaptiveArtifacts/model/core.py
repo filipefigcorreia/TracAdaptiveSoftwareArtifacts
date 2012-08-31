@@ -116,6 +116,12 @@ class Instance(object):
                 else:
                     setattr(self, py_identifier, [old_val, value])
 
+    def get_values(self):
+            """
+            Returns (attribute,value) pairs of all the values of the instance, independently in they are defined by any spec.
+            """
+            return [(name, getattr(self, py_id, None)) for name, py_id in self.attr_identifiers.iteritems()]
+
     def get_value(self, name):
             """
             Returns the value for the attribute with the specified name.
