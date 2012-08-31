@@ -37,7 +37,8 @@ def view_get(req, dbp, inst, resource):
         'repr': type(inst),
         'version': inst.version,
     }
-    return 'asa_view.html', data, None
+    return 'asa_view_entity.html' if isinstance(inst, Entity) else 'asa_view_instance.html', data, None
+
 
 def list_get(req, dbp, inst, resource):
     dbp.load_instances_of(inst.get_id())

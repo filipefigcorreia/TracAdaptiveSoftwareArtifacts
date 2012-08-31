@@ -14,25 +14,12 @@
         <ul>
             <li>Identifier: ${instance.get_id()}</li>
             <li>Meta: <a href="${req.href.adaptiveartifacts(instance.__class__.get_id(), action='view')}">${instance.__class__.get_name()}</a></li>
-            <py:if test="instance.__class__.__name__ == 'Entity'">
-            <li>Name: ${instance.get_name()}</li>
-            </py:if>
             <li>Values:
                 <ul>
                     <li py:for="name, value in instance.get_values()"><py:choose test=""><py:when test="name in [attribute.name for attribute in instance.__class__.get_attributes()]"><strong>${name}</strong></py:when><py:otherwise>${name}</py:otherwise></py:choose>: ${value}</li>
                 </ul>
             </li>
-            <py:if test="instance.__class__.__name__ == 'Entity'">
-            <li>Properties:
-                <ul>
-                    <li py:for="attribute in instance.get_attributes()">${attribute.name}</li>
-                </ul>
-            </li>
-            </py:if>
         </ul>
-        <py:if test="instance.__class__.__name__ == 'Entity'">
-        <a href="${req.href.adaptiveartifacts(instance.get_id(), action='list')}">See Instances</a>
-        </py:if>
     </div>
   </body>
 </html>
