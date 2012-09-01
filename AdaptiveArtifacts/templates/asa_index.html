@@ -11,13 +11,13 @@
   </head>
   <body>
       <ul>
-          <li py:for="spec,count in specs"><a href="">+</a> <a href="${req.href.adaptiveartifacts(spec.get_id(), action='view')}">${spec.get_name()}</a> (${count})</li>
+          <li py:for="spec,count in specs"><a href="">+</a> <a href="${req.href.adaptiveartifacts('spec/' + spec.get_id(), action='view')}">${spec.get_name()}</a> (${count})</li>
       </ul>
-      <form method="get" action="${href.adaptiveartifacts('__Entity')}" id="modifypage">
+      <form method="get" action="${href.adaptiveartifacts('spec')}" id="modifypage">
           <input type="hidden" name="action" value="new" />
           <input type="submit" value="New Spec" />
       </form>
-      <form method="get" action="${href.adaptiveartifacts('__Instance')}" id="modifypage">
+      <form method="get" action="${href.adaptiveartifacts('artifact')}" id="modifypage">
           <input type="hidden" name="action" value="new" />
           <input type="submit" value="New Artifact" />
       </form>

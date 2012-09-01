@@ -55,7 +55,7 @@
   <body>
       <div id="content" class="asa">
       <h1>New Artifact Specification</h1>
-      <form method="post" action="${href.adaptiveartifacts(instance_meta.get_id())}">
+      <form method="post" action="${href(url_path)}">
           <label>Name:</label> <input type="text" name="name" value="" /><br/>
           <label>Inherits:</label>
           <py:if test="instance_meta.get_parent() is None">

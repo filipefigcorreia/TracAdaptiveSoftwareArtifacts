@@ -33,16 +33,19 @@ class Core(Component):
 
     # IRequestHandler methods
     def match_request(self, req):
-        match = re.match(r'/%s(?:/(.+))?$' % self.base_url, req.path_info)
+        match = re.match(r'/%s(?:/([^/]+))?/?(.+)?$' % self.base_url, req.path_info)
         if match:
             if match.group(1):
-                req.args['asa_resource'] = match.group(1)
+                req.args['asa_resource_type'] = match.group(1)
+            if match.group(2):
+                req.args['asa_resource'] = match.group(2)
             return True
         else:
             return False
 
     def process_request(self, req):
         action = req.args.get('action', None) # view, edit, list, index, new
+        asa_resource_type = req.args.get('asa_resource_type', None)
         asa_resource_name = req.args.get('asa_resource', None)
         version = req.args.get('version')
         #old_version = req.args.get('old_version')
@@ -52,15 +55,23 @@ class Core(Component):
 
         dbp = DBPool(self.env, InstancePool())
 
-        if asa_resource_name is None or asa_resource_name == Entity.get_name():
-            inst = Entity
-        elif asa_resource_name == Instance.get_name():
-            inst = Instance
+        if asa_resource_type is None:
+            inst = None
+            action = 'index'
         else:
-            dbp.load_item(asa_resource_name)
-            inst = dbp.pool.get_item(asa_resource_name)
-            if inst is None:
-                raise ResourceNotFound("No resource found with identifier '%s'" % asa_resource_name)
+            if not asa_resource_type in ['spec', 'artifact']:
+                raise Exception("Unknown type of resource '%s'" % (asa_resource_type,))
+
+            if asa_resource_name is None:
+                if asa_resource_type == 'spec':
+                    inst = Entity
+                elif asa_resource_type == 'artifact':
+                    inst = Instance
+            else:
+                dbp.load_item(asa_resource_name)
+                inst = dbp.pool.get_item(asa_resource_name)
+                if inst is None:
+                    raise ResourceNotFound("No resource found with identifier '%s'" % asa_resource_name)
 
         if action is None: # default action depends on the instance's meta-level
             if inst is Entity:
@@ -71,18 +82,22 @@ class Core(Component):
                 action = 'view'
 
         add_javascript(req, 'adaptiveartifacts/js/uuid.js')
-        view = Core._resolve_view(action, req.method)
+        view = Core._resolve_view(asa_resource_type, action, req.method)
         if not view is None:
-            res = Core._get_resource(inst) if not inst in (Entity, Instance) else None
+            res = Core._get_resource(inst) if not inst in (Entity, Instance, None) else None
             return view(req, dbp, inst, res)
         else:
-            return None # Something's very wrong
+            raise Exception("Unknown view '%s'" % (view,)) # Something's very wrong
 
     @staticmethod
-    def _resolve_view(action, method):
+    def _resolve_view(res_type, action, method):
+        assert res_type in ['spec', 'artifact', None]
         from AdaptiveArtifacts import views
-        mlist = [method_name for method_name in dir(views) if callable(getattr(views, method_name)) and method_name.split('_',1)[-1] in ('get', 'post')]
-        mname = action.lower() + '_' + method.lower()
+        mlist = [method_name for method_name in dir(views) if callable(getattr(views, method_name)) and method_name.startswith(('get_', 'post_'))]
+        if res_type is None:
+            mname = '%s_%s' % (method.lower(), action.lower())
+        else:
+            mname = '%s_%s_%s' % (method.lower(), action.lower(), res_type.lower())
         if mname in mlist:
             return getattr(views, mname)
         else:
