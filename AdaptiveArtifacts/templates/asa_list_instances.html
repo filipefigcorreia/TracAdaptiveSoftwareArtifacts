@@ -10,7 +10,7 @@
     <title></title>
   </head>
   <body>
-      Available ${context_instance.get_name()}s:
+      <h1>${context_instance.get_name()}s</h1>
       <ul>
           <li py:for="entity in entities"><a href="${req.href.adaptiveartifacts('artifact/' + str(entity.get_id()), action='view')}">${entity.get_name()}</a></li>
           <li py:for="instance in instances"><a href="${req.href.adaptiveartifacts('artifact/' + str(instance.get_id()), action='view')}">${instance.get_id()}</a></li>

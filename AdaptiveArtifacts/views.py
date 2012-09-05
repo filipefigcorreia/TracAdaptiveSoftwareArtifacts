@@ -98,7 +98,7 @@ def post_new_spec(req, dbp, inst, resource):
     name = req.args.get('name')
     parent_name = req.args.get('parent')
     attributes = [
-        Attribute(req.args.get('attr_name'), req.args.get('attr_multiplicity'), req.args.get('attr_type'))
+        Attribute(req.args.get('attr-name-X'), req.args.get('attr-multiplicity-X'), req.args.get('attr-type-X'))
     ]
     if parent_name:
         dbp.load_spec(parent_name)

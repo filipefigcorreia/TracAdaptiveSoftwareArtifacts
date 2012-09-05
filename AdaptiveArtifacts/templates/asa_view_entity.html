@@ -7,18 +7,19 @@
       xmlns:xi="http://www.w3.org/2001/XInclude">
   <xi:include href="layout.html" />
   <head>
-    <title>${instance.__class__.get_id()}</title>
+    <title>Artifact Spec - ${instance.get_name()}</title>
   </head>
   <body>
     <div id="content" class="asa">
-        <ul>
-            <li>Name: ${instance.get_name()}</li>
-            <li>Attributes:
-                <ul>
-                    <li py:for="attribute in instance.get_attributes()">${attribute.name} | ${attribute.type.__name__} | ${attribute.multiplicity}</li>
-                </ul>
-            </li>
-        </ul>
+        <h1>${instance.get_name()}</h1>
+        <table border="1">
+        <tr><th>Attribute</th><th>Type</th><th>Multiplicity</th></tr>
+        <tr py:for="attribute in instance.get_attributes()">
+            <td>${attribute.name}</td><td>${attribute.type.__name__}</td><td>${attribute.multiplicity[0]},${attribute.multiplicity[1]}</td>
+        </tr>
+        </table>
+        <br/>
+        <a href="${req.href.adaptiveartifacts('spec/' + instance.get_id(), action='edit')}">Edit</a>
         <a href="${req.href.adaptiveartifacts('spec/' + instance.get_id(), action='list')}">See Instances</a>
     </div>
   </body>

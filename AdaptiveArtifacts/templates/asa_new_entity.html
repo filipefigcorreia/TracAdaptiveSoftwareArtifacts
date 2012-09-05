@@ -6,6 +6,26 @@
       xmlns:i18n="http://genshi.edgewall.org/i18n"
       xmlns:xi="http://www.w3.org/2001/XInclude">
   <xi:include href="layout.html" />
+
+  <py:def function="attr_markup(idx=None, attr_name=None, attr_type=None, attr_multiplicity=None)">
+      <td><a class="delvalue" href="#">[-]</a></td>
+      <td><input type="text" name="attr-name-${idx}" value="${attr_name}" /></td>
+      <td>
+          <select name="attr-type-${idx}">
+            <option value=""></option>
+            <option value="str">str</option>
+          </select>
+      </td>
+      <td>
+           <select name="attr-multiplicity-${idx}">
+               <option value=""></option>
+               <option value="1">1</option>
+               <option value="">*</option>
+           </select>
+       </td>
+  </py:def>
+
+
   <head>
     <title></title>
     <script type="text/javascript">
@@ -66,21 +86,9 @@
           </py:if><br/>
           <label>Attributes:</label>
           <table>
-              <tr><th>Name</th><th>Type</th><th>Multiplicity</th></tr>
+              <tr><th></th><th>Name</th><th>Type</th><th>Multiplicity</th></tr>
               <tr>
-              <td><input type="text" name="attr_name" value="" /></td>
-              <td>
-                  <select name="attr_type">
-                      <option value=""></option>
-                      <option value="str">str</option>
-                  </select>
-              </td>
-                  <td>
-                      <select name="attr_multiplicity">
-                          <option value=""></option>
-                          <option value="1">1</option>
-                      </select>
-                  </td>
+                  ${attr_markup(idx="X")}
               </tr>
           </table>
 
