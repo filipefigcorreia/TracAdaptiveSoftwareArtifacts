@@ -78,7 +78,7 @@ def get_new_spec(req, dbp, inst, resource):
     return 'asa_new_entity.html', data, None
 
 def get_new_artifact(req, dbp, inst, resource):
-    assert(inst is Instance or isinstance(inst, Entity)) # otherwise, we're trying to instantiate something that is not an atifact
+    assert(inst is Instance or isinstance(inst, Entity)) # otherwise, we're trying to instantiate something that is not an artifact
 
     data = {
         'context': Context.from_request(req, resource),
