@@ -123,6 +123,28 @@ def get_edit_spec(req, dbp, inst, resource):
     }
     return 'asa_new_entity.html', data, None
 
+def post_edit_spec(req, dbp, inst, resource):
+    assert(inst is Instance or isinstance(inst, Entity))
+
+    # group posted attributes into a list of tuples (attr_name,attr_type,attr_multiplicity)
+    # {'attr_name_1':'Age', 'attr_type_1':'str', 'attr_multiplicity_1':None} -> [('Age','str',None)]
+    attrs = []
+    for key in req.args.keys():
+        if key[0:9] == 'attr-name' and len(req.args[key]) > 0 and key[10:] != 'X':
+            idx = key[10:]
+            attr_name = req.args[key]
+            attr_type = req.args['attr-type-'+idx]
+            attr_multiplicity = req.args['attr-multiplicity-'+idx]
+            attrs.append((attr_name, attr_type, attr_multiplicity))
+
+    attributes = [Attribute(n,m,t) for n,t,m in attrs]
+
+    inst.replace_attributes(attributes)
+
+    dbp.save('author', 'comment', 'address')
+    add_notice(req, 'Your changes have been saved.')
+    url = req.href.adaptiveartifacts('spec/%s' % (inst.get_id(),), action='view')
+    req.redirect(url)
 
 
 def get_new_artifact(req, dbp, inst, resource):
