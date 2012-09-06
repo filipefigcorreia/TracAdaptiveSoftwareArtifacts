@@ -87,7 +87,7 @@ class Core(Component):
             res = Core._get_resource(inst) if not inst in (Entity, Instance, None) else None
             return view(req, dbp, inst, res)
         else:
-            raise Exception("Unknown view '%s'" % (view,)) # Something's very wrong
+            raise Exception("Unable to find a view for %s, %s, %s" % (asa_resource_type, action, req.method))
 
     @staticmethod
     def _resolve_view(res_type, action, method):
