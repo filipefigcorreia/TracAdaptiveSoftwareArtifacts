@@ -129,6 +129,18 @@ class Instance(object):
                 else:
                     setattr(self, py_identifier, [old_val, value])
 
+    def replace_values(self, values_list):
+        """
+        Replaces the attribute values of an instance.
+
+        values_list: A list of tuples (attr_name, attr_value)
+        """
+        for py_identifier in self.attr_identifiers.values():
+            delattr(self, py_identifier)
+        self.attr_identifiers = {}
+        self.add_values(values_list)
+        self._is_modified = True
+
     def get_values(self):
             """
             Returns (attribute,value) pairs of all the values of the instance, independently in they are defined by any spec.

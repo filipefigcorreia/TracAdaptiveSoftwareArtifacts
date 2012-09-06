@@ -87,6 +87,18 @@ def get_new_artifact(req, dbp, inst, resource):
     }
     return 'asa_new_instance.html', data, None
 
+def get_edit_artifact(req, dbp, inst, resource):
+    assert(isinstance(inst, Instance)) # otherwise, we're trying to edit something that is not an artifact
+
+    data = {
+        'context': Context.from_request(req, resource),
+        'instance_meta': inst.__class__,
+        'instance': inst,
+        'values': [(attr,val) for attr,val in inst.get_values()],
+        'url_path': req.path_info,
+    }
+    return 'asa_new_instance.html', data, None
+
 def post_new_spec(req, dbp, inst, resource):
     if inst is Entity: # instantiating Entity (i.e., creating a spec)
         pass
@@ -132,4 +144,25 @@ def post_new_artifact(req, dbp, inst, resource):
     dbp.save('author', 'comment', 'address')
     add_notice(req, 'Your changes have been saved.')
     url = req.href.adaptiveartifacts('artifact/%d' % (brand_new_inst.get_id(),), action='view')
+    req.redirect(url)
+
+def post_edit_artifact(req, dbp, inst, resource):
+    assert(isinstance(inst, Instance)) # otherwise, we're trying to edit something that is not an artifact
+
+    # group posted values into a dict of attr_name:attr_value
+    # {'attr_name_1':'Age', 'attr_value_1':'42'} -> {'Age':'42'}
+    values = {}
+    for key in req.args.keys():
+        if key[0:9] == 'attr-name' and len(req.args[key]) > 0 and key[10:] != 'X':
+            idx = key[10:]
+            attr_name = req.args[key]
+            values[attr_name] = req.args['attr-value-'+idx]
+            if 'attr-default_'+idx in req.args:
+                values['str-attr'] = attr_name
+
+    inst.replace_values(values.items())
+
+    dbp.save('author', 'comment', 'address')
+    add_notice(req, 'Your changes have been saved.')
+    url = req.href.adaptiveartifacts('artifact/%s' % (inst.get_id(),), action='view')
     req.redirect(url)

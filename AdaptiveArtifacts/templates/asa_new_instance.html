@@ -74,11 +74,22 @@
               <tr class="attribute prototype">
                   ${attr_value_markup(value_idx="X", attr_name="", attr_value="")}
               </tr>
+              <py:if test="instance">
+                  <tr py:for="name,value in instance.get_values()" class="attribute">
+                      ${attr_value_markup(value_idx=name, attr_name=name, attr_value=value)}
+                  </tr>
+              </py:if>
           </table>
           <a href="#" class="addvalue" title="Add one more value" style="margin-left: 12.5em;">[+]</a>
           <br/>
-          <input type="hidden" name="action" value="new" />
-          <input type="submit" value="Create" />
+          <py:if test="not instance">
+            <input type="hidden" name="action" value="new" />
+            <input type="submit" value="Create" />
+          </py:if>
+          <py:if test="instance">
+            <input type="hidden" name="action" value="edit" />
+            <input type="submit" value="Edit" />
+          </py:if>
           <br/><br/>
       </form>
       </div>
