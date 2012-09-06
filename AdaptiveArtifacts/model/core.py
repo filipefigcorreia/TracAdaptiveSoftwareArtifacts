@@ -42,6 +42,7 @@ class Instance(object):
 
     name = '__Instance'
     _is_new = False
+    _is_modified = False
     attributes = []
 
     def __init__(self, *args, **kwargs):
@@ -49,6 +50,7 @@ class Instance(object):
         self.version = kwargs.pop('version', None)
         self.str_attr = kwargs.pop('str_attr', "id")
         self._is_new = not kwargs.pop('persisted', False)
+        self._is_modified = False
         values = kwargs.pop('values', {})
         self.attr_identifiers = {}
         for name, value in values.iteritems():
@@ -70,10 +72,21 @@ class Instance(object):
 
     @util.classinstancemethod
     def is_uncommitted(self, cls):
+        if self is None: # the Instance class or one of its descendents
+            if cls is Instance:
+                return False # the Instance class is always committed, as it's not changeable
+            else:
+                return cls._is_new or cls._is_modified
+        else: # a instance of the Instance class or one of its descendants
+            return self._is_new or self._is_modified
+
+    @util.classinstancemethod
+    def is_new(self, cls):
         if self is None: # the Instance class
-            return cls._is_new
+            return False
         else: # a instance of the Instance class or one of its descendants
             return self._is_new
+
 
     @classmethod
     def get_name(cls):
@@ -216,6 +229,7 @@ class Entity(type):
         dct = args[2] if len(args)>2 else extra_kwargs.pop('dct', None)
         cls.version = extra_kwargs.get('version', None)
         cls._is_new = not kwargs.pop('persisted', False)
+        cls._is_modified = False
         cls.attributes = extra_kwargs.get('attributes', [])
         #cls.py_id = util.to_valid_identifier_name(cls.id) # not needed as an extra attribute, it's already the class identifier!
         super(Entity, cls).__init__(name, bases, dct)
@@ -249,3 +263,6 @@ class Entity(type):
     def is_uncommitted(mcs):
         return False # report the "Entity" class as always committed as it's not even changeable...
 
+    @classmethod
+    def is_new(mcs):
+        return False

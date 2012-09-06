@@ -239,11 +239,22 @@ class DBPool(object):
                                 VALUES (%s,%s,%s,%s,%s,%s)
                                 """, (item.get_name(), version_id, attribute.name, attribute.multiplicity[0], attribute.multiplicity[1], attribute.type if not type(attribute.type)==type else attribute.type.__name__))
                     else: # it's an artifact
-                        cursor.execute("""
-                            INSERT INTO asa_artifact (version_id, meta_class)
-                            VALUES (%s,%s)
-                            """, (version_id, item.__class__.name))
-                        art_id = cursor.lastrowid
+                        if item.is_new():
+                            cursor.execute("""
+                                INSERT INTO asa_artifact_id VALUES (NULL)
+                                """)
+                            art_id = cursor.lastrowid
+                            cursor.execute("""
+                                INSERT INTO asa_artifact (id, version_id, meta_class)
+                                VALUES (%s,%s,%s)
+                                """, (art_id, version_id, item.__class__.name))
+                        else:
+                            art_id = item.get_id()
+                            cursor.execute("""
+                                INSERT INTO asa_artifact (id, version_id, meta_class)
+                                VALUES (%s,%s,%s)
+                                """, (art_id, version_id, item.__class__.name))
+
                         for attr_name in item.attr_identifiers.keys():
                             values = item.get_value(attr_name)
                             if not isinstance(values, list):
@@ -272,6 +283,7 @@ class DBPool(object):
                 cursor.execute("DELETE FROM asa_spec WHERE name=%s", (item.get_name(),))
             else: # it's an artifact
                 cursor.execute("DELETE FROM asa_artifact_value WHERE artifact_id=%s", (item.get_id(),))
+                cursor.execute("DELETE FROM asa_artifact_id WHERE id=%s", (item.get_id(),))
                 cursor.execute("DELETE FROM asa_artifact WHERE id=%s", (item.get_id(),))
             self.pool.remove(item)
             self.env.log.info("Deleted item '%s'" % item.get_id())

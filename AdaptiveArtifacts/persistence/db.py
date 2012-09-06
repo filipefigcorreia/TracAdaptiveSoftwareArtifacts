@@ -20,8 +20,13 @@ schema = [
             Column('readonly',  type='int'),
             Index(['id'], unique=True),
     ],
-    Table('asa_artifact', key=('id', 'version_id'))[
+    # Workaround for sqlite not supporting multiple column primary keys with an auto-increment.
+    # This table as the sole purpose of getting the auto-increment values
+    Table('asa_artifact_id', key='id')[
         Column('id', type='int64', auto_increment=True),
+    ],
+    Table('asa_artifact', key=['id', 'version_id'])[
+        Column('id', type='int64'),
         Column('version_id', type='int64'),
         Column('meta_class'),
         Index(['id', 'version_id'], unique=True),
@@ -33,7 +38,7 @@ schema = [
         Column('attr_value'),
         Index(['artifact_id', 'version_id']),
     ],
-    Table('asa_spec', key=('name', 'version_id'))[
+    Table('asa_spec', key=['name', 'version_id'])[
         Column('name'),
         Column('version_id', type='int64'),
         Column('base_class'),
