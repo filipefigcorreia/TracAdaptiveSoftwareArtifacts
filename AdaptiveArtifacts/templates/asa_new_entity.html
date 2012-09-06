@@ -8,7 +8,7 @@
   <xi:include href="layout.html" />
 
   <py:def function="attr_markup(idx=None, attr_name=None, attr_type=None, attr_multiplicity=None)">
-      <td><a class="delvalue" href="#">[-]</a></td>
+      <td><a class="delattr" href="#">[-]</a></td>
       <td><input type="text" name="attr-name-${idx}" value="${attr_name}" /></td>
       <td>
           <select name="attr-type-${idx}">
@@ -30,20 +30,24 @@
     <title></title>
     <script type="text/javascript">
       $(document).ready(function(){
-          $("a.addproperty").click(function(){
+          $("a.addattr").click(function(){
             var newid = uuid.v4()
-            var copy = $("div.property:last").clone(true)
+            var copy = $("tr.attribute:last").clone(true)
             copy.removeClass('prototype')
-            name_input = copy.find("input[name^='property-name-']")
-            name_input.attr("name", "property-name-" + newid)
+            name_input = copy.find("input[name^='attr-name-']")
+            name_input.attr("name", "attr-name-" + newid)
             name_input.attr("value", "")
-            domain_input = copy.find("select[name^='property-domain-']")
-            domain_input.attr("name", "property-domain-" + newid)
-            $("div.properties").append(copy)
+            type_input = copy.find("select[name^='attr-type-']")
+            type_input.attr("name", "attr-type-" + newid)
+            type_input.attr("value", "")
+            type_multiplicity = copy.find("select[name^='attr-multiplicity-']")
+            type_multiplicity.attr("name", "attr-multiplicity-" + newid)
+            type_multiplicity.attr("value", "")
+            $("table.attributes").append(copy)
           });
 
-          $("a.delproperty").click(function(){
-              $(this).parent().remove()
+          $("a.delattr").click(function(){
+              $(this).parent().parent().remove()
           });
       });
     </script>
@@ -85,12 +89,13 @@
               <input type="text" name="parent" value="${instance_meta.get_parent().get_name()}" />
           </py:if><br/>
           <label>Attributes:</label>
-          <table>
+          <table class="attributes">
               <tr><th></th><th>Name</th><th>Type</th><th>Multiplicity</th></tr>
-              <tr>
+              <tr class="attribute prototype">
                   ${attr_markup(idx="X")}
               </tr>
           </table>
+          <a href="#" class="addattr" title="Add one more attribute" style="margin-left: 12.5em;">[+]</a>
 
           <br/>
           <input type="hidden" name="action" value="new" />

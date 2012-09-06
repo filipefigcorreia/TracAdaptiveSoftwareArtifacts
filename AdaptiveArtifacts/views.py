@@ -84,9 +84,19 @@ def post_new_spec(req, dbp, inst, resource):
 
     name = req.args.get('name')
     parent_name = req.args.get('parent')
-    attributes = [
-        Attribute(req.args.get('attr-name-X'), req.args.get('attr-multiplicity-X'), req.args.get('attr-type-X'))
-    ]
+
+    # group posted attributes into a list of tuples (attr_name,attr_type,attr_multiplicity)
+    # {'attr_name_1':'Age', 'attr_type_1':'str', 'attr_multiplicity_1':None} -> [('Age','str',None)]
+    attrs = []
+    for key in req.args.keys():
+        if key[0:9] == 'attr-name' and len(req.args[key]) > 0 and key[10:] != 'X':
+            idx = key[10:]
+            attr_name = req.args[key]
+            attr_type = req.args['attr-type-'+idx]
+            attr_multiplicity = req.args['attr-multiplicity-'+idx]
+            attrs.append((attr_name, attr_type, attr_multiplicity))
+
+    attributes = [Attribute(n,m,t) for n,t,m in attrs]
     if parent_name:
         dbp.load_spec(parent_name)
         bases = (dbp.pool.get_item(parent_name),)
@@ -99,6 +109,20 @@ def post_new_spec(req, dbp, inst, resource):
     add_notice(req, 'Your changes have been saved.')
     url = req.href.adaptiveartifacts('spec/%s' % (brand_new_inst.get_id(),), action='view')
     req.redirect(url)
+
+def get_edit_spec(req, dbp, inst, resource):
+    assert(inst is Instance or isinstance(inst, Entity))
+
+    data = {
+        'context': Context.from_request(req, resource),
+        'instance_meta': inst.__class__,
+        'instance': inst,
+        'values': [(attr,val) for attr,val in inst.get_values()],
+        'url_path': req.path_info,
+    }
+    return 'asa_new_entity.html', data, None
+
+
 
 def get_new_artifact(req, dbp, inst, resource):
     assert(inst is Instance or isinstance(inst, Entity)) # otherwise, we're trying to instantiate something that is not an artifact
@@ -121,7 +145,7 @@ def post_new_artifact(req, dbp, inst, resource):
             idx = key[10:]
             attr_name = req.args[key]
             values[attr_name] = req.args['attr-value-'+idx]
-            if 'attr-default_'+idx in req.args:
+            if 'attr-default-'+idx in req.args:
                 values['str-attr'] = attr_name
     brand_new_inst = inst(values=values)
 
