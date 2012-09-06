@@ -185,7 +185,7 @@ class Attribute(object):
     def __init__(self, name, multiplicity=None, type=None):
         self.py_id = util.to_valid_identifier_name(name)
         self.name=name
-        self.type = type
+        self.type = type if type else 'str'
         if not multiplicity:
             self.multiplicity = (None, None)
         elif isinstance(multiplicity, int):
