@@ -26,7 +26,6 @@ def get_index(req, dbp, inst, resource):
     }
     return 'asa_index.html', data, None
 
-
 def get_view_spec(req, dbp, inst, resource):
     data = {
         'context': Context.from_request(req, resource),
@@ -40,7 +39,6 @@ def get_view_artifact(req, dbp, inst, resource):
         'instance': inst,
     }
     return 'asa_view_instance.html', data, None
-
 
 def get_list_spec(req, dbp, inst, resource):
     return get_list_artifact(req, dbp, inst, resource)
@@ -59,7 +57,6 @@ def get_list_artifact(req, dbp, inst, resource):
     #TODO: go through all TODOs
     return 'asa_list_instances.html', data, None
 
-
 def get_new_spec(req, dbp, inst, resource):
     from model import Entity
 
@@ -76,28 +73,6 @@ def get_new_spec(req, dbp, inst, resource):
         'url_path': req.path_info,
     }
     return 'asa_new_entity.html', data, None
-
-def get_new_artifact(req, dbp, inst, resource):
-    assert(inst is Instance or isinstance(inst, Entity)) # otherwise, we're trying to instantiate something that is not an artifact
-
-    data = {
-        'context': Context.from_request(req, resource),
-        'instance_meta': inst,
-        'url_path': req.path_info,
-    }
-    return 'asa_new_instance.html', data, None
-
-def get_edit_artifact(req, dbp, inst, resource):
-    assert(isinstance(inst, Instance)) # otherwise, we're trying to edit something that is not an artifact
-
-    data = {
-        'context': Context.from_request(req, resource),
-        'instance_meta': inst.__class__,
-        'instance': inst,
-        'values': [(attr,val) for attr,val in inst.get_values()],
-        'url_path': req.path_info,
-    }
-    return 'asa_new_instance.html', data, None
 
 def post_new_spec(req, dbp, inst, resource):
     if inst is Entity: # instantiating Entity (i.e., creating a spec)
@@ -125,6 +100,16 @@ def post_new_spec(req, dbp, inst, resource):
     url = req.href.adaptiveartifacts('spec/%s' % (brand_new_inst.get_id(),), action='view')
     req.redirect(url)
 
+def get_new_artifact(req, dbp, inst, resource):
+    assert(inst is Instance or isinstance(inst, Entity)) # otherwise, we're trying to instantiate something that is not an artifact
+
+    data = {
+        'context': Context.from_request(req, resource),
+        'instance_meta': inst,
+        'url_path': req.path_info,
+    }
+    return 'asa_new_instance.html', data, None
+
 def post_new_artifact(req, dbp, inst, resource):
     assert(inst is Instance or isinstance(inst, Entity)) # otherwise, we're trying to instantiate something that is not an atifact
 
@@ -145,6 +130,18 @@ def post_new_artifact(req, dbp, inst, resource):
     add_notice(req, 'Your changes have been saved.')
     url = req.href.adaptiveartifacts('artifact/%d' % (brand_new_inst.get_id(),), action='view')
     req.redirect(url)
+
+def get_edit_artifact(req, dbp, inst, resource):
+    assert(isinstance(inst, Instance)) # otherwise, we're trying to edit something that is not an artifact
+
+    data = {
+        'context': Context.from_request(req, resource),
+        'instance_meta': inst.__class__,
+        'instance': inst,
+        'values': [(attr,val) for attr,val in inst.get_values()],
+        'url_path': req.path_info,
+    }
+    return 'asa_new_instance.html', data, None
 
 def post_edit_artifact(req, dbp, inst, resource):
     assert(isinstance(inst, Instance)) # otherwise, we're trying to edit something that is not an artifact
