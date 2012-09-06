@@ -25,6 +25,12 @@
        </td>
   </py:def>
 
+  <py:def function="attr_markup_readonly(idx=None, attr_name=None, attr_type=None, attr_multiplicity=None)">
+      <td></td>
+      <td>${attr_name}</td>
+      <td>${attr_type}</td>
+      <td>${attr_multiplicity}</td>
+  </py:def>
 
   <head>
     <title></title>
@@ -74,19 +80,24 @@
         .prototype{
             display: none;
         }
+
+        th {font-weight: bold;}
     </style>
   </head>
   <body>
       <div id="content" class="asa">
       <h1>New Artifact Specification</h1>
       <form method="post" action="${href(url_path)}">
-          <label>Name:</label> <input type="text" name="name" value="" /><br/>
+          <label>Name:</label>
+          <py:if test="instance"><input type="text" name="name" value="${instance.get_name()}" /></py:if>
+          <py:if test="not instance"><input type="text" name="name" value="" /></py:if>
+          <br/>
           <label>Inherits:</label>
-          <py:if test="instance_meta.get_parent() is None">
+          <py:if test="not instance or instance.get_parent() is None">
               <input type="text" name="parent" value="" />
           </py:if>
-          <py:if test="not instance_meta.get_parent() is None">
-              <input type="text" name="parent" value="${instance_meta.get_parent().get_name()}" />
+          <py:if test="instance and not instance.get_parent() is None">
+              <input type="text" name="parent" value="${instance.get_parent().get_name()}" />
           </py:if><br/>
           <label>Attributes:</label>
           <table class="attributes">
@@ -94,12 +105,28 @@
               <tr class="attribute prototype">
                   ${attr_markup(idx="X")}
               </tr>
+              <py:if test="instance">
+                  <tr py:for="attr,uuid in attributes" class="attribute">
+                      <py:if test="attr.owner_spec == instance">
+                        ${attr_markup(idx=uuid, attr_name=attr.name, attr_type=attr.type._name__, attr_multiplicity=attr.multiplicity)}
+                      </py:if>
+                      <py:if test="attr.owner_spec != instance">
+                        ${attr_markup_readonly(idx=uuid, attr_name=attr.name, attr_type=attr.type.__name__, attr_multiplicity=attr.multiplicity)}
+                      </py:if>
+                  </tr>
+              </py:if>
           </table>
           <a href="#" class="addattr" title="Add one more attribute" style="margin-left: 12.5em;">[+]</a>
 
           <br/>
-          <input type="hidden" name="action" value="new" />
-          <input type="submit" value="Create" />
+          <py:if test="not instance">
+            <input type="hidden" name="action" value="new" />
+            <input type="submit" value="Create" />
+          </py:if>
+          <py:if test="instance">
+            <input type="hidden" name="action" value="edit" />
+            <input type="submit" value="Edit" />
+          </py:if>
           <br/><br/>
       </form>
       </div>

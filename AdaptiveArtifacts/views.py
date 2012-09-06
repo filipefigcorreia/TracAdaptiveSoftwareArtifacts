@@ -6,6 +6,7 @@
 from trac.mimeview.api import Context
 from trac.web.chrome import add_notice
 from util import is_uuid
+import uuid
 from AdaptiveArtifacts.model.core import Entity, Instance, Attribute
 
 #All the methods here should return a `(template_name, data, content_type)` tuple
@@ -117,7 +118,7 @@ def get_edit_spec(req, dbp, inst, resource):
         'context': Context.from_request(req, resource),
         'instance_meta': inst.__class__,
         'instance': inst,
-        'values': [(attr,val) for attr,val in inst.get_values()],
+        'attributes': [(attr,str(uuid.uuid4())) for attr in inst.get_attributes()],
         'url_path': req.path_info,
     }
     return 'asa_new_entity.html', data, None
