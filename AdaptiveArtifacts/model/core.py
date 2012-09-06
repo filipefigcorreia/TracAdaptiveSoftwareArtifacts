@@ -72,7 +72,7 @@ class Instance(object):
 
     @util.classinstancemethod
     def is_uncommitted(self, cls):
-        if self is None: # the Instance class or one of its descendents
+        if self is None: # the Instance class or one of its descendants
             if cls is Instance:
                 return False # the Instance class is always committed, as it's not changeable
             else:
