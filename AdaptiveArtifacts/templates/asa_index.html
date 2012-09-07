@@ -1,23 +1,18 @@
-<!DOCTYPE html
-    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/"
-      xmlns:i18n="http://genshi.edgewall.org/i18n"
       xmlns:xi="http://www.w3.org/2001/XInclude">
   <xi:include href="layout.html" />
-  <head>
-    <title></title>
-  </head>
+  <head><title></title></head>
   <body>
       <ul>
           <li py:for="spec,count in specs"><a href="">+</a> <a href="${req.href.adaptiveartifacts('spec/' + spec.get_id(), action='view')}">${spec.get_name()}</a> (${count})</li>
       </ul>
-      <form method="get" action="${href.adaptiveartifacts('spec')}" id="modifypage">
+      <form method="get" action="${href.adaptiveartifacts('spec')}">
           <input type="hidden" name="action" value="new" />
           <input type="submit" value="New Spec" />
       </form>
-      <form method="get" action="${href.adaptiveartifacts('artifact')}" id="modifypage">
+      <form method="get" action="${href.adaptiveartifacts('artifact')}">
           <input type="hidden" name="action" value="new" />
           <input type="submit" value="New Artifact" />
       </form>

@@ -1,9 +1,6 @@
-<!DOCTYPE html
-    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/"
-      xmlns:i18n="http://genshi.edgewall.org/i18n"
       xmlns:xi="http://www.w3.org/2001/XInclude">
   <xi:include href="layout.html" />
 
@@ -32,15 +29,7 @@
       <td>${attr_multiplicity}</td>
   </py:def>
 
-  <head>
-    <title></title>
-    <script type="text/javascript">
-      $(document).ready(function(){
-          $("a.addattr").click(addAttribute);
-          $("a.delattr").click(delAttribute);
-      });
-    </script>
-  </head>
+  <head><title></title></head>
   <body>
       <div id="content" class="asa">
       <h1>New Artifact Specification</h1>

@@ -1,3 +1,10 @@
+$(document).ready(function(){
+    $("a.addattr").click(addAttribute);
+    $("a.delattr").click(delAttribute);
+    $("a.addvalue").click(addValue);
+    $("a.delvalue").click(delValue);
+});
+
 function addAttribute(){
     var newid = uuid.v4()
     var copy = $("tr.attribute:last").clone(true)
