@@ -6,7 +6,7 @@
 import re
 from trac.core import *
 from trac.resource import IResourceManager, ResourceNotFound
-from trac.web.chrome import INavigationContributor, ITemplateProvider, add_javascript #, add_stylesheet
+from trac.web.chrome import INavigationContributor, ITemplateProvider, add_javascript, add_stylesheet
 from trac.web.main import IRequestHandler
 from trac.util import Markup
 from AdaptiveArtifacts.persistable_instance import AdaptiveArtifact, PersistablePool
@@ -82,6 +82,8 @@ class Core(Component):
                 action = 'view'
 
         add_javascript(req, 'adaptiveartifacts/js/uuid.js')
+        add_javascript(req, 'adaptiveartifacts/js/forms.js')
+        add_stylesheet(req, 'adaptiveartifacts/css/asa.css', media='screen')
         view = Core._resolve_view(asa_resource_type, action, req.method)
         if not view is None:
             res = Core._get_resource(inst) if not inst in (Entity, Instance, None) else None

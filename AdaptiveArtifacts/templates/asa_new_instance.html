@@ -20,48 +20,10 @@
     <title></title>
     <script type="text/javascript">
       $(document).ready(function(){
-          $("a.addvalue").click(function(){
-              var newid = uuid.v4()
-              var copy = $("tr.attribute:last").clone(true)
-              copy.removeClass('prototype')
-              name_input = copy.find("input[name^='attr-name-']")
-              name_input.attr("name", "attr-name-" + newid)
-              name_input.attr("value", "")
-              value_input = copy.find("input[name^='attr-value-']")
-              value_input.attr("name", "attr-value-" + newid)
-              value_input.attr("value", "")
-            $("table.attributes").append(copy)
-          });
-
-          $("a.delvalue").click(function(){
-              $(this).parent().parent().remove()
-          });
+          $("a.addvalue").click(addValue);
+          $("a.delvalue").click(delValue);
       });
     </script>
-    <style>
-        #content.asa {
-            width: 58em;
-            max-width: 100%;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        #content.asa label{
-            width: 20%;
-            margin-right: 0.5em;
-            text-align: right;
-            display: inline-block;
-        }
-
-        #content.asa input, #content.asa select{
-            width: 17em;
-            display: inline-block;
-        }
-
-        .prototype{
-            display: none;
-        }
-    </style>
   </head>
   <body>
       <div id="content" class="asa">
