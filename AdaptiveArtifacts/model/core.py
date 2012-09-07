@@ -198,7 +198,7 @@ class Attribute(object):
         self.py_id = util.to_valid_identifier_name(name)
         self.owner_spec = None # filled in when the attr is added to a spec
         self.name=name
-        self.type = type if type else 'str'
+        self.type = type
         if not multiplicity:
             self.multiplicity = (None, None)
         elif isinstance(multiplicity, int):

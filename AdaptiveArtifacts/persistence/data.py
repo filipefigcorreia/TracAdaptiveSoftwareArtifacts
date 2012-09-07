@@ -103,7 +103,7 @@ class DBPool(object):
                 WHERE spec_name='%s' AND version_id='%d'""" % (name, version))
         for row in rows.fetchall():
             try:
-                type = getattr(sys.modules['__builtin__'], str(row[3]) if str(row[3]) else 'str')
+                type = getattr(sys.modules['__builtin__'], str(row[3])) if row[3] else None
             except ValueError:
                 type = row[3]
             attributes.append(Attribute(name=row[0], multiplicity=(row[1], row[2]), type=type))

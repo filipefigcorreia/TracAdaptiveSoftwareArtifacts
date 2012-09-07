@@ -15,7 +15,7 @@
         <table border="1">
         <tr><th>Attribute</th><th>Type</th><th>Multiplicity</th></tr>
         <tr py:for="attribute in instance.get_attributes()">
-            <td>${attribute.name}</td><td>${attribute.type.__name__}</td><td>${attribute.multiplicity[0]},${attribute.multiplicity[1]}</td>
+            <td>${attribute.name}</td><td>${attribute.type.__name__ if attribute.type else ''}</td><td>${attribute.multiplicity[0]},${attribute.multiplicity[1]}</td>
         </tr>
         </table>
         <br/>
