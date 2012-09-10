@@ -139,6 +139,14 @@ class ModelInstancesStructure(object):
         self.lightningMcQueen = self.Car()
         self.lightningMcQueen.set_value('Wheels', ['front left wheel', 'front right wheel', 'rear left wheel', 'front right wheel'])
         self.assertEqual(len(self.lightningMcQueen.get_value("Wheels")), 4)
+
+    def test_instance_replace_attribute_values(self):
+        self.lightningMcQueen = self.Car()
+        self.lightningMcQueen.set_value('Wheels', ['front left wheel', 'front right wheel', 'rear left wheel', 'front right wheel'])
+        self.lightningMcQueen.replace_values([('Brand', 'Mazda'), ('Reviews', ['2010/01/05', '2011/01/22'])])
+        self.assertTrue(self.lightningMcQueen.get_value("Wheels") is None)
+        self.assertEqual(len(self.lightningMcQueen.get_value('Reviews')), 2)
+        self.assertEqual(len(self.lightningMcQueen.get_values()), 2)
 class TestModelInstancesStructure(unittest.TestCase, ModelInstancesStructure):
     def setUp(self):
         ModelInstancesStructure.setUp(self)
