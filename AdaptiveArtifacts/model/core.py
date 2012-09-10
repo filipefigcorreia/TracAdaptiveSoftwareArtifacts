@@ -143,7 +143,7 @@ class Instance(object):
 
     def get_values(self):
             """
-            Returns (attribute,value) pairs of all the values of the instance, independently in they are defined by any spec.
+            Returns a list of (attribute_name,value) pairs of all the values of the instance, independently in they are defined by any spec.
             """
             return [(name, getattr(self, py_id, None)) for name, py_id in self.attr_identifiers.iteritems()]
 
