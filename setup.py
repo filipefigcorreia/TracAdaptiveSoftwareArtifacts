@@ -14,7 +14,7 @@ setup(name=PACKAGE,
     entry_points={
         'trac.plugins': [
             '%s = AdaptiveArtifacts' % PACKAGE,
-            '%s.setup = AdaptiveArtifacts.db' % PACKAGE,
+            '%s.setup = AdaptiveArtifacts.persistence.db' % PACKAGE,
         ]
     },
     package_data={'AdaptiveArtifacts': ['htdocs/css/*.css',

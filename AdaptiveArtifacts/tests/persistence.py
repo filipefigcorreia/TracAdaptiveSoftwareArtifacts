@@ -13,7 +13,7 @@ from AdaptiveArtifacts.tests.model import MetaModelInstancesStructure, ModelInst
 
 class TestBasicEntityBehaviour(unittest.TestCase):
     def setUp(self):
-        self.env = EnvironmentStub(enable=['trac.*', 'AdaptiveArtifacts.*', 'AdaptiveArtifacts.db.*'])
+        self.env = EnvironmentStub(enable=['trac.*', 'AdaptiveArtifacts.*', 'AdaptiveArtifacts.persistence.db.*'])
         Setup(self.env).upgrade_environment(self.env.get_db_cnx())
 
         self.Vehicle = Entity(name="Vehicle")
@@ -95,7 +95,7 @@ class TestBasicEntityBehaviour(unittest.TestCase):
 class Scenarios(object):
     @staticmethod
     def build_saved_and_reloaded_pool(testcase):
-        testcase.env = EnvironmentStub(enable=['trac.*', 'AdaptiveArtifacts.*', 'AdaptiveArtifacts.db.*'])
+        testcase.env = EnvironmentStub(enable=['trac.*', 'AdaptiveArtifacts.*', 'AdaptiveArtifacts.persistence.db.*'])
         Setup(testcase.env).upgrade_environment(testcase.env.get_db_cnx())
 
         # this works as far as no one inherits from MetaModelInstancesStructureAfterLoad and ModelInstancesStructureAfterLoad
