@@ -154,6 +154,7 @@ def get_edit_artifact(req, dbp, inst, resource):
         'instance_meta': inst.__class__,
         'instance': inst,
         'values': [(attr,val) for attr,val in inst.get_values()],
+        'default': inst.str_attr,
         'url_path': req.path_info,
     }
     return 'asa_new_instance.html', data, None
@@ -161,6 +162,7 @@ def get_edit_artifact(req, dbp, inst, resource):
 def post_edit_artifact(req, dbp, inst, resource):
     assert(isinstance(inst, Instance)) # otherwise, we're trying to edit something that is not an artifact
 
+    inst.str_attr = req.args['default'] if 'default' in req.args else 'id'
     inst.replace_values(_group_artifact_values(req).items())
 
     dbp.save('author', 'comment', 'address')
@@ -177,8 +179,8 @@ def _group_artifact_values(req):
             idx = key[10:]
             attr_name = req.args[key]
             values[attr_name] = req.args['attr-value-' + idx]
-            if 'attr-default-' + idx in req.args:
-                values['str-attr'] = attr_name
+    #    if 'default' in req.args:
+    #        values['str-attr'] = req.args['attr-name-' + req.args['default']]
     return values
 
 def _group_spec_attributes(req):

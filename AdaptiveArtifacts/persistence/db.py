@@ -29,6 +29,7 @@ schema = [
         Column('id', type='int64'),
         Column('version_id', type='int64'),
         Column('meta_class'),
+        Column('title_expr'), # the "toString()" of artifacts
         Index(['id', 'version_id'], unique=True),
     ],
     Table('asa_artifact_value')[

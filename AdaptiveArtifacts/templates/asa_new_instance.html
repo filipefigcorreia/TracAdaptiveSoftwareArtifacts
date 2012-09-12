@@ -9,7 +9,12 @@
       <td><input type="text" name="attr-name-${value_idx}" value="${attr_name}" /></td>
       <td><input type="text" name="attr-value-${value_idx}" value="${attr_value}" /></td>
       <td>
-          <input type="radio" name="default" value="attr-default-${value_idx}" />
+          <py:if test="value_idx == default">
+            <input type="radio" name="default" value="${value_idx}" checked="checked" />
+          </py:if>
+          <py:if test="not value_idx == default">
+            <input type="radio" name="default" value="${value_idx}" />
+          </py:if>
       </td>
   </py:def>
 

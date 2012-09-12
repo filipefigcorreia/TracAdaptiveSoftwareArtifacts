@@ -33,17 +33,18 @@ class DBPool(object):
         if version is None:
             raise ValueError("No version found for artifact with id '%s'" % (id,))
 
-        # get the metaclass
+        # get the metaclass and title
         cursor = db.cursor()
         rows = cursor.execute("""
-                SELECT meta_class
+                SELECT meta_class, title_expr
                 FROM asa_artifact
                 WHERE id='%s' AND version_id='%d'
                 GROUP BY id""" % (id, version))
-        meta_class_name = rows.fetchone()
-        if meta_class_name is None or len(meta_class_name) == 0:
+        row = rows.fetchone()
+        if row is None or len(row) == 0:
             raise ValueError("No artifact found with id '%d'" % (id,))
-        meta_class_name = meta_class_name[0]
+        meta_class_name = row[0]
+        title_expr = row[1]
         self.load_spec(meta_class_name, db)
         meta_class = self.pool.get_item(meta_class_name)
 
@@ -57,7 +58,7 @@ class DBPool(object):
         values = rows.fetchall()
 
         # create the instance
-        artifact = meta_class(id=id, version=version, persisted=True)
+        artifact = meta_class(id=id, version=version, str_attr=title_expr, persisted=True)
         artifact.add_values(values)
 
         self.pool.add(artifact)
@@ -244,16 +245,12 @@ class DBPool(object):
                                 INSERT INTO asa_artifact_id VALUES (NULL)
                                 """)
                             art_id = cursor.lastrowid
-                            cursor.execute("""
-                                INSERT INTO asa_artifact (id, version_id, meta_class)
-                                VALUES (%s,%s,%s)
-                                """, (art_id, version_id, item.__class__.name))
                         else:
                             art_id = item.get_id()
-                            cursor.execute("""
-                                INSERT INTO asa_artifact (id, version_id, meta_class)
-                                VALUES (%s,%s,%s)
-                                """, (art_id, version_id, item.__class__.name))
+                        cursor.execute("""
+                            INSERT INTO asa_artifact (id, version_id, meta_class, title_expr)
+                            VALUES (%s,%s,%s,%s)
+                            """, (art_id, version_id, item.__class__.name, item.str_attr))
 
                         for attr_name in item.attr_identifiers.keys():
                             values = item.get_value(attr_name)

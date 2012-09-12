@@ -58,6 +58,10 @@ class Instance(object):
 
     def __str__(self):
         str_value = eval("self." + self.str_attr)
+        # Might need this later:
+        #if not str_value:
+        #    str_value = eval("self." + util.to_valid_identifier_name(self.str_attr))
+        #if str_value:
         if not str_value is None:
             return str_value
         else:
