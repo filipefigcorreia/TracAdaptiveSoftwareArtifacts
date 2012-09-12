@@ -86,18 +86,8 @@ def post_new_spec(req, dbp, inst, resource):
     name = req.args.get('name')
     parent_name = req.args.get('parent')
 
-    # group posted attributes into a list of tuples (attr_name,attr_type,attr_multiplicity)
-    # {'attr_name_1':'Age', 'attr_type_1':'str', 'attr_multiplicity_1':None} -> [('Age','str',None)]
-    attrs = []
-    for key in req.args.keys():
-        if key[0:9] == 'attr-name' and len(req.args[key]) > 0 and key[10:] != 'X':
-            idx = key[10:]
-            attr_name = req.args[key]
-            attr_type = req.args['attr-type-'+idx]
-            attr_multiplicity = req.args['attr-multiplicity-'+idx]
-            attrs.append((attr_name, attr_type, attr_multiplicity))
+    attributes = [Attribute(n,m,t) for n,t,m in _group_spec_attributes(req)]
 
-    attributes = [Attribute(n,m,t) for n,t,m in attrs]
     if parent_name:
         dbp.load_spec(parent_name)
         bases = (dbp.pool.get_item(parent_name),)
@@ -126,18 +116,7 @@ def get_edit_spec(req, dbp, inst, resource):
 def post_edit_spec(req, dbp, inst, resource):
     assert(inst is Instance or isinstance(inst, Entity))
 
-    # group posted attributes into a list of tuples (attr_name,attr_type,attr_multiplicity)
-    # {'attr_name_1':'Age', 'attr_type_1':'str', 'attr_multiplicity_1':None} -> [('Age','str',None)]
-    attrs = []
-    for key in req.args.keys():
-        if key[0:9] == 'attr-name' and len(req.args[key]) > 0 and key[10:] != 'X':
-            idx = key[10:]
-            attr_name = req.args[key]
-            attr_type = req.args['attr-type-'+idx]
-            attr_multiplicity = req.args['attr-multiplicity-'+idx]
-            attrs.append((attr_name, attr_type, attr_multiplicity))
-
-    attributes = [Attribute(n,m,t) for n,t,m in attrs]
+    attributes = [Attribute(n,m,t) for n,t,m in _group_spec_attributes(req)]
 
     inst.replace_attributes(attributes)
 
@@ -145,7 +124,6 @@ def post_edit_spec(req, dbp, inst, resource):
     add_notice(req, 'Your changes have been saved.')
     url = req.href.adaptiveartifacts('spec/%s' % (inst.get_id(),), action='view')
     req.redirect(url)
-
 
 def get_new_artifact(req, dbp, inst, resource):
     assert(inst is Instance or isinstance(inst, Entity)) # otherwise, we're trying to instantiate something that is not an artifact
@@ -160,17 +138,7 @@ def get_new_artifact(req, dbp, inst, resource):
 def post_new_artifact(req, dbp, inst, resource):
     assert(inst is Instance or isinstance(inst, Entity)) # otherwise, we're trying to instantiate something that is not an atifact
 
-    # group posted values into a dict of attr_name:attr_value
-    # {'attr_name_1':'Age', 'attr_value_1':'42'} -> {'Age':'42'}
-    values = {}
-    for key in req.args.keys():
-        if key[0:9] == 'attr-name' and len(req.args[key]) > 0 and key[10:] != 'X':
-            idx = key[10:]
-            attr_name = req.args[key]
-            values[attr_name] = req.args['attr-value-'+idx]
-            if 'attr-default-'+idx in req.args:
-                values['str-attr'] = attr_name
-    brand_new_inst = inst(values=values)
+    brand_new_inst = inst(values=_group_artifact_values(req))
 
     dbp.pool.add(brand_new_inst)
     dbp.save('author', 'comment', 'address')
@@ -193,6 +161,14 @@ def get_edit_artifact(req, dbp, inst, resource):
 def post_edit_artifact(req, dbp, inst, resource):
     assert(isinstance(inst, Instance)) # otherwise, we're trying to edit something that is not an artifact
 
+    inst.replace_values(_group_artifact_values(req).items())
+
+    dbp.save('author', 'comment', 'address')
+    add_notice(req, 'Your changes have been saved.')
+    url = req.href.adaptiveartifacts('artifact/%s' % (inst.get_id(),), action='view')
+    req.redirect(url)
+
+def _group_artifact_values(req):
     # group posted values into a dict of attr_name:attr_value
     # {'attr_name_1':'Age', 'attr_value_1':'42'} -> {'Age':'42'}
     values = {}
@@ -200,13 +176,20 @@ def post_edit_artifact(req, dbp, inst, resource):
         if key[0:9] == 'attr-name' and len(req.args[key]) > 0 and key[10:] != 'X':
             idx = key[10:]
             attr_name = req.args[key]
-            values[attr_name] = req.args['attr-value-'+idx]
-            if 'attr-default_'+idx in req.args:
+            values[attr_name] = req.args['attr-value-' + idx]
+            if 'attr-default-' + idx in req.args:
                 values['str-attr'] = attr_name
+    return values
 
-    inst.replace_values(values.items())
-
-    dbp.save('author', 'comment', 'address')
-    add_notice(req, 'Your changes have been saved.')
-    url = req.href.adaptiveartifacts('artifact/%s' % (inst.get_id(),), action='view')
-    req.redirect(url)
+def _group_spec_attributes(req):
+    # group posted attributes into a list of tuples (attr_name,attr_type,attr_multiplicity)
+    # {'attr_name_1':'Age', 'attr_type_1':'str', 'attr_multiplicity_1':None} -> [('Age','str',None)]
+    attrs = []
+    for key in req.args.keys():
+        if key[0:9] == 'attr-name' and len(req.args[key]) > 0 and key[10:] != 'X':
+            idx = key[10:]
+            attr_name = req.args[key]
+            attr_type = req.args['attr-type-' + idx]
+            attr_multiplicity = req.args['attr-multiplicity-' + idx]
+            attrs.append((attr_name, attr_type, attr_multiplicity))
+    return attrs
