@@ -203,13 +203,30 @@ class Attribute(object):
         self.owner_spec = None # filled in when the attr is added to a spec
         self.name=name
         self.type = type
+        self.multiplicity = None
+
+        # ensure it's a tuple of length 2
         if not multiplicity:
             self.multiplicity = (None, None)
-        elif isinstance(multiplicity, int):
+        elif not isinstance(multiplicity, tuple):
             self.multiplicity = (multiplicity, multiplicity)
-        elif isinstance(multiplicity, tuple) and len(multiplicity)==2:
-            self.multiplicity = multiplicity
-        else:
+        elif isinstance(multiplicity, tuple):
+            if len(multiplicity)==2:
+                self.multiplicity = multiplicity
+            elif len(multiplicity)<2:
+                self.multiplicity = (multiplicity[0], None)
+            if len(multiplicity)>2:
+                self.multiplicity = None
+
+        # ensure both bounds of the multiplicity are of the right type
+        if not self.multiplicity is None:
+            try:
+                self.multiplicity = (int(self.multiplicity[0]) if not self.multiplicity[0] is None else None,
+                                     int(self.multiplicity[1]) if not self.multiplicity[1] is None else None)
+            except ValueError:
+                self.multiplicity = None
+
+        if self.multiplicity is None:
             raise ValueError("The value provided for multiplicity is not valid: %s" % (multiplicity,))
 
 class Entity(type):

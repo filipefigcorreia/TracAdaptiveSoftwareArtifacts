@@ -71,6 +71,7 @@ def get_new_spec(req, dbp, inst, resource):
     data = {
         'context': Context.from_request(req, resource),
         'instance_meta': inst,
+        'multiplicities' : ['1', '0..*', '1..*'],
         'url_path': req.path_info,
     }
     return 'asa_new_entity.html', data, None
@@ -109,6 +110,7 @@ def get_edit_spec(req, dbp, inst, resource):
         'instance_meta': inst.__class__,
         'instance': inst,
         'attributes': [(attr,str(uuid.uuid4())) for attr in inst.get_attributes()],
+        'multiplicities' : ['1', '0..*', '1..*'],
         'url_path': req.path_info,
     }
     return 'asa_new_entity.html', data, None

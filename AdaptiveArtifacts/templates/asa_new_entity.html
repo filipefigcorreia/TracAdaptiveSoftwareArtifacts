@@ -16,8 +16,14 @@
       <td>
            <select name="attr-multiplicity-${idx}">
                <option value=""></option>
-               <option value="1">1</option>
-               <option value="">*</option>
+               <py:for each="m in multiplicities">
+                   <py:if test="m==attr_multiplicity">
+                       <option value="${m}" checked="checked">${m}</option>
+                   </py:if>
+                   <py:if test="m!=attr_multiplicity">
+                       <option value="${m}">${m}</option>
+                   </py:if>
+               </py:for>
            </select>
        </td>
   </py:def>
