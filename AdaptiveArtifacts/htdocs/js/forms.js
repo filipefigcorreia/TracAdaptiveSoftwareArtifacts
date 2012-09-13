@@ -35,6 +35,8 @@ function addValue(){
     var value_input = copy.find("input[name^='attr-value-']")
     value_input.attr("name", "attr-value-" + newid)
     value_input.attr("value", "")
+    var default_input = copy.find("input[name^='default']")
+    default_input.attr("value", newid)
     $("table.attributes").append(copy)
 }
 

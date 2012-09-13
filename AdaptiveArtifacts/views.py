@@ -138,7 +138,8 @@ def get_new_artifact(req, dbp, inst, resource):
 def post_new_artifact(req, dbp, inst, resource):
     assert(inst is Instance or isinstance(inst, Entity)) # otherwise, we're trying to instantiate something that is not an atifact
 
-    brand_new_inst = inst(values=_group_artifact_values(req))
+    values, str_attr = _group_artifact_values(req)
+    brand_new_inst = inst(str_attr=str_attr, values=values)
 
     dbp.pool.add(brand_new_inst)
     dbp.save('author', 'comment', 'address')
@@ -162,8 +163,9 @@ def get_edit_artifact(req, dbp, inst, resource):
 def post_edit_artifact(req, dbp, inst, resource):
     assert(isinstance(inst, Instance)) # otherwise, we're trying to edit something that is not an artifact
 
-    inst.str_attr = req.args['default'] if 'default' in req.args else 'id'
-    inst.replace_values(_group_artifact_values(req).items())
+    values, str_attr = _group_artifact_values(req)
+    inst.replace_values(values.items())
+    inst.str_attr = str_attr if not str_attr is None else 'id'
 
     dbp.save('author', 'comment', 'address')
     add_notice(req, 'Your changes have been saved.')
@@ -174,14 +176,15 @@ def _group_artifact_values(req):
     # group posted values into a dict of attr_name:attr_value
     # {'attr_name_1':'Age', 'attr_value_1':'42'} -> {'Age':'42'}
     values = {}
+    default = None
     for key in req.args.keys():
         if key[0:9] == 'attr-name' and len(req.args[key]) > 0 and key[10:] != 'X':
             idx = key[10:]
             attr_name = req.args[key]
             values[attr_name] = req.args['attr-value-' + idx]
-    #    if 'default' in req.args:
-    #        values['str-attr'] = req.args['attr-name-' + req.args['default']]
-    return values
+    if 'default' in req.args:
+        default = req.args['attr-name-' + req.args['default']]
+    return values, default
 
 def _group_spec_attributes(req):
     # group posted attributes into a list of tuples (attr_name,attr_type,attr_multiplicity)
