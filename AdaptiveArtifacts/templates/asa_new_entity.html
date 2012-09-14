@@ -18,7 +18,7 @@
                <option value=""></option>
                <py:for each="m in multiplicities">
                    <py:if test="m==attr_multiplicity">
-                       <option value="${m}" checked="checked">${m}</option>
+                       <option value="${m}" selected="selected">${m}</option>
                    </py:if>
                    <py:if test="m!=attr_multiplicity">
                        <option value="${m}">${m}</option>
@@ -60,10 +60,10 @@
               <py:if test="instance">
                   <tr py:for="attr,uuid in attributes" class="attribute">
                       <py:if test="attr.owner_spec == instance">
-                        ${attr_markup(idx=uuid, attr_name=attr.name, attr_type=attr.type._name__, attr_multiplicity=attr.multiplicity)}
+                        ${attr_markup(idx=uuid, attr_name=attr.name, attr_type=attr.type._name__, attr_multiplicity=attr.get_multiplicity_readable())}
                       </py:if>
                       <py:if test="attr.owner_spec != instance">
-                        ${attr_markup_readonly(idx=uuid, attr_name=attr.name, attr_type=attr.type.__name__, attr_multiplicity=attr.multiplicity)}
+                        ${attr_markup_readonly(idx=uuid, attr_name=attr.name, attr_type=attr.type.__name__, attr_multiplicity=attr.get_multiplicity_readable())}
                       </py:if>
                   </tr>
               </py:if>

@@ -205,17 +205,22 @@ class Attribute(object):
         self.type = type
         self.multiplicity = None
 
-        # ensure it's a tuple of length 2
+        # ensure multiplicity is (or becomes) a tuple of length 2 int values
         if not multiplicity:
             self.multiplicity = (None, None)
-        elif not isinstance(multiplicity, tuple):
-            self.multiplicity = (multiplicity, multiplicity)
+        elif isinstance(multiplicity, unicode):
+            if multiplicity=='0..*':
+                self.multiplicity = (0, None)
+            elif multiplicity=='1..*':
+                self.multiplicity = (1, None)
+            else:
+                self.multiplicity = (multiplicity, multiplicity)
         elif isinstance(multiplicity, tuple):
             if len(multiplicity)==2:
                 self.multiplicity = multiplicity
             elif len(multiplicity)<2:
                 self.multiplicity = (multiplicity[0], None)
-            if len(multiplicity)>2:
+            elif len(multiplicity)>2:
                 self.multiplicity = None
 
         # ensure both bounds of the multiplicity are of the right type
@@ -228,6 +233,18 @@ class Attribute(object):
 
         if self.multiplicity is None:
             raise ValueError("The value provided for multiplicity is not valid: %s" % (multiplicity,))
+
+    def get_multiplicity_readable(self):
+         if self.multiplicity==(0, None):
+             return '0..*'
+         elif self.multiplicity==(1, None):
+             return '1..*'
+         elif self.multiplicity==(1, 1):
+             return '1'
+         elif self.multiplicity[0]==self.multiplicity[1]:
+             return self.multiplicity[0]
+         else:
+             return str(self.multiplicity)
 
 class Entity(type):
     """
