@@ -10,7 +10,14 @@
       <td>
           <select name="attr-type-${idx}">
             <option value=""></option>
-            <option value="str">str</option>
+            <py:for each="t in types">
+                <py:if test="t==attr_type">
+                    <option value="${t}" selected="selected">${t}</option>
+                </py:if>
+                <py:if test="t!=attr_type">
+                    <option value="${t}">${t}</option>
+                </py:if>
+              </py:for>
           </select>
       </td>
       <td>
@@ -58,12 +65,12 @@
                   ${attr_markup(idx="X")}
               </tr>
               <py:if test="instance">
-                  <tr py:for="attr,uuid in attributes" class="attribute">
-                      <py:if test="attr.owner_spec == instance">
-                        ${attr_markup(idx=uuid, attr_name=attr.name, attr_type=attr.type._name__, attr_multiplicity=attr.get_multiplicity_readable())}
+                  <tr py:for="uuid, name, owner, type, multiplicity, in attributes" class="attribute">
+                      <py:if test="owner == instance">
+                          ${attr_markup(idx=uuid, attr_name=name, attr_type=type, attr_multiplicity=multiplicity)}
                       </py:if>
-                      <py:if test="attr.owner_spec != instance">
-                        ${attr_markup_readonly(idx=uuid, attr_name=attr.name, attr_type=attr.type.__name__, attr_multiplicity=attr.get_multiplicity_readable())}
+                      <py:if test="owner != instance">
+                          ${attr_markup_readonly(idx=uuid, attr_name=name, attr_type=type, attr_multiplicity=multiplicity)}
                       </py:if>
                   </tr>
               </py:if>

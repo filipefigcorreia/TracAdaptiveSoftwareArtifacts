@@ -71,6 +71,7 @@ def get_new_spec(req, dbp, inst, resource):
     data = {
         'context': Context.from_request(req, resource),
         'instance_meta': inst,
+        'types' : ['text', 'number', 'artifact'],
         'multiplicities' : ['1', '0..*', '1..*'],
         'url_path': req.path_info,
     }
@@ -109,7 +110,12 @@ def get_edit_spec(req, dbp, inst, resource):
         'context': Context.from_request(req, resource),
         'instance_meta': inst.__class__,
         'instance': inst,
-        'attributes': [(attr,str(uuid.uuid4())) for attr in inst.get_attributes()],
+        'attributes': [(str(uuid.uuid4()),
+                        attr.name,
+                        attr.owner_spec,
+                        Attribute.translate_to_user_type(attr.type),
+                        attr.get_multiplicity_readable()) for attr in inst.get_attributes()],
+        'types' : ['text', 'number', 'artifact'],
         'multiplicities' : ['1', '0..*', '1..*'],
         'url_path': req.path_info,
     }
@@ -118,7 +124,7 @@ def get_edit_spec(req, dbp, inst, resource):
 def post_edit_spec(req, dbp, inst, resource):
     assert(inst is Instance or isinstance(inst, Entity))
 
-    attributes = [Attribute(n,m,t) for n,t,m in _group_spec_attributes(req)]
+    attributes = [Attribute(n,m, Attribute.translate_to_python_type(t)) for n,t,m in _group_spec_attributes(req)]
 
     inst.replace_attributes(attributes)
 

@@ -246,6 +246,27 @@ class Attribute(object):
          else:
              return str(self.multiplicity)
 
+    @classmethod
+    def translate_to_python_type(cls, user_type):
+        if user_type == 'text':
+            python_type = str
+        elif user_type == 'number':
+            python_type = int
+        else:
+            python_type = None #TODO: fix. must account for user_type='artifact'
+        return python_type
+
+    @classmethod
+    def translate_to_user_type(cls, python_type):
+        if python_type is str:
+            user_type = 'text'
+        elif python_type is int:
+            user_type = 'number'
+        else:
+            user_type = '' #TODO: fix. must account for python_type=<artifact>
+        return user_type
+
+
 class Entity(type):
     """
     Entity should be its own metaclass, at the very least because
