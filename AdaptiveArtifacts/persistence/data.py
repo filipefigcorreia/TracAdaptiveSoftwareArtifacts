@@ -285,7 +285,7 @@ class DBPool(object):
         if not item in self.pool.get_items():
             raise Exception("Item not in pool")
 
-        if item.is_uncommited():
+        if item.is_new():
             return
 
         if db is None:
@@ -297,15 +297,16 @@ class DBPool(object):
                 FROM asa_version v"""
         if isinstance(item, Entity): # it's a spec
             query += """
-                    INNER JOIN asa_spec a ON a.version_id=v.id
-                    WHERE a.name=%s""" % (item.get_name())
+                    INNER JOIN asa_spec s ON s.version_id=v.id
+                    WHERE s.name=%s""" % (item.get_name())
         else: # it's an artifact
             query += """
                     INNER JOIN asa_artifact a ON a.version_id=v.id
                     WHERE a.id=%d""" % (item.get_id())
-        query += """
-                AND v.id <= %s
-                ORDER BY v.id DESC""" % (self.version,)
+
+        if not self.version is None:
+            query += ' AND v.id <= %s' % (self.version,)
+        query += ' ORDER BY v.id DESC'
         cursor.execute(query)
         for version, ts, author, ipnr, comment in cursor:
             yield version, from_utimestamp(ts), author, ipnr, comment

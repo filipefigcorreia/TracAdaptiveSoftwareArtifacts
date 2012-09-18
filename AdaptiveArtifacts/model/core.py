@@ -116,6 +116,7 @@ class Instance(object):
         py_identifier = util.to_valid_identifier_name(name)
         self.attr_identifiers[name] = py_identifier
         setattr(self, py_identifier, value)
+        self._is_modified = True
 
     def add_values(self, values_list):
         """

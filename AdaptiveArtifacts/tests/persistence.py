@@ -72,7 +72,6 @@ class TestBasicEntityBehaviour(unittest.TestCase):
         dbp.delete(sallyCarrera)
         self.assertEqual(3, len(dbp.pool.get_items((0,1))))
 
-
     def test_delete_changed(self):
         pool = InstancePool()
         dbp = DBPool(self.env, pool)
@@ -89,7 +88,21 @@ class TestBasicEntityBehaviour(unittest.TestCase):
         self.assertTrue(pool2.get_item(self.lightningMcQueen.get_id()) is None)
 
     def test_retrieve_history(self):
-        self.assertTrue(False)
+        # make change
+        pool = InstancePool()
+        dbp = DBPool(self.env, pool)
+        dbp.load_artifact(self.lightningMcQueen.get_id())
+        lm = pool.get_item(self.lightningMcQueen.get_id())
+        lm.set_value('License', 'GO-42-42')
+        dbp.save('me', 'added license information', '127.0.0.1')
+
+        # reload and inspect
+        pool = InstancePool()
+        dbp = DBPool(self.env, pool)
+        dbp.load_artifact(self.lightningMcQueen.get_id())
+        lm = pool.get_item(self.lightningMcQueen.get_id())
+        h = [(version, timestamp, author, ipnr, comment) for version, timestamp, author, ipnr, comment in dbp.get_history(lm)]
+        self.assertEqual(len(h), 2)
 
 
 class Scenarios(object):
