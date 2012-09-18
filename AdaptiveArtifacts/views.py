@@ -41,9 +41,6 @@ def get_view_artifact(req, dbp, inst, resource):
     return 'asa_view_artifact.html', data, None
 
 def get_list_spec(req, dbp, inst, resource):
-    return get_list_artifact(req, dbp, inst, resource)
-
-def get_list_artifact(req, dbp, inst, resource):
     dbp.load_instances_of(inst.get_id())
     instances = dbp.pool.get_instances_of(inst.get_id())
 
@@ -53,8 +50,6 @@ def get_list_artifact(req, dbp, inst, resource):
         'context_instance': inst,
         'instances': instances,
     }
-    #TODO: return right template, depending if we're listing entities or instances
-    #TODO: go through all TODOs
     return 'asa_list_artifacts.html', data, None
 
 def get_new_spec(req, dbp, inst, resource):

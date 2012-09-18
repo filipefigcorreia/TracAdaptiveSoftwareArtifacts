@@ -50,15 +50,14 @@ class Instance(object):
             self.set_value(name, value)
 
     def __str__(self):
-        str_value = eval("self." + self.str_attr)
-        # Might need this later:
-        #if not str_value:
-        #    str_value = eval("self." + util.to_valid_identifier_name(self.str_attr))
-        #if str_value:
+        if self.str_attr in ('id', 'version'):
+            return str(getattr(self, self.str_attr))
+
+        str_value = self.get_value(self.str_attr)
         if not str_value is None:
             return str_value
         else:
-            return repr(self)
+            return str(self.id)
 
     @util.classinstancemethod
     def get_id(self, cls):
