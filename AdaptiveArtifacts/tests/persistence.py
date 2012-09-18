@@ -18,7 +18,7 @@ class TestBasicEntityBehaviour(unittest.TestCase):
 
         self.Vehicle = Entity(name="Vehicle")
         self.Car = Entity(name="Car", bases=(self.Vehicle,),
-                attributes=[Attribute(name="Wheels", multiplicity=4, type=str)]
+                attributes=[Attribute(name="Wheels", multiplicity=4, atype=str)]
             )
         self.lightningMcQueen = self.Car(
                 values={"Wheels": ['front left wheel', 'front right wheel', 'rear left wheel', 'front right wheel']}

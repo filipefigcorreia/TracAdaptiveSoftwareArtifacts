@@ -103,11 +103,7 @@ class DBPool(object):
                 FROM asa_spec_attribute
                 WHERE spec_name='%s' AND version_id='%d'""" % (name, version))
         for row in rows.fetchall():
-            try:
-                type = Attribute.translate_to_python_type(row[3])
-            except ValueError:
-                type = row[3]
-            attributes.append(Attribute(name=row[0], multiplicity=(row[1], row[2]), type=type))
+            attributes.append(Attribute(name=row[0], multiplicity=(row[1], row[2]), atype=row[3]))
 
         # create the entity
         spec = Entity(name=name, bases=bases, version=version, persisted=True, attributes=attributes)
@@ -238,7 +234,7 @@ class DBPool(object):
                             cursor.execute("""
                                 INSERT INTO asa_spec_attribute (spec_name, version_id, name, multplicity_low, multplicity_high, type)
                                 VALUES (%s,%s,%s,%s,%s,%s)
-                                """, (item.get_name(), version_id, attribute.name, attribute.multiplicity[0], attribute.multiplicity[1], Attribute.translate_to_user_type(attribute.type)))
+                                """, (item.get_name(), version_id, attribute.name, attribute.multiplicity[0], attribute.multiplicity[1], attribute.get_type_readable()))
                     else: # it's an artifact
                         if item.is_new():
                             cursor.execute("""

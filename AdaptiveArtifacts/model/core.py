@@ -24,6 +24,7 @@ multiplicity and attribute types, sometimes extra work has to be done
 for convenient access (e.g., see the __get_all() method)
 """
 from AdaptiveArtifacts.model import util
+import types
 
 class Version(object):
     def __init__(self, id, comment, author, time, readonly):
@@ -198,41 +199,43 @@ class Instance(object):
 
 
 class Attribute(object):
-    def __init__(self, name, multiplicity=None, type=None):
+    def __init__(self, name, multiplicity=None, atype=None):
         self.py_id = util.to_valid_identifier_name(name)
         self.owner_spec = None # filled in when the attr is added to a spec
-        self.name=name
-        self.type = type
-        self.multiplicity = None
+        self.name = name
+        self.type = self._get_valid_type(atype)
+        self.multiplicity = self._get_valid_multiplicity(multiplicity)
 
+    def _get_valid_multiplicity(self, multiplicity):
         # ensure multiplicity is (or becomes) a tuple of length 2 int values
+        m = None
         if not multiplicity:
-            self.multiplicity = (None, None)
-        elif isinstance(multiplicity, unicode):
-            if multiplicity=='0..*':
-                self.multiplicity = (0, None)
-            elif multiplicity=='1..*':
-                self.multiplicity = (1, None)
+            m = (None, None)
+        elif isinstance(multiplicity, unicode) or isinstance(multiplicity, int):
+            if multiplicity == '0..*':
+                m = (0, None)
+            elif multiplicity == '1..*':
+                m = (1, None)
             else:
-                self.multiplicity = (multiplicity, multiplicity)
+                m = (multiplicity, multiplicity)
         elif isinstance(multiplicity, tuple):
-            if len(multiplicity)==2:
-                self.multiplicity = multiplicity
-            elif len(multiplicity)<2:
-                self.multiplicity = (multiplicity[0], None)
-            elif len(multiplicity)>2:
-                self.multiplicity = None
+            if len(multiplicity) == 2:
+                m = multiplicity
+            elif len(multiplicity) < 2:
+                m = (multiplicity[0], None)
+            elif len(multiplicity) > 2:
+                m = None
 
         # ensure both bounds of the multiplicity are of the right type
-        if not self.multiplicity is None:
+        if not m is None:
             try:
-                self.multiplicity = (int(self.multiplicity[0]) if not self.multiplicity[0] is None else None,
-                                     int(self.multiplicity[1]) if not self.multiplicity[1] is None else None)
+                m = (int(m[0]) if not m[0] is None else None,
+                     int(m[1]) if not m[1] is None else None)
             except ValueError:
-                self.multiplicity = None
-
-        if self.multiplicity is None:
+                m = None
+        if m is None:
             raise ValueError("The value provided for multiplicity is not valid: %s" % (multiplicity,))
+        return m
 
     def get_multiplicity_readable(self):
          if self.multiplicity==(0, None):
@@ -246,8 +249,9 @@ class Attribute(object):
          else:
              return str(self.multiplicity)
 
-    @classmethod
-    def translate_to_python_type(cls, user_type):
+    def _get_valid_type(cls, user_type):
+        if user_type in types.__dict__.values():
+            return user_type # it's already a python type after all
         if user_type == 'text':
             python_type = str
         elif user_type == 'number':
@@ -256,8 +260,8 @@ class Attribute(object):
             python_type = None #TODO: fix. must account for user_type='artifact'
         return python_type
 
-    @classmethod
-    def translate_to_user_type(cls, python_type):
+    def get_type_readable(self):
+        python_type = self.type
         if python_type is str:
             user_type = 'text'
         elif python_type is int:

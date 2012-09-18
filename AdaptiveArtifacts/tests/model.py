@@ -12,12 +12,12 @@ class Scenarios(object):
         testcase.Vehicle = Entity(name="Vehicle",
                 attributes=[
                     Attribute(name="Number of Engines"),
-                    Attribute(name="Brand", multiplicity=1, type=str)
+                    Attribute(name="Brand", multiplicity=1, atype=str)
                 ]
             )
         testcase.Car = Entity(name="Car", bases=(testcase.Vehicle,),
                 attributes=[
-                    Attribute(name="Number of Doors", multiplicity=1, type=int)
+                    Attribute(name="Number of Doors", multiplicity=1, atype=int)
                 ]
             )
         testcase.Corsa = Entity(name="Opel Corsa", bases=(testcase.Car,))
@@ -157,17 +157,17 @@ class ModelComplianceValidation(object):
         self.Vehicle = Entity(name="Vehicle",
                 attributes=[
                     Attribute(name="Number of Engines"),
-                    Attribute(name="Brand", multiplicity=1, type=str)
+                    Attribute(name="Brand", multiplicity=1, atype=str)
                 ]
             )
         self.Car = Entity(name="Car", bases=(self.Vehicle,),
                 attributes=[
-                    Attribute(name="Number of Doors", multiplicity=1, type=int)
+                    Attribute(name="Number of Doors", multiplicity=1, atype=int)
                 ]
             )
         self.Plane = Entity(name="Plane", bases=(self.Vehicle,),
                 attributes=[
-                    Attribute(name="Lengths of the Wings", multiplicity=(2,5), type=int)
+                    Attribute(name="Lengths of the Wings", multiplicity=(2,5), atype=int)
                 ]
             )
 
@@ -245,7 +245,7 @@ class TestPoolOperations(unittest.TestCase, PoolOperations):
 class InstanceVersions(object):
     def setUp(self):
         self.Car = Entity(name="Car",
-            attributes=[Attribute(name="Brand", multiplicity=1, type=str)]
+            attributes=[Attribute(name="Brand", multiplicity=1, atype=str)]
             )
         self.lightningMcQueen = self.Car()
 
