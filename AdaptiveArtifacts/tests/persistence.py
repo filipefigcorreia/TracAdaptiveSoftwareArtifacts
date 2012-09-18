@@ -47,6 +47,34 @@ class TestBasicEntityBehaviour(unittest.TestCase):
         self.assertTrue(not pool.get_item(self.Car.get_id()) is None)
         self.assertTrue(not pool.get_item(self.Vehicle.get_id()) is None)
 
+    def test_load_all_specs(self):
+        pool = InstancePool()
+        dbp = DBPool(self.env, pool)
+        dbp.load_specs()
+        self.assertEqual(len(pool.get_items((1,))), 2)
+        self.assertTrue(not pool.get_item(self.Car.get_id()) is None)
+        self.assertTrue(not pool.get_item(self.Vehicle.get_id()) is None)
+
+    def test_load_artifacts_of_spec(self):
+        # add a couple more instances
+        pool = InstancePool()
+        dbp = DBPool(self.env, pool)
+        dbp.load_specs()
+        car1 = self.Car(values={"License": "GO-42-42"})
+        plane2 = self.Vehicle(values={"License": "GO-55-55"})
+        pool.add(car1)
+        pool.add(plane2)
+        dbp.save('me', 'a couple more instances', '127.0.0.1')
+
+        # load cars only
+        pool = InstancePool()
+        dbp = DBPool(self.env, pool)
+        dbp.load_instances_of(self.Car.get_id())
+        
+        self.assertEqual(len(pool.get_items((0,))), 2)
+        self.assertTrue(not pool.get_item(self.lightningMcQueen.get_id()) is None)
+        self.assertTrue(not pool.get_item(car1.get_id()) is None)
+
     def test_delete_unmodified(self):
         pool = InstancePool()
         dbp = DBPool(self.env, pool)
