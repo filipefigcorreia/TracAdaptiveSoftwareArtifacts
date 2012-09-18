@@ -5,7 +5,6 @@
 
 from trac.mimeview.api import Context
 from trac.web.chrome import add_notice
-from util import is_uuid
 import uuid
 from AdaptiveArtifacts.model.core import Entity, Instance, Attribute
 

@@ -7,7 +7,6 @@ from trac.core import *
 from trac.db import Table, Column, Index
 from trac.db import DatabaseManager
 from trac.env import IEnvironmentSetupParticipant
-#from AdaptiveArtifacts.environment_maintainer import ASAEnvironmentMaintainer
 
 schema_version = 1
 schema = [

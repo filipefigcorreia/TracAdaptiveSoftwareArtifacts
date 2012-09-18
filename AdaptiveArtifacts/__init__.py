@@ -13,8 +13,7 @@ from AdaptiveArtifacts.persistable_instance import AdaptiveArtifact, Persistable
 from AdaptiveArtifacts.persistence.data import DBPool
 from AdaptiveArtifacts.model.pool import InstancePool
 from AdaptiveArtifacts.model.pool import Entity, Instance
-from util import is_uuid
-from AdaptiveArtifacts.persistence.db import *
+
 
 class Core(Component):
     """Core module of the plugin. Provides the Adaptive-Artifacts themselves."""

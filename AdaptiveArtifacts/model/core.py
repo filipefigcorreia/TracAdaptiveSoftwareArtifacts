@@ -26,14 +26,6 @@ for convenient access (e.g., see the __get_all() method)
 from AdaptiveArtifacts.model import util
 import types
 
-class Version(object):
-    def __init__(self, id, comment, author, time, readonly):
-        self.id = id
-        self.comment = comment
-        self.author = author
-        self.time = time
-        self.readonly = readonly
-
 class Instance(object):
     """
     The metaclass of Instance should be Entity, at the very least because

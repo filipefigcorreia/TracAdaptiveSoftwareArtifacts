@@ -5,7 +5,7 @@
 
 import sys
 from trac.db import with_transaction
-from trac.util.datefmt import from_utimestamp, to_utimestamp, utc
+from trac.util.datefmt import from_utimestamp, to_utimestamp
 from AdaptiveArtifacts.model.core import Instance, Entity, Attribute
 
 class DBPool(object):
