@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/AdaptiveArtifactsPlugin.iml" filepath="$PROJECT_DIR$/.idea/AdaptiveArtifactsPlugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/trac-asa.iml" filepath="$PROJECT_DIR$/.idea/trac-asa.iml" />
     </modules>
   </component>
 </project>

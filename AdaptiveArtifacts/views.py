@@ -1,102 +1,202 @@
+# -*- coding: utf-8 -*-
+#
+# This software is licensed as described in the file license.txt, which
+# you should have received as part of this distribution.
+
 from trac.mimeview.api import Context
 from trac.web.chrome import add_notice
-from util import is_uuid
+import uuid
+from AdaptiveArtifacts.model.core import Entity, Instance, Attribute
 
 #All the methods here should return a `(template_name, data, content_type)` tuple
 
-def view_get(req, ppool, instance, resource):
-    data = {
-        'context': Context.from_request(req, resource),
-        'action': 'view',
-        'instance': instance,
-        'dir': dir(instance),
-        'type': type(instance),
-        'repr': type(instance),
-        'version': instance.get_state().version,
-    }
-    return 'asa_view.html', data, None
+def get_index(req, dbp, inst, resource):
+    # Load *everything* TODO: make more efficient
+    dbp.load_specs()
+    dbp.load_instances_of(Instance.get_id())
 
-def list_get(req, ppool, instance, resource):
-    entities = [pi.instance for pi in ppool.get_instances_of(ppool.env, instance.get_identifier(), [1])]
-    instances = [pi.instance for pi in ppool.get_instances_of(ppool.env, instance.get_identifier(), [0])]
+    specs = []
+    for spec in dbp.pool.get_items((1,)):
+        specs.append((spec, len(dbp.pool.get_instances_of(spec.get_name()))))
 
     data = {
         'context': Context.from_request(req, resource),
         'action': 'list',
-        'context_instance': instance,
-        'entities': entities,
+        'specs': specs,
+    }
+    return 'asa_index.html', data, None
+
+def get_view_spec(req, dbp, inst, resource):
+    data = {
+        'context': Context.from_request(req, resource),
+        'instance': inst,
+    }
+    return 'asa_view_spec.html', data, None
+
+def get_view_artifact(req, dbp, inst, resource):
+    data = {
+        'context': Context.from_request(req, resource),
+        'instance': inst,
+    }
+    return 'asa_view_artifact.html', data, None
+
+def get_list_spec(req, dbp, inst, resource):
+    dbp.load_instances_of(inst.get_id())
+    instances = dbp.pool.get_instances_of(inst.get_id())
+
+    data = {
+        'context': Context.from_request(req, resource),
+        'action': 'list',
+        'context_instance': inst,
         'instances': instances,
     }
-    #TODO: return right template, depending if we're listing entities or instances
-    #TODO: go through all TODOs
-    return 'asa_list_instances.html', data, None
+    return 'asa_list_artifacts.html', data, None
 
+def get_new_spec(req, dbp, inst, resource):
+    from model import Entity
 
-def instantiate_get(req, ppool, instance, resource):
-    from model import InstancePool, Package, Property, Entity
-    from presentable_instance import PresentableInstance
-
-    a_m2_class = InstancePool.get_metamodel_python_class_by_id(instance.get_identifier())
-    if not a_m2_class is None:
-        if not a_m2_class in [Package, Property, Entity]:
-            raise Exception("Trying to instanciate a not instantiatable instance '%s'." % a_m2_class)
-
-        new_instance = a_m2_class.get_new_default_instance(pool=ppool.pool, name="A New " + instance.get_name())
-    else: # we're instantiating a model (M1) instance, not a metamodel (M2) instance
-        a_m2_class = Entity
-        new_instance = a_m2_class.get_new_default_instance(pool=ppool.pool, name="A New " + instance.get_name(), id_meta=instance.get_identifier())
-
-    Property(ppool.pool, "A New Property", owner=new_instance.get_identifier())
+    if inst is Entity: # instantiating Entity (i.e., creating a spec)
+        pass
+    elif inst is Instance or isinstance(inst, Entity): # instantiating an existing spec
+        return get_new_artifact(req, dbp, inst, resource)
+    else:
+        raise Exception("Trying to instantiate something that can't be instantiated '%s'" % (inst,))
 
     data = {
         'context': Context.from_request(req, resource),
-        'action': 'list',
-        'instance_meta': PresentableInstance(instance),
-        'instance': PresentableInstance(new_instance),
+        'instance_meta': inst,
+        'types' : ['text', 'number', 'artifact'],
+        'multiplicities' : ['1', '0..*', '1..*'],
+        'url_path': req.path_info,
     }
-    return 'asa_edit.html', data, None
+    return 'asa_edit_spec.html', data, None
 
+def post_new_spec(req, dbp, inst, resource):
+    if inst is Entity: # instantiating Entity (i.e., creating a spec)
+        pass
+    elif inst is Instance or isinstance(inst, Entity): # instantiating an existing spec
+        return post_new_artifact(req, dbp, inst, resource)
+    else:
+        raise Exception("Trying to instantiate something that can't be instantiated '%s'" % (inst,))
 
-def instantiate_post(req, ppool, instance, resource):
-    from model import InstancePool, Package, Property, Entity, Instance
+    name = req.args.get('name')
+    parent_name = req.args.get('parent')
 
-    meta = instance
-    a_m2_class = InstancePool.get_metamodel_python_class_by_id(instance.get_identifier())
-    if not a_m2_class is None:
-        if not a_m2_class in [Package, Property, Entity]:
-            raise Exception("Trying to instanciate a not instantiatable instance '%s'." % a_m2_class)
+    attributes = [Attribute(n,m,t) for n,t,m in _group_spec_attributes(req)]
 
-        brand_new_instance = a_m2_class.get_new_default_instance(pool=ppool.pool, name="A New " + instance.get_name())
-    else: # we're instantiating a model (M1) instance, not a metamodel (M2) instance
-        if instance.get_meta_level() == '2':
-            a_m2_class = Entity
-        else:
-            a_m2_class = Instance
-        brand_new_instance = a_m2_class.get_new_default_instance(pool=ppool.pool, name="A New " + instance.get_name(), id_meta=instance.get_identifier())
+    if parent_name:
+        dbp.load_spec(parent_name)
+        bases = (dbp.pool.get_item(parent_name),)
+    else:
+        bases = tuple()
+    brand_new_inst = Entity(name=name, attributes=attributes, bases=bases)
 
-    for key in req.args.keys(): # go through submitted values
-        value = req.args.get(key)
-        if is_uuid(key): # it's a property of meta
-            ref = key
-            prop = meta.get_property(ref)
-            if prop is None: # let's retrieve it from meta, just to make sure
-                raise Exception("Property '%s' was not found in meta '%s'." % (ref, meta.get_identifier()))
-            if not prop.is_valid_value(value):
-                raise Exception("Not a valid value for property '%s': '%s'" % (prop.get_name(), value))
-            brand_new_instance.set_value(key, value)
-        elif key.startswith('property-name-'): # it's a property of the instance (it's name, to be precise)
-            ref = key.lstrip('property-name-')
-            if not is_uuid(ref):
-                continue # probably a html prototype
-            name = req.args.get(key, '')
-            domain = req.args.get('property-domain-' + ref, '')
-            Property(ppool.pool, name, owner=brand_new_instance.get_identifier(), domain = domain)
-        elif key.startswith('property-domain-'): # it's a property of the instance. ignore, as these properties are already handled when their names are found
-            pass
-        else: # something else that we don't care about
-            pass
-    ppool.save(ppool.env)
+    dbp.pool.add(brand_new_inst)
+    dbp.save('author', 'comment', 'address')
     add_notice(req, 'Your changes have been saved.')
-    id = brand_new_instance.get_identifier()
-    url = req.href.adaptiveartifacts(id, action='view')
+    url = req.href.adaptiveartifacts('spec/%s' % (brand_new_inst.get_id(),), action='view')
     req.redirect(url)
+
+def get_edit_spec(req, dbp, inst, resource):
+    assert(inst is Instance or isinstance(inst, Entity))
+
+    data = {
+        'context': Context.from_request(req, resource),
+        'instance_meta': inst.__class__,
+        'instance': inst,
+        'attributes': [(str(uuid.uuid4()),
+                        attr.name,
+                        attr.owner_spec,
+                        attr.get_type_readable(),
+                        attr.get_multiplicity_readable()) for attr in inst.get_attributes()],
+        'types' : ['text', 'number', 'artifact'],
+        'multiplicities' : ['1', '0..*', '1..*'],
+        'url_path': req.path_info,
+    }
+    return 'asa_edit_spec.html', data, None
+
+def post_edit_spec(req, dbp, inst, resource):
+    assert(inst is Instance or isinstance(inst, Entity))
+
+    attributes = [Attribute(n,m,t) for n,t,m in _group_spec_attributes(req)]
+
+    inst.replace_attributes(attributes)
+
+    dbp.save('author', 'comment', 'address')
+    add_notice(req, 'Your changes have been saved.')
+    url = req.href.adaptiveartifacts('spec/%s' % (inst.get_id(),), action='view')
+    req.redirect(url)
+
+def get_new_artifact(req, dbp, inst, resource):
+    assert(inst is Instance or isinstance(inst, Entity)) # otherwise, we're trying to instantiate something that is not an artifact
+
+    data = {
+        'context': Context.from_request(req, resource),
+        'instance_meta': inst,
+        'url_path': req.path_info,
+    }
+    return 'asa_edit_artifact.html', data, None
+
+def post_new_artifact(req, dbp, inst, resource):
+    assert(inst is Instance or isinstance(inst, Entity)) # otherwise, we're trying to instantiate something that is not an atifact
+
+    values, str_attr = _group_artifact_values(req)
+    brand_new_inst = inst(str_attr=str_attr, values=values)
+
+    dbp.pool.add(brand_new_inst)
+    dbp.save('author', 'comment', 'address')
+    add_notice(req, 'Your changes have been saved.')
+    url = req.href.adaptiveartifacts('artifact/%d' % (brand_new_inst.get_id(),), action='view')
+    req.redirect(url)
+
+def get_edit_artifact(req, dbp, inst, resource):
+    assert(isinstance(inst, Instance)) # otherwise, we're trying to edit something that is not an artifact
+
+    data = {
+        'context': Context.from_request(req, resource),
+        'instance_meta': inst.__class__,
+        'instance': inst,
+        'values': [(attr,val) for attr,val in inst.get_values()],
+        'default': inst.str_attr,
+        'url_path': req.path_info,
+    }
+    return 'asa_edit_artifact.html', data, None
+
+def post_edit_artifact(req, dbp, inst, resource):
+    assert(isinstance(inst, Instance)) # otherwise, we're trying to edit something that is not an artifact
+
+    values, str_attr = _group_artifact_values(req)
+    inst.replace_values(values.items())
+    inst.str_attr = str_attr if not str_attr is None else 'id'
+
+    dbp.save('author', 'comment', 'address')
+    add_notice(req, 'Your changes have been saved.')
+    url = req.href.adaptiveartifacts('artifact/%s' % (inst.get_id(),), action='view')
+    req.redirect(url)
+
+def _group_artifact_values(req):
+    # group posted values into a dict of attr_name:attr_value
+    # {'attr_name_1':'Age', 'attr_value_1':'42'} -> {'Age':'42'}
+    values = {}
+    default = None
+    for key in req.args.keys():
+        if key[0:9] == 'attr-name' and len(req.args[key]) > 0 and key[10:] != 'X':
+            idx = key[10:]
+            attr_name = req.args[key]
+            values[attr_name] = req.args['attr-value-' + idx]
+    if 'default' in req.args:
+        default = req.args['attr-name-' + req.args['default']]
+    return values, default
+
+def _group_spec_attributes(req):
+    # group posted attributes into a list of tuples (attr_name,attr_type,attr_multiplicity)
+    # {'attr_name_1':'Age', 'attr_type_1':'str', 'attr_multiplicity_1':None} -> [('Age','str',None)]
+    attrs = []
+    for key in req.args.keys():
+        if key[0:9] == 'attr-name' and len(req.args[key]) > 0 and key[10:] != 'X':
+            idx = key[10:]
+            attr_name = req.args[key]
+            attr_type = req.args['attr-type-' + idx]
+            attr_multiplicity = req.args['attr-multiplicity-' + idx]
+            attrs.append((attr_name, attr_type, attr_multiplicity))
+    return attrs

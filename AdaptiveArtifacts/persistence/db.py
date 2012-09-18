@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-#
-# Copyright (C) 2011 Filipe Correia
-# All rights reserved.
+## -*- coding: utf-8 -*-
 #
 # This software is licensed as described in the file license.txt, which
 # you should have received as part of this distribution.
@@ -10,32 +7,51 @@ from trac.core import *
 from trac.db import Table, Column, Index
 from trac.db import DatabaseManager
 from trac.env import IEnvironmentSetupParticipant
-#from AdaptiveArtifacts.environment_maintainer import ASAEnvironmentMaintainer
 
 schema_version = 1
 schema = [
-    # Represents which instances exist and in which versions
-    Table('asa_instance', key=('id', 'version'))[
-        Column('id'),
-        Column('iname'),
-        Column('meta_level'),
-        Column('version', type='int64'),
-        Column('time', type='int64'),
-        Column('author'),
-        Column('ipnr'),
-        Column('op_type'), # 'C','U','D'
-        Column('comment'),
-        Index(['id', 'version'], unique=True),
+    Table('asa_version', key='id')[
+            Column('id', type='int64', auto_increment=True),
+            Column('time', type='int64'),
+            Column('author'),
+            Column('ipnr'),
+            Column('comment'),
+            Column('readonly',  type='int'),
+            Index(['id'], unique=True),
     ],
-    # Represents instance's property values. The absence of a key is deliberate as, depending
-    # on the multiplicity of each property, an instance may have several values for each property.
-    Table('asa_value')[
-        Column('instance_id'),
-        Column('instance_version', type='int64'),
-        Column('property_instance_id'), #uuid
-        Column('property_instance_iname'),
-        Column('value'),
-        Index(['instance_id', 'instance_version', 'property_instance_id']),
+    # Workaround for sqlite not supporting multiple column primary keys with an auto-increment.
+    # This table as the sole purpose of getting the auto-increment values
+    Table('asa_artifact_id', key='id')[
+        Column('id', type='int64', auto_increment=True),
+    ],
+    Table('asa_artifact', key=['id', 'version_id'])[
+        Column('id', type='int64'),
+        Column('version_id', type='int64'),
+        Column('meta_class'),
+        Column('title_expr'), # the "toString()" of artifacts
+        Index(['id', 'version_id'], unique=True),
+    ],
+    Table('asa_artifact_value')[
+        Column('artifact_id', type='int64'),
+        Column('version_id', type='int64'),
+        Column('attr_name'),
+        Column('attr_value'),
+        Index(['artifact_id', 'version_id']),
+    ],
+    Table('asa_spec', key=['name', 'version_id'])[
+        Column('name'),
+        Column('version_id', type='int64'),
+        Column('base_class'),
+        Index(['name', 'version_id'], unique=True),
+    ],
+    Table('asa_spec_attribute')[
+        Column('spec_name'),
+        Column('version_id', type='int64'),
+        Column('name'),
+        Column('multplicity_low'),
+        Column('multplicity_high'),
+        Column('type'),
+        Index(['spec_name', 'version_id']),
     ],
 ]
 
@@ -67,7 +83,6 @@ class Setup(Component):
         try:
             if self.schema_version == self.default_version:
                 self._install_asa_support()
-                self._save_m2_bootstraped_pool()
 #           elif self.schema_version == 'XXXX':
 #                cursor = db.cursor()
 #                cursor.execute("UPDATE various stuff ...")
@@ -95,12 +110,6 @@ class Setup(Component):
 
         self.schema_version = self.running_version
 
-    def _save_m2_bootstraped_pool(self):
-        from persistable_instance import PersistablePool
-        from model import InstancePool
-
-        ppool = PersistablePool(self.env, InstancePool(True))
-        ppool.save(self.env, meta_levels=['2'])
 
     def _get_system_value(self, key):
         return self._get_scalar_value("SELECT value FROM system WHERE name=%s", 0, key)

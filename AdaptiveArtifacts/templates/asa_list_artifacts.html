@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include href="layout.html" />
+  <head><title></title></head>
+  <body>
+      <h1>${context_instance.get_name()}s</h1>
+      <ul>
+          <li py:for="instance in instances"><a href="${req.href.adaptiveartifacts('artifact/' + str(instance.get_id()), action='view')}">${str(instance)}</a></li>
+      </ul>
+      <form method="get" action="${href.adaptiveartifacts('spec/' + context_instance.get_id())}" id="modifypage">
+          <input type="hidden" name="action" value="new" />
+          <input type="submit" value="Create new" />
+      </form>
+      <br/>
+  </body>
+</html>

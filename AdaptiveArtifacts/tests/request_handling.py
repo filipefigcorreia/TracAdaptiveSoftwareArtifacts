@@ -1,15 +1,11 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2011 Filipe Correia
-# All rights reserved.
-#
 # This software is licensed as described in the file license.txt, which
 # you should have received as part of this distribution.
-#
 
 import unittest
 from AdaptiveArtifacts import Core
-from AdaptiveArtifacts.views import view_get, instantiate_post
+from AdaptiveArtifacts.views import get_view_spec, post_new_artifact
 
 class RequestHandling(unittest.TestCase):
     def setUp(self):
@@ -19,7 +15,7 @@ class RequestHandling(unittest.TestCase):
         pass
 
     def test_view_resolution(self):
-        view = Core._resolve_view(action="view", method="GET")
-        self.assertEqual(view_get, view)
-        view = Core._resolve_view(action="instantiate", method="POST")
-        self.assertEqual(instantiate_post, view)
+        view = Core._resolve_view(res_type="spec", action="view", method="GET")
+        self.assertEqual(get_view_spec, view)
+        view = Core._resolve_view(res_type="artifact", action="new", method="POST")
+        self.assertEqual(post_new_artifact, view)

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include href="layout.html" />
+  <head><title></title></head>
+  <body>
+      <ul>
+          <li py:for="spec,count in specs"><a href="">+</a> <a href="${req.href.adaptiveartifacts('spec/' + spec.get_id(), action='view')}">${spec.get_name()}</a> (${count})</li>
+      </ul>
+      <form method="get" action="${href.adaptiveartifacts('spec')}">
+          <input type="hidden" name="action" value="new" />
+          <input type="submit" value="New Spec" />
+      </form>
+      <form method="get" action="${href.adaptiveartifacts('artifact')}">
+          <input type="hidden" name="action" value="new" />
+          <input type="submit" value="New Artifact" />
+      </form>
+      <br/>
+  </body>
+</html>
