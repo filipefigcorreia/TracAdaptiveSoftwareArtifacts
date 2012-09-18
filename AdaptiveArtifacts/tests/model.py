@@ -223,9 +223,11 @@ class PoolOperations(object):
         self.Car = Entity(name="Car")
         self.Corsa = Entity(name="Opel Corsa", bases=(self.Car,))
         self.Enjoy = Entity(name="Opel Corsa Enjoy", bases=(self.Corsa,))
+        self.mycar = self.Enjoy(values={"License": 'ja-42-88'})
         self.pool.add(self.Car)
         self.pool.add(self.Corsa)
         self.pool.add(self.Enjoy)
+        self.pool.add(self.mycar)
 
     def test_pool_items_identities(self):
         entities = self.pool.get_instances_of(Entity.get_id())
@@ -235,6 +237,13 @@ class PoolOperations(object):
         self.assertEqual(len([ent for ent in entities if ent.get_id() == self.Car.get_id()]), 1)
         self.assertEqual(len([ent for ent in entities if ent.get_id() == self.Corsa.get_id()]), 1)
         self.assertEqual(len([ent for ent in entities if ent.get_id() == self.Enjoy.get_id()]), 1)
+
+    def test_pool_items_retrieval(self):
+        self.assertEqual(len(self.pool.get_items()), 6) #all
+        self.assertEqual(len(self.pool.get_items(levels=(0,))), 1) #instances
+        self.assertEqual(len(self.pool.get_items(levels=(1,))), 3) #entities
+        self.assertEqual(len(self.pool.get_items(levels=(2,))), 2) #meta-meta-model
+
 
     def test_inexistent_instance(self):
             self.assertTrue(self.pool.get_item(id="somerandomid") is None)
