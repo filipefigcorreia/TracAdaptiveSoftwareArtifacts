@@ -31,14 +31,14 @@ def get_view_spec(req, dbp, inst, resource):
         'context': Context.from_request(req, resource),
         'instance': inst,
     }
-    return 'asa_view_entity.html', data, None
+    return 'asa_view_spec.html', data, None
 
 def get_view_artifact(req, dbp, inst, resource):
     data = {
         'context': Context.from_request(req, resource),
         'instance': inst,
     }
-    return 'asa_view_instance.html', data, None
+    return 'asa_view_artifact.html', data, None
 
 def get_list_spec(req, dbp, inst, resource):
     return get_list_artifact(req, dbp, inst, resource)
@@ -55,7 +55,7 @@ def get_list_artifact(req, dbp, inst, resource):
     }
     #TODO: return right template, depending if we're listing entities or instances
     #TODO: go through all TODOs
-    return 'asa_list_instances.html', data, None
+    return 'asa_list_artifacts.html', data, None
 
 def get_new_spec(req, dbp, inst, resource):
     from model import Entity
@@ -74,7 +74,7 @@ def get_new_spec(req, dbp, inst, resource):
         'multiplicities' : ['1', '0..*', '1..*'],
         'url_path': req.path_info,
     }
-    return 'asa_new_entity.html', data, None
+    return 'asa_edit_spec.html', data, None
 
 def post_new_spec(req, dbp, inst, resource):
     if inst is Entity: # instantiating Entity (i.e., creating a spec)
@@ -118,7 +118,7 @@ def get_edit_spec(req, dbp, inst, resource):
         'multiplicities' : ['1', '0..*', '1..*'],
         'url_path': req.path_info,
     }
-    return 'asa_new_entity.html', data, None
+    return 'asa_edit_spec.html', data, None
 
 def post_edit_spec(req, dbp, inst, resource):
     assert(inst is Instance or isinstance(inst, Entity))
@@ -140,7 +140,7 @@ def get_new_artifact(req, dbp, inst, resource):
         'instance_meta': inst,
         'url_path': req.path_info,
     }
-    return 'asa_new_instance.html', data, None
+    return 'asa_edit_artifact.html', data, None
 
 def post_new_artifact(req, dbp, inst, resource):
     assert(inst is Instance or isinstance(inst, Entity)) # otherwise, we're trying to instantiate something that is not an atifact
@@ -165,7 +165,7 @@ def get_edit_artifact(req, dbp, inst, resource):
         'default': inst.str_attr,
         'url_path': req.path_info,
     }
-    return 'asa_new_instance.html', data, None
+    return 'asa_edit_artifact.html', data, None
 
 def post_edit_artifact(req, dbp, inst, resource):
     assert(isinstance(inst, Instance)) # otherwise, we're trying to edit something that is not an artifact
