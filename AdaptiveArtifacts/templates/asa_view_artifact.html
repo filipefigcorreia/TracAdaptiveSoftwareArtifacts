@@ -6,9 +6,10 @@
   <head><title>${instance.__class__.get_id()}</title></head>
   <body>
     <div id="content" class="asa">
+        <h1>Artifact <em>${str(instance)}</em></h1>
         <ul>
             <li>Identifier: ${instance.get_id()}</li>
-            <li>Meta: <a href="${req.href.adaptiveartifacts('spec/' + instance.__class__.get_id(), action='view')}">${instance.__class__.get_name()}</a></li>
+            <li>Spec: <a href="${req.href.adaptiveartifacts('spec/' + instance.__class__.get_id(), action='view')}">${instance.__class__.get_name()}</a></li>
             <li>Values:
                 <ul>
                     <li py:for="name, value in instance.get_values()"><py:choose test=""><py:when test="name in [attribute.name for attribute in instance.__class__.get_attributes()]"><strong>${name}</strong></py:when><py:otherwise>${name}</py:otherwise></py:choose>: ${value}</li>
