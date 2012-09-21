@@ -10,7 +10,6 @@ from trac.web.chrome import INavigationContributor, ITemplateProvider, add_javas
 from trac.web.main import IRequestHandler
 from trac.web.api import IRequestFilter
 from trac.util import Markup
-from AdaptiveArtifacts.persistable_instance import AdaptiveArtifact, PersistablePool
 from AdaptiveArtifacts.persistence.data import DBPool
 from AdaptiveArtifacts.model.pool import InstancePool
 from AdaptiveArtifacts.model.pool import Entity, Instance
@@ -126,6 +125,7 @@ class Core(Component):
     def get_resource_url(self, resource, href, **kwargs):
         return href.asa_resource(resource.id)
 
+    """
     def get_resource_description(self, resource, format='default', context=None, **kwargs):
         pi = AdaptiveArtifact.load(self.env, identifier=resource.id, version=resource.version)
         #TODO: instead of using the identifier, use the text_repr_expr property value, if it exists
@@ -134,6 +134,7 @@ class Core(Component):
     def resource_exists(self, resource):
         pi = AdaptiveArtifact.load(self.env, identifier=resource.id, version=resource.version)
         return not pi.instance is None
+    """"
 
     # IRequestFilter methods
     def pre_process_request(self, req, handler):
