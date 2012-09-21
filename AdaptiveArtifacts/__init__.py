@@ -8,6 +8,7 @@ from trac.core import *
 from trac.resource import IResourceManager, ResourceNotFound
 from trac.web.chrome import INavigationContributor, ITemplateProvider, add_javascript, add_stylesheet
 from trac.web.main import IRequestHandler
+from trac.web.api import IRequestFilter
 from trac.util import Markup
 from AdaptiveArtifacts.persistable_instance import AdaptiveArtifact, PersistablePool
 from AdaptiveArtifacts.persistence.data import DBPool
@@ -17,7 +18,7 @@ from AdaptiveArtifacts.model.pool import Entity, Instance
 
 class Core(Component):
     """Core module of the plugin. Provides the Adaptive-Artifacts themselves."""
-    implements(INavigationContributor, IRequestHandler, ITemplateProvider, IResourceManager)
+    implements(INavigationContributor, IRequestHandler, ITemplateProvider, IResourceManager, IRequestFilter)
 
     def __init__(self):
         self.base_url = 'adaptiveartifacts'
@@ -134,3 +135,10 @@ class Core(Component):
         pi = AdaptiveArtifact.load(self.env, identifier=resource.id, version=resource.version)
         return not pi.instance is None
 
+    # IRequestFilter methods
+    def pre_process_request(self, req, handler):
+        return handler
+
+    def post_process_request(self, req, template, data, content_type):
+        add_javascript(req, "adaptiveartifacts/js/wiki.js")
+        return (template, data, content_type)
