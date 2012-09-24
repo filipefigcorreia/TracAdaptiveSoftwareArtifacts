@@ -297,7 +297,7 @@ class Entity(type):
         dct = args[2] if len(args)>2 else extra_kwargs.pop('dct', None)
         cls.version = extra_kwargs.get('version', None)
         cls._is_new = not kwargs.pop('persisted', False)
-        cls.replace_attributes(extra_kwargs.get('attributes', []))
+        cls._replace_attributes(extra_kwargs.get('attributes', []))
         cls._is_modified = False
         #cls.py_id = util.to_valid_identifier_name(cls.id) # not needed as an extra attribute, it's already the class identifier!
         super(Entity, cls).__init__(name, bases, dct)
@@ -327,7 +327,18 @@ class Entity(type):
     def get_attributes(mcs):
         return []
 
-    def replace_attributes(cls, attributes):
+    def replace_state(cls, name, base, attributes):
+        cls._replace_name(name)
+        cls.__bases__ = (base,) if base else (Instance,)
+        cls._replace_attributes(attributes)
+        cls._is_modified = True
+
+    def _replace_name(cls, name):
+        cls.name = name
+        cls.__name__ = util.to_valid_identifier_name(cls.name)
+        cls._is_modified = True
+
+    def _replace_attributes(cls, attributes):
         cls.attributes = attributes
         for attribute in cls.attributes:
             attribute.owner_spec = cls

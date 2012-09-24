@@ -120,7 +120,16 @@ def post_edit_spec(req, dbp, inst, resource):
 
     attributes = [Attribute(n,m,t) for n,t,m in _group_spec_attributes(req)]
 
-    inst.replace_attributes(attributes)
+    base = None
+    base_name = req.args['parent']
+    if base_name:
+        dbp.load_spec(base_name)
+        base = dbp.pool.get_item(req.args['parent'])
+
+    inst.replace_state(
+        name=req.args['name'],
+        base=base,
+        attributes=attributes)
 
     dbp.save('author', 'comment', 'address')
     add_notice(req, 'Your changes have been saved.')
