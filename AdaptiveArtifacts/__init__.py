@@ -134,7 +134,7 @@ class Core(Component):
     def resource_exists(self, resource):
         pi = AdaptiveArtifact.load(self.env, identifier=resource.id, version=resource.version)
         return not pi.instance is None
-    """"
+    """
 
     # IRequestFilter methods
     def pre_process_request(self, req, handler):
