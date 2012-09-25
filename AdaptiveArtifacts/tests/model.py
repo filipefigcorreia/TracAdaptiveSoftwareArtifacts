@@ -258,10 +258,10 @@ class PoolOperations(object):
         self.pool.add(self.mycar)
 
     def test_pool_items_identities(self):
-        entities = self.pool.get_instances_of(Entity.get_id())
+        entities = self.pool.get_instances_of(Entity.get_name())
         self.assertEqual(len(entities), 3)
         for ent in entities:
-            self.assertEqual(ent.__class__.name, Entity.get_id())
+            self.assertEqual(ent.__class__.name, Entity.get_name())
         self.assertEqual(len([ent for ent in entities if ent.get_id() == self.Car.get_id()]), 1)
         self.assertEqual(len([ent for ent in entities if ent.get_id() == self.Corsa.get_id()]), 1)
         self.assertEqual(len([ent for ent in entities if ent.get_id() == self.Enjoy.get_id()]), 1)

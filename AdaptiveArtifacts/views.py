@@ -41,8 +41,8 @@ def get_view_artifact(req, dbp, inst, resource):
     return 'asa_view_artifact.html', data, None
 
 def get_list_spec(req, dbp, inst, resource):
-    dbp.load_instances_of(inst.get_id())
-    instances = dbp.pool.get_instances_of(inst.get_id())
+    dbp.load_instances_of(inst.get_name())
+    instances = dbp.pool.get_instances_of(inst.get_name())
 
     data = {
         'context': Context.from_request(req, resource),
@@ -94,7 +94,7 @@ def post_new_spec(req, dbp, inst, resource):
     dbp.pool.add(brand_new_inst)
     dbp.save('author', 'comment', 'address')
     add_notice(req, 'Your changes have been saved.')
-    url = req.href.adaptiveartifacts('spec/%s' % (brand_new_inst.get_id(),), action='view')
+    url = req.href.adaptiveartifacts('spec/%s' % (brand_new_inst.get_name(),), action='view')
     req.redirect(url)
 
 def get_edit_spec(req, dbp, inst, resource):
@@ -133,7 +133,7 @@ def post_edit_spec(req, dbp, inst, resource):
 
     dbp.save('author', 'comment', 'address')
     add_notice(req, 'Your changes have been saved.')
-    url = req.href.adaptiveartifacts('spec/%s' % (inst.get_id(),), action='view')
+    url = req.href.adaptiveartifacts('spec/%s' % (inst.get_name(),), action='view')
     req.redirect(url)
 
 def get_new_artifact(req, dbp, inst, resource):

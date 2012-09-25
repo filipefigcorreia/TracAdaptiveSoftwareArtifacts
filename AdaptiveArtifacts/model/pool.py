@@ -48,12 +48,13 @@ class InstancePool(object):
             result = [item for item in result if isinstance(item, Entity) and len(item.__bases__) > 0 and item.__bases__[0] is base]
         return result
 
-    def get_instances_of(self, meta_id):
-        assert(not meta_id is None)
-        return [item for item in self._items if item.__class__ in self.get_spec_and_child_specs(meta_id)]
+    def get_instances_of(self, spec_name):
+        assert(not spec_name is None)
+        return [item for item in self._items if item.__class__ in self.get_spec_and_child_specs(spec_name)]
 
-    def get_spec_and_child_specs(self, id_spec):
-        inh_chain = current = [self.get_item(id_spec)]
+
+    def get_spec_and_child_specs(self, spec_name):
+        inh_chain = current = [self.get_item(spec_name)]
         while True:
             childs = [self.get_items(base_name=spec.get_name()) for spec in current]
             current = [child for sublist in childs for child in sublist]
@@ -65,6 +66,6 @@ class InstancePool(object):
     def get_possible_domains(self):
         pool = self
         possible_domains = {'string':'string'}
-        possible_domains.update(dict([(i.get_identifier(), i.get_name()) for i in pool.get_model_instances(Entity.get_id())]))
+        possible_domains.update(dict([(i.get_identifier(), i.get_name()) for i in pool.get_items(levels=(1,))]))
         return possible_domains
 

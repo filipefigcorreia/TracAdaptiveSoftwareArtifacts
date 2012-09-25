@@ -69,7 +69,7 @@ class TestBasicEntityBehaviour(unittest.TestCase):
         # load cars only
         pool = InstancePool()
         dbp = DBPool(self.env, pool)
-        dbp.load_instances_of(self.Car.get_id())
+        dbp.load_instances_of(self.Car.get_name())
         
         self.assertEqual(len(pool.get_items((0,))), 2)
         self.assertTrue(not pool.get_item(self.lightningMcQueen.get_id()) is None)
@@ -147,9 +147,9 @@ class Scenarios(object):
 
         new_pool = InstancePool()
         new_dbp = DBPool(testcase.env, new_pool)
-        for instance in testcase.pool.get_instances_of(Instance.get_id()):
+        for instance in testcase.pool.get_instances_of(Instance.get_name()):
             new_dbp.load_artifact(instance.get_id())
-        for entity in testcase.pool.get_instances_of(Entity.get_id()):
+        for entity in testcase.pool.get_instances_of(Entity.get_name()):
             new_dbp.load_spec(entity.get_name())
 
         testcase.pool = new_pool
