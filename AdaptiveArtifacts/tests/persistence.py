@@ -75,6 +75,33 @@ class TestBasicEntityBehaviour(unittest.TestCase):
         self.assertTrue(not pool.get_item(self.lightningMcQueen.get_id()) is None)
         self.assertTrue(not pool.get_item(car1.get_id()) is None)
 
+    def test_edit_spec_name(self):
+        pool = InstancePool()
+        dbp = DBPool(self.env, pool)
+        dbp.load_spec("Car")
+        Car = dbp.pool.get_item("Car")
+
+        # create three more versions
+        Car._is_modified = True
+        dbp.save('me', 'a new version', '127.0.0.1')
+        Car._is_modified = True
+        dbp.save('me', 'a new version', '127.0.0.1')
+        Car._is_modified = True
+        dbp.save('me', 'a new version', '127.0.0.1')
+
+        # so, there should be 4 versions now
+        ch = [(version, timestamp, author, ipnr, comment) for version, timestamp, author, ipnr, comment in dbp.get_history(Car)]
+        self.assertEqual(len(ch), 4)
+
+        # edit the name
+        Car._replace_name("Automobile")
+        dbp.save('me', 'a couple more instances', '127.0.0.1')
+
+        # querying by the new name should render 5 versions
+        self.assertEqual(Car.get_name(), "Automobile")
+        ch = [(version, timestamp, author, ipnr, comment) for version, timestamp, author, ipnr, comment in dbp.get_history(Car)]
+        self.assertEqual(len(ch), 5)
+
     def test_delete_unmodified(self):
         pool = InstancePool()
         dbp = DBPool(self.env, pool)

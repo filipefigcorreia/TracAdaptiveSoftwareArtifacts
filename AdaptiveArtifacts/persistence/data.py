@@ -226,10 +226,15 @@ class DBPool(object):
 
                 for item in uncommitted_items:
                     if isinstance(item, Entity): # it's a spec
+                        if item._is_renamed:
+                            cursor.execute("""
+                                UPDATE asa_spec SET name=%s WHERE name=%s
+                                """, (item.get_name(), item.original_name))
                         cursor.execute("""
                             INSERT INTO asa_spec (name, version_id, base_class)
-                            VALUES (%s,%s, %s)
+                            VALUES (%s,%s,%s)
                             """, (item.get_name(), version_id, item.__bases__[0].get_name()))
+
                         for attribute in item.attributes:
                             cursor.execute("""
                                 INSERT INTO asa_spec_attribute (spec_name, version_id, name, multplicity_low, multplicity_high, type)
@@ -298,7 +303,8 @@ class DBPool(object):
         if isinstance(item, Entity): # it's a spec
             query += """
                     INNER JOIN asa_spec s ON s.version_id=v.id
-                    WHERE s.name=%s""" % (item.get_name())
+                    WHERE s.name='%s'
+                    """ % (item.get_name())
         else: # it's an artifact
             query += """
                     INNER JOIN asa_artifact a ON a.version_id=v.id

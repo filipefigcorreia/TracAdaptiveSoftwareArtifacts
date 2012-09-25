@@ -36,6 +36,7 @@ class Instance(object):
     name = '__Instance'
     _is_new = False
     _is_modified = False
+    _is_renamed = False
     attributes = []
 
     def __init__(self, *args, **kwargs):
@@ -291,6 +292,7 @@ class Entity(type):
 
     def __init__(cls, *args, **kwargs):
         extra_kwargs = dict(kwargs)
+        cls.original_name = None
         cls.name = args[0] if len(args)>0 else extra_kwargs.pop('name', None)
         name = util.to_valid_identifier_name(cls.name)
         bases = args[1] if len(args)>1 else extra_kwargs.pop('bases', None)
@@ -298,7 +300,8 @@ class Entity(type):
         cls.version = extra_kwargs.get('version', None)
         cls._is_new = not kwargs.pop('persisted', False)
         cls._replace_attributes(extra_kwargs.get('attributes', []))
-        cls._is_modified = False
+        cls._is_modified = False # will be switched to True if either the name bases or attributes are changed
+        cls._is_renamed = False # will be switched to True if the name is changed
         #cls.py_id = util.to_valid_identifier_name(cls.id) # not needed as an extra attribute, it's already the class identifier!
         super(Entity, cls).__init__(name, bases, dct)
 
@@ -334,8 +337,10 @@ class Entity(type):
         cls._is_modified = True
 
     def _replace_name(cls, name):
+        cls.original_name = cls.name
         cls.name = name
         cls.__name__ = util.to_valid_identifier_name(cls.name)
+        cls._is_renamed = True
         cls._is_modified = True
 
     def _replace_attributes(cls, attributes):
