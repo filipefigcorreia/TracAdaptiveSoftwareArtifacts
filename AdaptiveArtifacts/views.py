@@ -183,6 +183,15 @@ def post_edit_artifact(req, dbp, inst, resource):
     url = req.href.adaptiveartifacts('artifact/%s' % (inst.get_id(),), action='view')
     req.redirect(url)
 
+def get_delete_artifact(req, dbp, inst, resource):
+    assert(isinstance(inst, Instance)) # otherwise, we're trying to delete something that is not an artifact
+
+    spec = inst.__class__
+    dbp.delete(inst)
+
+    url = req.href.adaptiveartifacts('spec/%s' % (spec.get_name(),), action='list')
+    req.redirect(url)
+
 def _group_artifact_values(req):
     # group posted values into a dict of attr_name:attr_value
     # {'attr_name_1':'Age', 'attr_value_1':'42'} -> {'Age':'42'}
