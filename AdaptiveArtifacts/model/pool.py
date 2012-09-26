@@ -48,10 +48,13 @@ class InstancePool(object):
             result = [item for item in result if isinstance(item, Entity) and len(item.__bases__) > 0 and item.__bases__[0] is base]
         return result
 
-    def get_instances_of(self, spec_name):
+    def get_instances_of(self, spec_name, direct_instances_only=False):
         assert(not spec_name is None)
-        return [item for item in self._items if item.__class__ in self.get_spec_and_child_specs(spec_name)]
-
+        if direct_instances_only:
+            return [item for item in self._items if hasattr(item.__class__, 'name') and item.__class__.name == spec_name]
+        else:
+            spec_and_childs = self.get_spec_and_child_specs(spec_name)
+            return [item for item in self._items if item.__class__ in spec_and_childs]
 
     def get_spec_and_child_specs(self, spec_name):
         inh_chain = current = [self.get_item(spec_name)]

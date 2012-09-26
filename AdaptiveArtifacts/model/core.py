@@ -67,6 +67,13 @@ class Instance(object):
         else: # a instance of the Instance class or one of its descendants
             return self.id
 
+    @classmethod
+    def get_parent(cls):
+        if cls is Instance: # the Instance class
+            return None
+        else: # a descendant of the Instance class
+            return cls.__bases__[0] if len(cls.__bases__) > 0 and not cls.__bases__[0] in (type, Instance) else None
+
     @util.classinstancemethod
     def is_uncommitted(self, cls):
         if self is None: # the Instance class or one of its descendants
@@ -319,12 +326,9 @@ class Entity(type):
         else: # a class, instance of the Entity class
             return self.name
 
-    @util.classinstancemethod
-    def get_parent(self, cls):
-        if self is None: # the Entity class
-            return None
-        else: # a class, instance of the Entity class
-                return self.__bases__[0] if len(self.__bases__) > 0 and not self.__bases__[0] in (type, Instance) else None
+    @classmethod
+    def get_parent(cls):
+        return None
 
     @classmethod
     def get_attributes(mcs):

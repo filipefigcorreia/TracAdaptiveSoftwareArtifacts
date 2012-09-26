@@ -13,7 +13,7 @@ from AdaptiveArtifacts.model.core import Entity, Instance, Attribute
 def get_index(req, dbp, inst, resource):
     # Load *everything* TODO: make more efficient
     dbp.load_specs()
-    dbp.load_instances_of(Instance.get_id())
+    dbp.load_instances_of(Instance.get_name())
 
     specs = []
     for spec in dbp.pool.get_items((1,)):
@@ -47,10 +47,24 @@ def get_list_spec(req, dbp, inst, resource):
     data = {
         'context': Context.from_request(req, resource),
         'action': 'list',
+        'list_title': inst.get_name() + "s",
         'context_instance': inst,
         'instances': instances,
     }
-    return 'asa_list_artifacts.html', data, None
+    return 'asa_list_spec_artifacts.html', data, None
+
+def get_list_aggregate(req, dbp, inst, resource):
+    dbp.load_instances_of(Instance.get_name())
+    artifacts_with_no_spec = dbp.pool.get_instances_of(Instance.get_name(), direct_instances_only=True)
+
+    data = {
+        'context': Context.from_request(req, resource),
+        'action': 'list',
+        'list_title': 'Artifacts without a spec',
+        'context_instance': Instance,
+        'instances': artifacts_with_no_spec,
+    }
+    return 'asa_list_spec_artifacts.html', data, None
 
 def get_new_spec(req, dbp, inst, resource):
     from model import Entity

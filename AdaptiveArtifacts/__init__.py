@@ -45,32 +45,39 @@ class Core(Component):
     def process_request(self, req):
         action = req.args.get('action', None) # view, edit, list, index, new
         asa_resource_type = req.args.get('asa_resource_type', None)
-        asa_resource_name = req.args.get('asa_resource', None)
+        asa_resource_id = req.args.get('asa_resource', None)
         version = req.args.get('version')
         #old_version = req.args.get('old_version')
 
-        if not asa_resource_name is None and asa_resource_name.endswith('/'):
-            req.redirect(req.href.adaptiveartifacts(asa_resource_name.strip('/')))
+        if not asa_resource_id is None and asa_resource_id.endswith('/'):
+            req.redirect(req.href.adaptiveartifacts(asa_resource_id.strip('/')))
 
         dbp = DBPool(self.env, InstancePool())
+
+
+        if not asa_resource_type is None and \
+           not asa_resource_type in ['spec', 'artifact', 'aggregate']:
+            raise Exception("Unknown type of resource '%s'" % (asa_resource_type,))
 
         if asa_resource_type is None:
             inst = None
             action = 'index'
-        else:
-            if not asa_resource_type in ['spec', 'artifact']:
-                raise Exception("Unknown type of resource '%s'" % (asa_resource_type,))
-
-            if asa_resource_name is None:
+        elif asa_resource_type == 'aggregate':
+            if not asa_resource_id == 'no_spec':
+                raise Exception("Unknown aggregate '%s'" % (asa_resource_id,))
+            inst = None
+            action = 'list'
+        elif asa_resource_type in ['spec', 'artifact']:
+            if asa_resource_id is None:
                 if asa_resource_type == 'spec':
                     inst = Entity
                 elif asa_resource_type == 'artifact':
                     inst = Instance
             else:
-                dbp.load_item(asa_resource_name)
-                inst = dbp.pool.get_item(asa_resource_name)
+                dbp.load_item(asa_resource_id)
+                inst = dbp.pool.get_item(asa_resource_id)
                 if inst is None:
-                    raise ResourceNotFound("No resource found with identifier '%s'" % asa_resource_name)
+                    raise ResourceNotFound("No resource found with identifier '%s'" % asa_resource_id)
 
         if action is None: # default action depends on the instance's meta-level
             if inst is Entity:
@@ -92,7 +99,7 @@ class Core(Component):
 
     @staticmethod
     def _resolve_view(res_type, action, method):
-        assert res_type in ['spec', 'artifact', None]
+        assert res_type in ['spec', 'artifact', 'aggregate', None]
         from AdaptiveArtifacts import views
         mlist = [method_name for method_name in dir(views) if callable(getattr(views, method_name)) and method_name.startswith(('get_', 'post_'))]
         if res_type is None:
