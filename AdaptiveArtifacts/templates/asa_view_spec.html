@@ -7,6 +7,7 @@
   <body>
     <div id="content" class="asa">
         <h1>${instance.get_name()}</h1>
+        <strong>Inherits:</strong><py:if test="not instance.get_parent() is None">${instance.get_parent().get_name()}</py:if>
         <table border="1">
         <tr><th>Attribute</th><th>Type</th><th>Multiplicity</th></tr>
         <tr py:for="attribute in instance.get_attributes()">
