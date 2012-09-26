@@ -197,11 +197,19 @@ def post_edit_artifact(req, dbp, inst, resource):
     url = req.href.adaptiveartifacts('artifact/%s' % (inst.get_id(),), action='view')
     req.redirect(url)
 
+def get_delete_spec(req, dbp, inst, resource):
+    assert(isinstance(inst, Entity)) # otherwise, we're trying to delete something that is not a spec
+
+    dbp.delete(inst, 'author', 'comment', 'address')
+
+    url = req.href.adaptiveartifacts()
+    req.redirect(url)
+
 def get_delete_artifact(req, dbp, inst, resource):
     assert(isinstance(inst, Instance)) # otherwise, we're trying to delete something that is not an artifact
 
     spec = inst.__class__
-    dbp.delete(inst)
+    dbp.delete(inst, 'author', 'comment', 'address')
 
     url = req.href.adaptiveartifacts('spec/%s' % (spec.get_name(),), action='list')
     req.redirect(url)

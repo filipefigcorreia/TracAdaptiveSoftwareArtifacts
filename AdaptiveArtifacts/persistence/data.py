@@ -264,7 +264,7 @@ class DBPool(object):
                                     """, (art_id, version_id, attr_name, value))
                         item.id=art_id
 
-    def delete(self, item, db=None):
+    def delete(self, item, author, comment, remote_addr, t=None):
         if not item in self.pool.get_items():
             raise Exception("Item not in pool")
 
@@ -277,6 +277,39 @@ class DBPool(object):
         def do_delete(db):
             cursor = db.cursor()
             if isinstance(item, Entity): # it's a spec
+
+                # get a new version number for all changes we may need to make
+                cursor.execute("""
+                    INSERT INTO asa_version (time, author, ipnr, comment, readonly)
+                    VALUES (%s,%s,%s,%s,%s)
+                    """, (to_utimestamp(t), author, remote_addr, comment, 0))
+                version_id = db.get_last_id(cursor, 'asa_version')
+
+                # change artifacts of the deleted spec to point to the "Instance" spec
+                cursor.execute("""
+                    INSERT INTO asa_artifact (id, version_id, meta_class, title_expr)
+                    SELECT id, %s, %s, title_expr
+                    FROM asa_artifact
+                    WHERE meta_class=%s
+                    """, (version_id, Instance.get_name(), item.get_name()))
+
+                # change specs inheriting from the deleted spec to inherit from "Instance" instead
+                cursor.execute("""
+                    INSERT INTO asa_spec (name, version_id, base_class)
+                    SELECT name, %s, %s
+                    FROM asa_spec
+                    WHERE base_class=%s
+                    """, (version_id, Instance.get_name(), item.get_name()))
+
+                # change attributes that had the deleted spec as type
+                cursor.execute("""
+                    INSERT INTO asa_spec_attribute (spec_name, version_id, name, multplicity_low, multplicity_high, type)
+                    SELECT spec_name, %s, name, multplicity_low, multplicity_high, %s
+                    FROM asa_spec_attribute
+                    WHERE type=%s
+                    """, (version_id, Instance.get_name(), item.get_name()))
+
+                # finally, delete the spec
                 cursor.execute("DELETE FROM asa_spec_attribute WHERE spec_name=%s", (item.get_name(),))
                 cursor.execute("DELETE FROM asa_spec WHERE name=%s", (item.get_name(),))
             else: # it's an artifact
