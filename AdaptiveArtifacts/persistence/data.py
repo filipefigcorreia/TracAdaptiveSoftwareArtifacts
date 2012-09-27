@@ -57,7 +57,7 @@ class DBPool(object):
                 WHERE artifact_id='%s' AND version_id='%d'""" % (id, version))
         values = rows.fetchall()
 
-        # create the instance
+        # create the artifact
         artifact = spec(id=id, version=version, str_attr=title_expr, persisted=True)
         artifact.add_values(values)
 
@@ -190,7 +190,7 @@ class DBPool(object):
                 self.load_spec(name)
                 current_specs.append(name)
 
-    def load_instances_of(self, spec_name, db=None):
+    def load_artifacts_of(self, spec_name, db=None):
         if not db:
             db = self.env.get_read_db()
         cursor = db.cursor()

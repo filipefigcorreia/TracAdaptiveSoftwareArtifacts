@@ -69,7 +69,7 @@ class TestBasicEntityBehaviour(unittest.TestCase):
         # load cars only
         pool = InstancePool()
         dbp = DBPool(self.env, pool)
-        dbp.load_instances_of(self.Car.get_name())
+        dbp.load_artifacts_of(self.Car.get_name())
         
         self.assertEqual(len(pool.get_items((0,))), 2)
         self.assertTrue(not pool.get_item(self.lightningMcQueen.get_id()) is None)

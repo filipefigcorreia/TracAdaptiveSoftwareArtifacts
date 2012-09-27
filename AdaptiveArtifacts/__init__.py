@@ -60,29 +60,29 @@ class Core(Component):
             raise Exception("Unknown type of resource '%s'" % (asa_resource_type,))
 
         if asa_resource_type is None:
-            inst = None
+            obj = None
             action = 'index'
         elif asa_resource_type == 'aggregate':
             if not asa_resource_id == 'no_spec':
                 raise Exception("Unknown aggregate '%s'" % (asa_resource_id,))
-            inst = None
+            obj = None
             action = 'list'
         elif asa_resource_type in ['spec', 'artifact']:
             if asa_resource_id is None:
                 if asa_resource_type == 'spec':
-                    inst = Entity
+                    obj = Entity
                 elif asa_resource_type == 'artifact':
-                    inst = Instance
+                    obj = Instance
             else:
                 dbp.load_item(asa_resource_id)
-                inst = dbp.pool.get_item(asa_resource_id)
-                if inst is None:
+                obj = dbp.pool.get_item(asa_resource_id)
+                if obj is None:
                     raise ResourceNotFound("No resource found with identifier '%s'" % asa_resource_id)
 
         if action is None: # default action depends on the instance's meta-level
-            if inst is Entity:
+            if obj is Entity:
                 action = 'index'
-            elif isinstance(inst, type):
+            elif isinstance(obj, type):
                 action = 'list'
             else:
                 action = 'view'
@@ -92,8 +92,8 @@ class Core(Component):
         add_stylesheet(req, 'adaptiveartifacts/css/asa.css', media='screen')
         view = Core._resolve_view(asa_resource_type, action, req.method)
         if not view is None:
-            res = Core._get_resource(inst) if not inst in (Entity, Instance, None) else None
-            return view(req, dbp, inst, res)
+            res = Core._get_resource(obj) if not obj in (Entity, Instance, None) else None
+            return view(req, dbp, obj, res)
         else:
             raise Exception("Unable to find a view for %s, %s, %s" % (asa_resource_type, action, req.method))
 
