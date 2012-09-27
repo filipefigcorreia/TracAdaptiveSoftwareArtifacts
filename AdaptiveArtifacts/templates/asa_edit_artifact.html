@@ -23,7 +23,7 @@
       <div id="content" class="asa">
       <h1>Artifact</h1>
       <form method="post" action="${href(url_path)}">
-          <label>Spec:</label> <input type="text" name="spec_name" value="${instance_meta.get_name()}" /><br/>
+          <label>Spec:</label> ${instance_meta.get_name()} <br/>
           <label>Attributes:</label>
           <table class="attributes">
               <tr><th></th><th>Name</th><th>Value</th><th>Default</th></tr>
