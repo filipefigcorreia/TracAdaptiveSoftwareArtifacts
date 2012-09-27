@@ -23,26 +23,26 @@
       <div id="content" class="asa">
       <h1>Artifact</h1>
       <form method="post" action="${href(url_path)}">
-          <label>Spec:</label> ${instance_meta.get_name()} <br/>
+          <label>Spec:</label> ${spec.get_name()} <br/>
           <label>Attributes:</label>
           <table class="attributes">
               <tr><th></th><th>Name</th><th>Value</th><th>Default</th></tr>
               <tr class="attribute prototype">
                   ${attr_value_markup(value_idx="X", attr_name="", attr_value="")}
               </tr>
-              <py:if test="instance">
-                  <tr py:for="name,value in instance.get_values()" class="attribute">
+              <py:if test="artifact">
+                  <tr py:for="name,value in artifact.get_values()" class="attribute">
                       ${attr_value_markup(value_idx=name, attr_name=name, attr_value=value)}
                   </tr>
               </py:if>
           </table>
           <a href="#" class="addvalue" title="Add one more value" style="margin-left: 12.5em;">[+]</a>
           <br/>
-          <py:if test="not instance">
+          <py:if test="not artifact">
             <input type="hidden" name="action" value="new" />
             <input type="submit" value="Create" />
           </py:if>
-          <py:if test="instance">
+          <py:if test="artifact">
             <input type="hidden" name="action" value="edit" />
             <input type="submit" value="Edit" />
           </py:if>

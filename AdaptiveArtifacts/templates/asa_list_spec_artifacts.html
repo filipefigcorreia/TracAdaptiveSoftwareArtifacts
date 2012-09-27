@@ -7,9 +7,9 @@
   <body>
       <h1>${list_title}</h1>
       <ul>
-          <li py:for="instance in instances"><a href="${req.href.adaptiveartifacts('artifact/' + str(instance.get_id()), action='view')}">${str(instance)}</a></li>
+          <li py:for="artifact in artifacts"><a href="${req.href.adaptiveartifacts('artifact/' + str(artifact.get_id()), action='view')}">${str(artifact)}</a></li>
       </ul>
-      <form method="get" action="${href.adaptiveartifacts('spec/' + context_instance.get_id())}" id="modifypage">
+      <form method="get" action="${href.adaptiveartifacts('spec/' + spec.get_id())}" id="modifypage">
           <input type="hidden" name="action" value="new" />
           <input type="submit" value="Create new" />
       </form>

@@ -29,27 +29,27 @@ def get_index(req, dbp, inst, resource):
 def get_view_spec(req, dbp, inst, resource):
     data = {
         'context': Context.from_request(req, resource),
-        'instance': inst,
+        'spec': inst,
     }
     return 'asa_view_spec.html', data, None
 
 def get_view_artifact(req, dbp, inst, resource):
     data = {
         'context': Context.from_request(req, resource),
-        'instance': inst,
+        'artifact': inst,
     }
     return 'asa_view_artifact.html', data, None
 
 def get_list_spec(req, dbp, inst, resource):
     dbp.load_instances_of(inst.get_name())
-    instances = dbp.pool.get_instances_of(inst.get_name())
+    artifacts = dbp.pool.get_instances_of(inst.get_name())
 
     data = {
         'context': Context.from_request(req, resource),
         'action': 'list',
         'list_title': inst.get_name() + "s",
-        'context_instance': inst,
-        'instances': instances,
+        'spec': inst,
+        'artifacts': artifacts,
     }
     return 'asa_list_spec_artifacts.html', data, None
 
@@ -61,8 +61,8 @@ def get_list_aggregate(req, dbp, inst, resource):
         'context': Context.from_request(req, resource),
         'action': 'list',
         'list_title': 'Artifacts without a spec',
-        'context_instance': Instance,
-        'instances': artifacts_with_no_spec,
+        'spec': Instance,
+        'artifacts': artifacts_with_no_spec,
     }
     return 'asa_list_spec_artifacts.html', data, None
 
@@ -78,7 +78,6 @@ def get_new_spec(req, dbp, inst, resource):
 
     data = {
         'context': Context.from_request(req, resource),
-        'instance_meta': inst,
         'types' : ['text', 'number', 'artifact'],
         'multiplicities' : ['1', '0..*', '1..*'],
         'url_path': req.path_info,
@@ -116,8 +115,7 @@ def get_edit_spec(req, dbp, inst, resource):
 
     data = {
         'context': Context.from_request(req, resource),
-        'instance_meta': inst.__class__,
-        'instance': inst,
+        'spec': inst,
         'attributes': [(str(uuid.uuid4()),
                         attr.name,
                         attr.owner_spec,
@@ -155,7 +153,7 @@ def get_new_artifact(req, dbp, inst, resource):
 
     data = {
         'context': Context.from_request(req, resource),
-        'instance_meta': inst,
+        'spec': inst,
         'url_path': req.path_info,
     }
     return 'asa_edit_artifact.html', data, None
@@ -177,8 +175,8 @@ def get_edit_artifact(req, dbp, inst, resource):
 
     data = {
         'context': Context.from_request(req, resource),
-        'instance_meta': inst.__class__,
-        'instance': inst,
+        'spec': inst.__class__,
+        'artifact': inst,
         'values': [(attr,val) for attr,val in inst.get_values()],
         'default': inst.str_attr,
         'url_path': req.path_info,

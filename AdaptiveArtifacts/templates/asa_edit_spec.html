@@ -48,15 +48,15 @@
       <h1>Artifact Specification</h1>
       <form method="post" action="${href(url_path)}">
           <label>Name:</label>
-          <py:if test="instance"><input type="text" name="name" value="${instance.get_name()}" /></py:if>
-          <py:if test="not instance"><input type="text" name="name" value="" /></py:if>
+          <py:if test="spec"><input type="text" name="name" value="${spec.get_name()}" /></py:if>
+          <py:if test="not spec"><input type="text" name="name" value="" /></py:if>
           <br/>
           <label>Inherits:</label>
-          <py:if test="not instance or instance.get_parent() is None">
+          <py:if test="not spec or spec.get_parent() is None">
               <input type="text" name="parent" value="" />
           </py:if>
-          <py:if test="instance and not instance.get_parent() is None">
-              <input type="text" name="parent" value="${instance.get_parent().get_name()}" />
+          <py:if test="spec and not spec.get_parent() is None">
+              <input type="text" name="parent" value="${spec.get_parent().get_name()}" />
           </py:if><br/>
           <label>Attributes:</label>
           <table class="attributes">
@@ -64,12 +64,12 @@
               <tr class="attribute prototype">
                   ${attr_markup(idx="X")}
               </tr>
-              <py:if test="instance">
+              <py:if test="spec">
                   <tr py:for="uuid, name, owner, type, multiplicity, in attributes" class="attribute">
-                      <py:if test="owner == instance">
+                      <py:if test="owner == spec">
                           ${attr_markup(idx=uuid, attr_name=name, attr_type=type, attr_multiplicity=multiplicity)}
                       </py:if>
-                      <py:if test="owner != instance">
+                      <py:if test="owner != spec">
                           ${attr_markup_readonly(idx=uuid, attr_name=name, attr_type=type, attr_multiplicity=multiplicity)}
                       </py:if>
                   </tr>
@@ -78,11 +78,11 @@
           <a href="#" class="addattr" title="Add one more attribute" style="margin-left: 12.5em;">[+]</a>
 
           <br/>
-          <py:if test="not instance">
+          <py:if test="not spec">
             <input type="hidden" name="action" value="new" />
             <input type="submit" value="Create" />
           </py:if>
-          <py:if test="instance">
+          <py:if test="spec">
             <input type="hidden" name="action" value="edit" />
             <input type="submit" value="Edit" />
           </py:if>
