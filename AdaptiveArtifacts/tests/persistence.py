@@ -69,18 +69,45 @@ class TestBasicEntityBehaviour(unittest.TestCase):
         # load cars only
         pool = InstancePool()
         dbp = DBPool(self.env, pool)
-        dbp.load_instances_of(self.Car.get_id())
+        dbp.load_artifacts_of(self.Car.get_name())
         
         self.assertEqual(len(pool.get_items((0,))), 2)
         self.assertTrue(not pool.get_item(self.lightningMcQueen.get_id()) is None)
         self.assertTrue(not pool.get_item(car1.get_id()) is None)
+
+    def test_edit_spec_name(self):
+        pool = InstancePool()
+        dbp = DBPool(self.env, pool)
+        dbp.load_spec("Car")
+        Car = dbp.pool.get_item("Car")
+
+        # create three more versions
+        Car._is_modified = True
+        dbp.save('me', 'a new version', '127.0.0.1')
+        Car._is_modified = True
+        dbp.save('me', 'a new version', '127.0.0.1')
+        Car._is_modified = True
+        dbp.save('me', 'a new version', '127.0.0.1')
+
+        # so, there should be 4 versions now
+        ch = [(version, timestamp, author, ipnr, comment) for version, timestamp, author, ipnr, comment in dbp.get_history(Car)]
+        self.assertEqual(len(ch), 4)
+
+        # edit the name
+        Car._replace_name("Automobile")
+        dbp.save('me', 'a couple more instances', '127.0.0.1')
+
+        # querying by the new name should render 5 versions
+        self.assertEqual(Car.get_name(), "Automobile")
+        ch = [(version, timestamp, author, ipnr, comment) for version, timestamp, author, ipnr, comment in dbp.get_history(Car)]
+        self.assertEqual(len(ch), 5)
 
     def test_delete_unmodified(self):
         pool = InstancePool()
         dbp = DBPool(self.env, pool)
         dbp.load_artifact(self.lightningMcQueen.get_id())
         lightningMcQueen = pool.get_item(self.lightningMcQueen.get_id())
-        dbp.delete(lightningMcQueen)
+        dbp.delete(lightningMcQueen, 'me', 'deleted stuff', '127.0.0.1')
         self.assertTrue(pool.get_item(lightningMcQueen.get_id()) is None)
 
         pool2 = InstancePool()
@@ -97,7 +124,7 @@ class TestBasicEntityBehaviour(unittest.TestCase):
         pool.add(sallyCarrera)
 
         dbp = DBPool(self.env, pool)
-        dbp.delete(sallyCarrera)
+        dbp.delete(sallyCarrera, 'me', 'deleted stuff', '127.0.0.1')
         self.assertEqual(3, len(dbp.pool.get_items((0,1))))
 
     def test_delete_changed(self):
@@ -106,7 +133,7 @@ class TestBasicEntityBehaviour(unittest.TestCase):
         dbp.load_artifact(self.lightningMcQueen.get_id())
         lightningMcQueen = pool.get_item(self.lightningMcQueen.get_id())
         self.lightningMcQueen.set_value('Wheels', ['front middle wheel', 'rear left wheel', 'front right wheel'])
-        dbp.delete(lightningMcQueen)
+        dbp.delete(lightningMcQueen, 'me', 'deleted stuff', '127.0.0.1')
         self.assertTrue(pool.get_item(lightningMcQueen.get_id()) is None)
         self.assertEqual(2, len(dbp.pool.get_items((0,1))))
 
@@ -147,9 +174,9 @@ class Scenarios(object):
 
         new_pool = InstancePool()
         new_dbp = DBPool(testcase.env, new_pool)
-        for instance in testcase.pool.get_instances_of(Instance.get_id()):
+        for instance in testcase.pool.get_instances_of(Instance.get_name()):
             new_dbp.load_artifact(instance.get_id())
-        for entity in testcase.pool.get_instances_of(Entity.get_id()):
+        for entity in testcase.pool.get_instances_of(Entity.get_name()):
             new_dbp.load_spec(entity.get_name())
 
         testcase.pool = new_pool

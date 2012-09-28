@@ -36,6 +36,7 @@ class Instance(object):
     name = '__Instance'
     _is_new = False
     _is_modified = False
+    _is_renamed = False
     attributes = []
 
     def __init__(self, *args, **kwargs):
@@ -65,6 +66,13 @@ class Instance(object):
             return cls.name
         else: # a instance of the Instance class or one of its descendants
             return self.id
+
+    @classmethod
+    def get_parent(cls):
+        if cls is Instance: # the Instance class
+            return None
+        else: # a descendant of the Instance class
+            return cls.__bases__[0] if len(cls.__bases__) > 0 and not cls.__bases__[0] in (type, Instance) else None
 
     @util.classinstancemethod
     def is_uncommitted(self, cls):
@@ -291,14 +299,16 @@ class Entity(type):
 
     def __init__(cls, *args, **kwargs):
         extra_kwargs = dict(kwargs)
+        cls.original_name = None
         cls.name = args[0] if len(args)>0 else extra_kwargs.pop('name', None)
         name = util.to_valid_identifier_name(cls.name)
         bases = args[1] if len(args)>1 else extra_kwargs.pop('bases', None)
         dct = args[2] if len(args)>2 else extra_kwargs.pop('dct', None)
         cls.version = extra_kwargs.get('version', None)
         cls._is_new = not kwargs.pop('persisted', False)
-        cls.replace_attributes(extra_kwargs.get('attributes', []))
-        cls._is_modified = False
+        cls._replace_attributes(extra_kwargs.get('attributes', []))
+        cls._is_modified = False # will be switched to True if either the name bases or attributes are changed
+        cls._is_renamed = False # will be switched to True if the name is changed
         #cls.py_id = util.to_valid_identifier_name(cls.id) # not needed as an extra attribute, it's already the class identifier!
         super(Entity, cls).__init__(name, bases, dct)
 
@@ -316,18 +326,28 @@ class Entity(type):
         else: # a class, instance of the Entity class
             return self.name
 
-    @util.classinstancemethod
-    def get_parent(self, cls):
-        if self is None: # the Entity class
-            return None
-        else: # a class, instance of the Entity class
-                return self.__bases__[0] if len(self.__bases__) > 0 and not self.__bases__[0] in (type, Instance) else None
+    @classmethod
+    def get_parent(cls):
+        return None
 
     @classmethod
     def get_attributes(mcs):
         return []
 
-    def replace_attributes(cls, attributes):
+    def replace_state(cls, name, base, attributes):
+        cls._replace_name(name)
+        cls.__bases__ = (base,) if base else (Instance,)
+        cls._replace_attributes(attributes)
+        cls._is_modified = True
+
+    def _replace_name(cls, name):
+        cls.original_name = cls.name
+        cls.name = name
+        cls.__name__ = util.to_valid_identifier_name(cls.name)
+        cls._is_renamed = True
+        cls._is_modified = True
+
+    def _replace_attributes(cls, attributes):
         cls.attributes = attributes
         for attribute in cls.attributes:
             attribute.owner_spec = cls

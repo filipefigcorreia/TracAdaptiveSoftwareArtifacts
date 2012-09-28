@@ -8,7 +8,7 @@ setup(name=PACKAGE,
     author='Filipe Correia',
     author_email='filipe dot correia at fe dot up dot pt',
     long_description="""
-      This Trac plugin allows to create entities following an arbitrary structure, improving developers' expressiveness.
+      This Trac plugin allows to create information following an arbitrary structure, improving developers' expressiveness.
       """,
     packages=find_packages(exclude=['*.tests']),
     entry_points={

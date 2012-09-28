@@ -33,7 +33,7 @@ class DBPool(object):
         if version is None:
             raise ValueError("No version found for artifact with id '%s'" % (id,))
 
-        # get the metaclass and title
+        # get the spec (metaclass) and title
         cursor = db.cursor()
         rows = cursor.execute("""
                 SELECT meta_class, title_expr
@@ -43,10 +43,10 @@ class DBPool(object):
         row = rows.fetchone()
         if row is None or len(row) == 0:
             raise ValueError("No artifact found with id '%d'" % (id,))
-        meta_class_name = row[0]
+        spec_name = row[0]
         title_expr = row[1]
-        self.load_spec(meta_class_name, db)
-        meta_class = self.pool.get_item(meta_class_name)
+        self.load_spec(spec_name, db)
+        spec = self.pool.get_item(spec_name)
 
         # get the values
         values={}
@@ -57,24 +57,24 @@ class DBPool(object):
                 WHERE artifact_id='%s' AND version_id='%d'""" % (id, version))
         values = rows.fetchall()
 
-        # create the instance
-        artifact = meta_class(id=id, version=version, str_attr=title_expr, persisted=True)
+        # create the artifact
+        artifact = spec(id=id, version=version, str_attr=title_expr, persisted=True)
         artifact.add_values(values)
 
         self.pool.add(artifact)
 
-    def load_spec(self, name, db=None):
+    def load_spec(self, spec_name, db=None):
 
         # Ignore requests to load the top-most classes of the instantiation chain (Entity and Instance),
         # as these will not be persisted to the database and will be always available from the pool.
-        if name in (Entity.get_name(), Instance.get_name()):
+        if spec_name in (Entity.get_name(), Instance.get_name()):
             return
 
         if not db:
             db = self.env.get_read_db()
-        version = self._get_latest_spec_version(name, db)
+        version = self._get_latest_spec_version(spec_name, db)
         if version is None:
-            raise ValueError("No version found for spec with name '%s'" % (name,))
+            raise ValueError("No version found for spec with name '%s'" % (spec_name,))
 
         # get the baseclass
         base_class = None
@@ -83,7 +83,7 @@ class DBPool(object):
                 SELECT base_class
                 FROM asa_spec
                 WHERE name='%s' AND version_id='%d'
-                GROUP BY name""" % (name, version))
+                GROUP BY name""" % (spec_name, version))
         base_class_name = rows.fetchone()
         if not base_class_name is None and len(base_class_name) > 0:
             base_class_name = base_class_name[0]
@@ -101,14 +101,14 @@ class DBPool(object):
         rows = cursor.execute("""
                 SELECT name, multplicity_low, multplicity_high, type
                 FROM asa_spec_attribute
-                WHERE spec_name='%s' AND version_id='%d'""" % (name, version))
+                WHERE spec_name='%s' AND version_id='%d'""" % (spec_name, version))
         for row in rows.fetchall():
             attributes.append(Attribute(name=row[0], multiplicity=(row[1], row[2]), atype=row[3]))
 
         # create the entity
-        spec = Entity(name=name, bases=bases, version=version, persisted=True, attributes=attributes)
+        spec = Entity(name=spec_name, bases=bases, version=version, persisted=True, attributes=attributes)
 
-        if self.pool.get_item(spec.get_id()) is None:
+        if self.pool.get_item(spec.get_name()) is None:
             self.pool.add(spec)
 
     def _get_latest_artifact_version(self, id, db=None):
@@ -126,14 +126,14 @@ class DBPool(object):
         row = rows.fetchone()
         return row[0] if not row is None and len(row)>0 else None
 
-    def _get_latest_spec_version(self, name, db=None):
+    def _get_latest_spec_version(self, spec_name, db=None):
         if not db:
             db = self.env.get_read_db()
         cursor = db.cursor()
         query = """
                 SELECT max(version_id) version_id
                 FROM asa_spec
-                WHERE name='%s' """  % (name,)
+                WHERE name='%s' """  % (spec_name,)
         if not self.version is None:
             query += 'AND version_id <= %s '  % (self.version,)
         query += """GROUP BY name"""
@@ -161,7 +161,7 @@ class DBPool(object):
         filter += ")"
         return filter
 
-    def _load_spec_and_child_specs(self, id_spec, db=None):
+    def _load_spec_and_child_specs(self, spec_name, db=None):
         """
         Loads the specified spec and discovers and loads all the specs that inherit from it
         """
@@ -169,8 +169,8 @@ class DBPool(object):
             db = self.env.get_read_db()
         cursor = db.cursor()
 
-        self.load_spec(id_spec, db)
-        current_specs = [id_spec]
+        self.load_spec(spec_name, db)
+        current_specs = [spec_name]
         while True:
             filter = self._get_filter(current_specs)
             query = """
@@ -190,14 +190,14 @@ class DBPool(object):
                 self.load_spec(name)
                 current_specs.append(name)
 
-    def load_instances_of(self, id_spec, db=None):
+    def load_artifacts_of(self, spec_name, db=None):
         if not db:
             db = self.env.get_read_db()
         cursor = db.cursor()
 
-        self._load_spec_and_child_specs(id_spec, db)
-        specs = self.pool.get_spec_and_child_specs(id_spec)
-        filter = self._get_filter([spec.get_id() for spec in specs])
+        self._load_spec_and_child_specs(spec_name, db)
+        specs = self.pool.get_spec_and_child_specs(spec_name)
+        filter = self._get_filter([spec.get_name() for spec in specs])
 
         # load artifacts of these specs
         query = """
@@ -226,10 +226,15 @@ class DBPool(object):
 
                 for item in uncommitted_items:
                     if isinstance(item, Entity): # it's a spec
+                        if item._is_renamed:
+                            cursor.execute("""
+                                UPDATE asa_spec SET name=%s WHERE name=%s
+                                """, (item.get_name(), item.original_name))
                         cursor.execute("""
                             INSERT INTO asa_spec (name, version_id, base_class)
-                            VALUES (%s,%s, %s)
+                            VALUES (%s,%s,%s)
                             """, (item.get_name(), version_id, item.__bases__[0].get_name()))
+
                         for attribute in item.attributes:
                             cursor.execute("""
                                 INSERT INTO asa_spec_attribute (spec_name, version_id, name, multplicity_low, multplicity_high, type)
@@ -259,7 +264,7 @@ class DBPool(object):
                                     """, (art_id, version_id, attr_name, value))
                         item.id=art_id
 
-    def delete(self, item, db=None):
+    def delete(self, item, author, comment, remote_addr, t=None):
         if not item in self.pool.get_items():
             raise Exception("Item not in pool")
 
@@ -272,6 +277,39 @@ class DBPool(object):
         def do_delete(db):
             cursor = db.cursor()
             if isinstance(item, Entity): # it's a spec
+
+                # get a new version number for all changes we may need to make
+                cursor.execute("""
+                    INSERT INTO asa_version (time, author, ipnr, comment, readonly)
+                    VALUES (%s,%s,%s,%s,%s)
+                    """, (to_utimestamp(t), author, remote_addr, comment, 0))
+                version_id = db.get_last_id(cursor, 'asa_version')
+
+                # change artifacts of the deleted spec to point to the "Instance" spec
+                cursor.execute("""
+                    INSERT INTO asa_artifact (id, version_id, meta_class, title_expr)
+                    SELECT id, %s, %s, title_expr
+                    FROM asa_artifact
+                    WHERE meta_class=%s
+                    """, (version_id, Instance.get_name(), item.get_name()))
+
+                # change specs inheriting from the deleted spec to inherit from "Instance" instead
+                cursor.execute("""
+                    INSERT INTO asa_spec (name, version_id, base_class)
+                    SELECT name, %s, %s
+                    FROM asa_spec
+                    WHERE base_class=%s
+                    """, (version_id, Instance.get_name(), item.get_name()))
+
+                # change attributes that had the deleted spec as type
+                cursor.execute("""
+                    INSERT INTO asa_spec_attribute (spec_name, version_id, name, multplicity_low, multplicity_high, type)
+                    SELECT spec_name, %s, name, multplicity_low, multplicity_high, %s
+                    FROM asa_spec_attribute
+                    WHERE type=%s
+                    """, (version_id, Instance.get_name(), item.get_name()))
+
+                # finally, delete the spec
                 cursor.execute("DELETE FROM asa_spec_attribute WHERE spec_name=%s", (item.get_name(),))
                 cursor.execute("DELETE FROM asa_spec WHERE name=%s", (item.get_name(),))
             else: # it's an artifact
@@ -298,7 +336,8 @@ class DBPool(object):
         if isinstance(item, Entity): # it's a spec
             query += """
                     INNER JOIN asa_spec s ON s.version_id=v.id
-                    WHERE s.name=%s""" % (item.get_name())
+                    WHERE s.name='%s'
+                    """ % (item.get_name())
         else: # it's an artifact
             query += """
                     INNER JOIN asa_artifact a ON a.version_id=v.id

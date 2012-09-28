@@ -217,6 +217,34 @@ class TestModelComplianceValidation(unittest.TestCase, ModelComplianceValidation
     def setUp(self):
         ModelComplianceValidation.setUp(self)
 
+class ModelManipulation(object):
+    def setUp(self):
+        Scenarios.build_simple_two_level_inheritance_with_two_instances(self)
+
+    def test_replace_entity_state(self):
+        AnotherEntity = Entity(name="AnotherEntity",
+                        attributes=[
+                            Attribute(name="Some Attribute", multiplicity=1, atype=str)
+                        ]
+                    )
+        self.Car.replace_state(
+                        name="Automobile",
+                        base=AnotherEntity,
+                        attributes=[Attribute(name="Some Attribute", multiplicity=1, atype=str)],
+                    )
+
+        self.assertEqual(self.Car.get_name(), 'Automobile')
+        self.assertEqual(self.Car.__bases__, (AnotherEntity,))
+        self.assertEqual(len(self.Car.attributes), 1)
+        self.assertEqual(self.Car.attributes[0].name, "Some Attribute")
+        self.assertEqual(self.Car.attributes[0].multiplicity, (1,1))
+        self.assertEqual(self.Car.attributes[0].type, str)
+
+class TestModelManipulation(unittest.TestCase, ModelManipulation):
+    def setUp(self):
+        ModelManipulation.setUp(self)
+
+
 class PoolOperations(object):
     def setUp(self):
         self.pool = InstancePool()
@@ -230,10 +258,10 @@ class PoolOperations(object):
         self.pool.add(self.mycar)
 
     def test_pool_items_identities(self):
-        entities = self.pool.get_instances_of(Entity.get_id())
+        entities = self.pool.get_instances_of(Entity.get_name())
         self.assertEqual(len(entities), 3)
         for ent in entities:
-            self.assertEqual(ent.__class__.name, Entity.get_id())
+            self.assertEqual(ent.__class__.name, Entity.get_name())
         self.assertEqual(len([ent for ent in entities if ent.get_id() == self.Car.get_id()]), 1)
         self.assertEqual(len([ent for ent in entities if ent.get_id() == self.Corsa.get_id()]), 1)
         self.assertEqual(len([ent for ent in entities if ent.get_id() == self.Enjoy.get_id()]), 1)

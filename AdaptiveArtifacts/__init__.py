@@ -45,37 +45,44 @@ class Core(Component):
     def process_request(self, req):
         action = req.args.get('action', None) # view, edit, list, index, new
         asa_resource_type = req.args.get('asa_resource_type', None)
-        asa_resource_name = req.args.get('asa_resource', None)
+        asa_resource_id = req.args.get('asa_resource', None)
         version = req.args.get('version')
         #old_version = req.args.get('old_version')
 
-        if not asa_resource_name is None and asa_resource_name.endswith('/'):
-            req.redirect(req.href.adaptiveartifacts(asa_resource_name.strip('/')))
+        if not asa_resource_id is None and asa_resource_id.endswith('/'):
+            req.redirect(req.href.adaptiveartifacts(asa_resource_id.strip('/')))
 
         dbp = DBPool(self.env, InstancePool())
 
-        if asa_resource_type is None:
-            inst = None
-            action = 'index'
-        else:
-            if not asa_resource_type in ['spec', 'artifact']:
-                raise Exception("Unknown type of resource '%s'" % (asa_resource_type,))
 
-            if asa_resource_name is None:
+        if not asa_resource_type is None and \
+           not asa_resource_type in ['spec', 'artifact', 'aggregate']:
+            raise Exception("Unknown type of resource '%s'" % (asa_resource_type,))
+
+        if asa_resource_type is None:
+            obj = None
+            action = 'index'
+        elif asa_resource_type == 'aggregate':
+            if not asa_resource_id == 'no_spec':
+                raise Exception("Unknown aggregate '%s'" % (asa_resource_id,))
+            obj = None
+            action = 'list'
+        elif asa_resource_type in ['spec', 'artifact']:
+            if asa_resource_id is None:
                 if asa_resource_type == 'spec':
-                    inst = Entity
+                    obj = Entity
                 elif asa_resource_type == 'artifact':
-                    inst = Instance
+                    obj = Instance
             else:
-                dbp.load_item(asa_resource_name)
-                inst = dbp.pool.get_item(asa_resource_name)
-                if inst is None:
-                    raise ResourceNotFound("No resource found with identifier '%s'" % asa_resource_name)
+                dbp.load_item(asa_resource_id)
+                obj = dbp.pool.get_item(asa_resource_id)
+                if obj is None:
+                    raise ResourceNotFound("No resource found with identifier '%s'" % asa_resource_id)
 
         if action is None: # default action depends on the instance's meta-level
-            if inst is Entity:
+            if obj is Entity:
                 action = 'index'
-            elif isinstance(inst, type):
+            elif isinstance(obj, type):
                 action = 'list'
             else:
                 action = 'view'
@@ -85,14 +92,14 @@ class Core(Component):
         add_stylesheet(req, 'adaptiveartifacts/css/asa.css', media='screen')
         view = Core._resolve_view(asa_resource_type, action, req.method)
         if not view is None:
-            res = Core._get_resource(inst) if not inst in (Entity, Instance, None) else None
-            return view(req, dbp, inst, res)
+            res = Core._get_resource(obj) if not obj in (Entity, Instance, None) else None
+            return view(req, dbp, obj, res)
         else:
             raise Exception("Unable to find a view for %s, %s, %s" % (asa_resource_type, action, req.method))
 
     @staticmethod
     def _resolve_view(res_type, action, method):
-        assert res_type in ['spec', 'artifact', None]
+        assert res_type in ['spec', 'artifact', 'aggregate', None]
         from AdaptiveArtifacts import views
         mlist = [method_name for method_name in dir(views) if callable(getattr(views, method_name)) and method_name.startswith(('get_', 'post_'))]
         if res_type is None:
@@ -125,6 +132,7 @@ class Core(Component):
     def get_resource_url(self, resource, href, **kwargs):
         return href.asa_resource(resource.id)
 
+    """
     def get_resource_description(self, resource, format='default', context=None, **kwargs):
         pi = AdaptiveArtifact.load(self.env, identifier=resource.id, version=resource.version)
         #TODO: instead of using the identifier, use the text_repr_expr property value, if it exists
@@ -133,6 +141,7 @@ class Core(Component):
     def resource_exists(self, resource):
         pi = AdaptiveArtifact.load(self.env, identifier=resource.id, version=resource.version)
         return not pi.instance is None
+    """
 
     # IRequestFilter methods
     def pre_process_request(self, req, handler):
