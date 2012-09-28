@@ -10,7 +10,6 @@ from trac.web.chrome import INavigationContributor, ITemplateProvider, add_javas
 from trac.web.main import IRequestHandler
 from trac.web.api import IRequestFilter
 from trac.util import Markup
-from AdaptiveArtifacts.persistable_instance import AdaptiveArtifact, PersistablePool
 from AdaptiveArtifacts.persistence.data import DBPool
 from AdaptiveArtifacts.model.pool import InstancePool
 from AdaptiveArtifacts.model.pool import Entity, Instance
