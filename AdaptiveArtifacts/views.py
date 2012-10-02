@@ -173,11 +173,23 @@ def post_new_artifact(request, dbp, obj, resource):
 
     dbp.pool.add(brand_new_inst)
     dbp.save('author', 'comment', 'address')
-    add_notice(request.req, 'Your changes have been saved.')
 
-    asa_format = request.req.args['format'] if 'format' in request.req.args else None
-    url = request.req.href.adaptiveartifacts('artifact/%d' % (brand_new_inst.get_id(),), action='view', format=asa_format)
-    request.req.redirect(url)
+    asa_format = request.req.args['format'] if 'format' in request.req.args else 'page'
+    if asa_format == 'page':
+        add_notice(request.req, 'Your changes have been saved.')
+        url = request.req.href.adaptiveartifacts('artifact/%d' % (brand_new_inst.get_id(),), action='view', format=asa_format)
+        request.req.redirect(url)
+    else:
+        import json
+        url = request.req.href.adaptiveartifacts('artifact/%d' % (brand_new_inst.get_id(),), action='view')
+        msg = json.dumps([{'result': 'success', 'resource': url}])
+        request.req.send_response(200)
+        request.req.send_header('Content-Type', 'application/json')
+        request.req.send_header('Content-Length', len(msg))
+        request.req.end_headers()
+        request.req.write(msg)
+
+
 
 def get_edit_artifact(request, dbp, obj, resource):
     assert(isinstance(obj, Instance)) # otherwise, we're trying to edit something that is not an artifact
