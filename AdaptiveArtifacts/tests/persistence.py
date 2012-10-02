@@ -4,7 +4,7 @@
 # you should have received as part of this distribution.
 
 import unittest
-from trac.test import EnvironmentStub, Mock
+from trac.test import EnvironmentStub
 from AdaptiveArtifacts.persistence.db import Setup
 from AdaptiveArtifacts.persistence.data import DBPool
 from AdaptiveArtifacts.model.core import Instance, Entity, Attribute
