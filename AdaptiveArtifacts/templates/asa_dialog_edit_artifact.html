@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <py:def function="attr_value_markup(value_idx=None, attr_name=None, attr_value=None)">
+      <td><a class="delvalue" href="#">[-]</a></td>
+      <td><input type="text" name="attr-name-${value_idx}" value="${attr_name}" /></td>
+      <td><input type="text" name="attr-value-${value_idx}" value="${attr_value}" /></td>
+      <td>
+          <py:if test="value_idx == default">
+            <input type="radio" name="default" value="${value_idx}" checked="checked" />
+          </py:if>
+          <py:if test="not value_idx == default">
+            <input type="radio" name="default" value="${value_idx}" />
+          </py:if>
+      </td>
+  </py:def>
+
+  <body>
+      <div id="content" class="asa">
+      <h1>Artifact</h1>
+      <form method="post" action="${href(url_path)}">
+          <label>Spec:</label> ${spec.get_name()} <br/>
+          <label>Attributes:</label>
+          <table class="attributes">
+              <tr><th></th><th>Name</th><th>Value</th><th>Default</th></tr>
+              <tr class="attribute prototype">
+                  ${attr_value_markup(value_idx="X", attr_name="", attr_value="")}
+              </tr>
+              <py:if test="artifact">
+                  <tr py:for="name,value in artifact.get_values()" class="attribute">
+                      ${attr_value_markup(value_idx=name, attr_name=name, attr_value=value)}
+                  </tr>
+              </py:if>
+          </table>
+          <a href="#" class="addvalue" title="Add one more value" style="margin-left: 12.5em;">[+]</a>
+          <br/>
+          <py:if test="not artifact">
+            <input type="hidden" name="action" value="new" />
+            <input type="submit" value="Create" />
+          </py:if>
+          <py:if test="artifact">
+            <input type="hidden" name="action" value="edit" />
+            <input type="submit" value="Edit" />
+          </py:if>
+          <br/><br/>
+      </form>
+      </div>
+  </body>
+</html>

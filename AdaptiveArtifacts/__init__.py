@@ -6,13 +6,14 @@
 import re
 from trac.core import *
 from trac.resource import IResourceManager, ResourceNotFound
-from trac.web.chrome import INavigationContributor, ITemplateProvider, add_javascript, add_stylesheet
+from trac.web.chrome import Chrome, INavigationContributor, ITemplateProvider, add_javascript, add_stylesheet
 from trac.web.main import IRequestHandler
 from trac.web.api import IRequestFilter
 from trac.util import Markup
 from AdaptiveArtifacts.persistence.data import DBPool
 from AdaptiveArtifacts.model.pool import InstancePool
 from AdaptiveArtifacts.model.pool import Entity, Instance
+from AdaptiveArtifacts.requests.request import Request
 
 
 class Core(Component):
@@ -43,73 +44,21 @@ class Core(Component):
             return False
 
     def process_request(self, req):
-        action = req.args.get('action', None) # view, edit, list, index, new
-        asa_resource_type = req.args.get('asa_resource_type', None)
         asa_resource_id = req.args.get('asa_resource', None)
-        version = req.args.get('version')
-        #old_version = req.args.get('old_version')
-
         if not asa_resource_id is None and asa_resource_id.endswith('/'):
             req.redirect(req.href.adaptiveartifacts(asa_resource_id.strip('/')))
 
         dbp = DBPool(self.env, InstancePool())
+        request = Request(dbp, req)
 
-
-        if not asa_resource_type is None and \
-           not asa_resource_type in ['spec', 'artifact', 'aggregate']:
-            raise Exception("Unknown type of resource '%s'" % (asa_resource_type,))
-
-        if asa_resource_type is None:
-            obj = None
-            action = 'index'
-        elif asa_resource_type == 'aggregate':
-            if not asa_resource_id == 'no_spec':
-                raise Exception("Unknown aggregate '%s'" % (asa_resource_id,))
-            obj = None
-            action = 'list'
-        elif asa_resource_type in ['spec', 'artifact']:
-            if asa_resource_id is None:
-                if asa_resource_type == 'spec':
-                    obj = Entity
-                elif asa_resource_type == 'artifact':
-                    obj = Instance
-            else:
-                dbp.load_item(asa_resource_id)
-                obj = dbp.pool.get_item(asa_resource_id)
-                if obj is None:
-                    raise ResourceNotFound("No resource found with identifier '%s'" % asa_resource_id)
-
-        if action is None: # default action depends on the instance's meta-level
-            if obj is Entity:
-                action = 'index'
-            elif isinstance(obj, type):
-                action = 'list'
-            else:
-                action = 'view'
-
+        Chrome(self.env).add_jquery_ui(req)
         add_javascript(req, 'adaptiveartifacts/js/uuid.js')
         add_javascript(req, 'adaptiveartifacts/js/forms.js')
+        add_javascript(req, 'adaptiveartifacts/js/dialogs.js')
         add_stylesheet(req, 'adaptiveartifacts/css/asa.css', media='screen')
-        view = Core._resolve_view(asa_resource_type, action, req.method)
-        if not view is None:
-            res = Core._get_resource(obj) if not obj in (Entity, Instance, None) else None
-            return view(req, dbp, obj, res)
-        else:
-            raise Exception("Unable to find a view for %s, %s, %s" % (asa_resource_type, action, req.method))
+        res = Core._get_resource(request.obj) if not request.obj in (Entity, Instance, None) else None
+        return request.view(request, dbp, request.obj, res)
 
-    @staticmethod
-    def _resolve_view(res_type, action, method):
-        assert res_type in ['spec', 'artifact', 'aggregate', None]
-        from AdaptiveArtifacts import views
-        mlist = [method_name for method_name in dir(views) if callable(getattr(views, method_name)) and method_name.startswith(('get_', 'post_'))]
-        if res_type is None:
-            mname = '%s_%s' % (method.lower(), action.lower())
-        else:
-            mname = '%s_%s_%s' % (method.lower(), action.lower(), res_type.lower())
-        if mname in mlist:
-            return getattr(views, mname)
-        else:
-            return None
 
     @staticmethod
     def _get_resource(instance):

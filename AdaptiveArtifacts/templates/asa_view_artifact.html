@@ -3,29 +3,9 @@
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
   <xi:include href="layout.html" />
+  <xi:include href="asa_dialog_view_artifact.html" />
+
   <head><title>${artifact.__class__.get_id()}</title></head>
   <body>
-    <div id="content" class="asa">
-        <h1>Artifact <em>${str(artifact)}</em></h1>
-        <ul>
-            <li>Identifier: ${artifact.get_id()}</li>
-            <li>Spec: <a href="${req.href.adaptiveartifacts('spec/' + artifact.__class__.get_id(), action='view')}">${artifact.__class__.get_name()}</a></li>
-            <li>Values:
-                <ul>
-                    <li py:for="name, value in artifact.get_values()"><py:choose test=""><py:when test="name in [attribute.name for attribute in artifact.__class__.get_attributes()]"><strong>${name}</strong></py:when><py:otherwise>${name}</py:otherwise></py:choose>: ${value}</li>
-                </ul>
-            </li>
-        </ul>
-
-        <form method="get" action="${href.adaptiveartifacts('artifact/' + artifact.get_id())}" id="modifypage">
-            <input type="hidden" name="action" value="edit" />
-            <input type="submit" value="Edit" />
-        </form>
-        <form method="get" action="${href.adaptiveartifacts('artifact/' + artifact.get_id())}" id="modifypage">
-            <input type="hidden" name="action" value="delete" />
-            <input type="submit" value="Delete" />
-        </form>
-
-    </div>
   </body>
 </html>
