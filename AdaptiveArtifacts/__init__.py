@@ -52,6 +52,7 @@ class Core(Component):
         request = Request(dbp, req)
 
         Chrome(self.env).add_jquery_ui(req)
+        add_javascript(req, 'adaptiveartifacts/js/util.js')
         add_javascript(req, 'adaptiveartifacts/js/uuid.js')
         add_javascript(req, 'adaptiveartifacts/js/forms.js')
         add_javascript(req, 'adaptiveartifacts/js/dialogs.js')
