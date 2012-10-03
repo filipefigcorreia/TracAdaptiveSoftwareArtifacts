@@ -24,14 +24,14 @@ def get_index(request, dbp, obj, resource):
         'action': 'list',
         'specs': specs,
     }
-    return 'asa_index.html', data, None
+    return 'page_mainindex.html', data, None
 
 def get_view_spec(request, dbp, obj, resource):
     data = {
         'context': Context.from_request(request.req, resource),
         'spec': obj,
     }
-    return 'asa_view_spec.html', data, None
+    return 'page_view_spec.html', data, None
 
 def get_view_artifact(request, dbp, obj, resource):
     data = {
@@ -40,9 +40,9 @@ def get_view_artifact(request, dbp, obj, resource):
     }
 
     if 'format' in request.req.args.keys() and request.req.args['format'].lower() == 'dialog':
-        return 'asa_dialog_view_artifact.html', data, None
+        return 'page_dialog_view_artifact.html', data, None
     else:
-        return 'asa_view_artifact.html', data, None
+        return 'page_view_artifact.html', data, None
 
 def get_list_spec(request, dbp, obj, resource):
     dbp.load_artifacts_of(obj.get_name())
@@ -55,7 +55,7 @@ def get_list_spec(request, dbp, obj, resource):
         'spec': obj,
         'artifacts': artifacts,
     }
-    return 'asa_list_spec_artifacts.html', data, None
+    return 'page_list_spec_artifacts.html', data, None
 
 def get_list_aggregate(request, dbp, obj, resource):
     dbp.load_artifacts_of(Instance.get_name())
@@ -68,7 +68,7 @@ def get_list_aggregate(request, dbp, obj, resource):
         'spec': Instance,
         'artifacts': artifacts_with_no_spec,
     }
-    return 'asa_list_spec_artifacts.html', data, None
+    return 'page_list_spec_artifacts.html', data, None
 
 def get_new_spec(request, dbp, obj, resource):
     from model import Entity
@@ -86,7 +86,7 @@ def get_new_spec(request, dbp, obj, resource):
         'multiplicities' : ['1', '0..*', '1..*'],
         'url_path': req.path_info,
     }
-    return 'asa_edit_spec.html', data, None
+    return 'page_edit_spec.html', data, None
 
 def post_new_spec(request, dbp, obj, resource):
     if obj is Entity: # instantiating Entity (i.e., creating a spec)
@@ -129,7 +129,7 @@ def get_edit_spec(request, dbp, obj, resource):
         'multiplicities' : ['1', '0..*', '1..*'],
         'url_path': request.req.path_info,
     }
-    return 'asa_edit_spec.html', data, None
+    return 'page_edit_spec.html', data, None
 
 def post_edit_spec(request, dbp, obj, resource):
     assert(obj is Instance or isinstance(obj, Entity))
