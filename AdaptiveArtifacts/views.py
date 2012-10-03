@@ -84,7 +84,7 @@ def get_new_spec(request, dbp, obj, resource):
         'context': Context.from_request(request.req, resource),
         'types' : ['text', 'number', 'artifact'],
         'multiplicities' : ['1', '0..*', '1..*'],
-        'url_path': req.path_info,
+        'url_path': request.req.path_info,
     }
     return 'edit_spec_page.html', data, None
 
