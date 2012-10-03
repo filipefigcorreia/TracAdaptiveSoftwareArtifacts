@@ -163,7 +163,7 @@ def get_new_artifact(request, dbp, obj, resource):
     if 'format' in request.req.args.keys() and request.req.args['format'].lower() == 'dialog':
         return 'dialog_edit_artifact.html', data, None
     else:
-        return 'asa_edit_artifact.html', data, None
+        return 'page_edit_artifact.html', data, None
 
 def post_new_artifact(request, dbp, obj, resource):
     assert(obj is Instance or isinstance(obj, Entity)) # otherwise, we're trying to instantiate something that is not an atifact
@@ -189,8 +189,6 @@ def post_new_artifact(request, dbp, obj, resource):
         request.req.end_headers()
         request.req.write(msg)
 
-
-
 def get_edit_artifact(request, dbp, obj, resource):
     assert(isinstance(obj, Instance)) # otherwise, we're trying to edit something that is not an artifact
 
@@ -202,7 +200,7 @@ def get_edit_artifact(request, dbp, obj, resource):
         'default': obj.str_attr,
         'url_path': request.req.path_info,
     }
-    return 'asa_edit_artifact.html', data, None
+    return 'page_edit_artifact.html', data, None
 
 def post_edit_artifact(request, dbp, obj, resource):
     assert(isinstance(obj, Instance)) # otherwise, we're trying to edit something that is not an artifact
