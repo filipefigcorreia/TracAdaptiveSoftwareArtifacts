@@ -40,7 +40,7 @@ def get_view_artifact(request, dbp, obj, resource):
     }
 
     if 'format' in request.req.args.keys() and request.req.args['format'].lower() == 'dialog':
-        return 'dialog_view_artifact_page.html', data, None
+        return 'view_artifact_dialog.html', data, None
     else:
         return 'view_artifact_page.html', data, None
 

@@ -2,10 +2,25 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
-  <xi:include href="layout.html" />
-  <xi:include href="dialog_view_artifact_page.html" />
+    <xi:include href="layout.html" />
+    <xi:include href="view_artifact_common.html" />
 
-  <head><title>${artifact.__class__.get_id()}</title></head>
-  <body>
-  </body>
+    <head><title>${artifact.__class__.get_id()}</title></head>    
+    <body>
+        <div id="content" class="asa">
+            <h1>Artifact <em>${str(artifact)}</em></h1>
+            
+            <div id="dialog-content"></div>
+
+            <form method="get" action="${href.adaptiveartifacts('artifact/' + artifact.get_id())}" id="modifypage">
+                <input type="hidden" name="action" value="edit" />
+                <input type="submit" value="Edit" />
+            </form>
+            <form method="get" action="${href.adaptiveartifacts('artifact/' + artifact.get_id())}" id="modifypage">
+                <input type="hidden" name="action" value="delete" />
+                <input type="submit" value="Delete" />
+            </form>
+    
+        </div>
+    </body>
 </html>
