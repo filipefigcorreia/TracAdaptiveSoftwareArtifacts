@@ -24,14 +24,14 @@ def get_index(request, dbp, obj, resource):
         'action': 'list',
         'specs': specs,
     }
-    return 'page_mainindex.html', data, None
+    return 'index_page.html', data, None
 
 def get_view_spec(request, dbp, obj, resource):
     data = {
         'context': Context.from_request(request.req, resource),
         'spec': obj,
     }
-    return 'page_view_spec.html', data, None
+    return 'view_spec_page.html', data, None
 
 def get_view_artifact(request, dbp, obj, resource):
     data = {
@@ -40,9 +40,9 @@ def get_view_artifact(request, dbp, obj, resource):
     }
 
     if 'format' in request.req.args.keys() and request.req.args['format'].lower() == 'dialog':
-        return 'page_dialog_view_artifact.html', data, None
+        return 'dialog_view_artifact_page.html', data, None
     else:
-        return 'page_view_artifact.html', data, None
+        return 'view_artifact_page.html', data, None
 
 def get_list_spec(request, dbp, obj, resource):
     dbp.load_artifacts_of(obj.get_name())
@@ -55,7 +55,7 @@ def get_list_spec(request, dbp, obj, resource):
         'spec': obj,
         'artifacts': artifacts,
     }
-    return 'page_list_spec_artifacts.html', data, None
+    return 'list_spec_artifacts_page.html', data, None
 
 def get_list_aggregate(request, dbp, obj, resource):
     dbp.load_artifacts_of(Instance.get_name())
@@ -68,7 +68,7 @@ def get_list_aggregate(request, dbp, obj, resource):
         'spec': Instance,
         'artifacts': artifacts_with_no_spec,
     }
-    return 'page_list_spec_artifacts.html', data, None
+    return 'list_spec_artifacts_page.html', data, None
 
 def get_new_spec(request, dbp, obj, resource):
     from model import Entity
@@ -86,7 +86,7 @@ def get_new_spec(request, dbp, obj, resource):
         'multiplicities' : ['1', '0..*', '1..*'],
         'url_path': req.path_info,
     }
-    return 'page_edit_spec.html', data, None
+    return 'edit_spec_page.html', data, None
 
 def post_new_spec(request, dbp, obj, resource):
     if obj is Entity: # instantiating Entity (i.e., creating a spec)
@@ -129,7 +129,7 @@ def get_edit_spec(request, dbp, obj, resource):
         'multiplicities' : ['1', '0..*', '1..*'],
         'url_path': request.req.path_info,
     }
-    return 'page_edit_spec.html', data, None
+    return 'edit_spec_page.html', data, None
 
 def post_edit_spec(request, dbp, obj, resource):
     assert(obj is Instance or isinstance(obj, Entity))
@@ -161,9 +161,9 @@ def get_new_artifact(request, dbp, obj, resource):
         'url_path': request.req.path_info,
     }
     if 'format' in request.req.args.keys() and request.req.args['format'].lower() == 'dialog':
-        return 'dialog_edit_artifact.html', data, None
+        return 'edit_artifact_dialog.html', data, None
     else:
-        return 'page_edit_artifact.html', data, None
+        return 'edit_artifact_page.html', data, None
 
 def post_new_artifact(request, dbp, obj, resource):
     assert(obj is Instance or isinstance(obj, Entity)) # otherwise, we're trying to instantiate something that is not an atifact
@@ -200,7 +200,7 @@ def get_edit_artifact(request, dbp, obj, resource):
         'default': obj.str_attr,
         'url_path': request.req.path_info,
     }
-    return 'page_edit_artifact.html', data, None
+    return 'edit_artifact_page.html', data, None
 
 def post_edit_artifact(request, dbp, obj, resource):
     assert(isinstance(obj, Instance)) # otherwise, we're trying to edit something that is not an artifact
