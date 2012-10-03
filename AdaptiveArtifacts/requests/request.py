@@ -68,3 +68,6 @@ class Request(object):
             self.view = getattr(views, mname)
         else:
             raise Exception("Unable to find a view for %s, %s, %s" % (res_type, action, method))
+
+    def get_format(self):
+        return self.res_format.lower() if self.res_format else 'page'

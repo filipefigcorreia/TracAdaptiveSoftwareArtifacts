@@ -38,11 +38,7 @@ def get_view_artifact(request, dbp, obj, resource):
         'context': Context.from_request(request.req, resource),
         'artifact': obj,
     }
-
-    if 'format' in request.req.args.keys() and request.req.args['format'].lower() == 'dialog':
-        return 'view_artifact_dialog.html', data, None
-    else:
-        return 'view_artifact_page.html', data, None
+    return 'view_artifact_%s.html' % (request.get_format(),), data, None
 
 def get_list_spec(request, dbp, obj, resource):
     dbp.load_artifacts_of(obj.get_name())
@@ -160,10 +156,7 @@ def get_new_artifact(request, dbp, obj, resource):
         'spec': obj,
         'url_path': request.req.path_info,
     }
-    if 'format' in request.req.args.keys() and request.req.args['format'].lower() == 'dialog':
-        return 'edit_artifact_dialog.html', data, None
-    else:
-        return 'edit_artifact_page.html', data, None
+    return 'edit_artifact_%s.html' % (request.get_format(),), data, None
 
 def post_new_artifact(request, dbp, obj, resource):
     assert(obj is Instance or isinstance(obj, Entity)) # otherwise, we're trying to instantiate something that is not an atifact
@@ -174,8 +167,7 @@ def post_new_artifact(request, dbp, obj, resource):
     dbp.pool.add(brand_new_inst)
     dbp.save('author', 'comment', 'address')
 
-    asa_format = request.req.args['format'] if 'format' in request.req.args else 'page'
-    if asa_format == 'page':
+    if request.get_format() == 'page':
         add_notice(request.req, 'Your changes have been saved.')
         url = request.req.href.adaptiveartifacts('artifact/%d' % (brand_new_inst.get_id(),), action='view', format=asa_format)
         request.req.redirect(url)
