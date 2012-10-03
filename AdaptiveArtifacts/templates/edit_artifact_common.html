@@ -33,5 +33,11 @@
           </table>
           <a href="#" class="addvalue" title="Add one more value" style="margin-left: 12.5em;">[+]</a>
           <br/>
+          <py:if test="not artifact">
+              <input type="hidden" name="action" value="new" />
+          </py:if>
+          <py:if test="artifact">
+              <input type="hidden" name="action" value="edit" />
+          </py:if>
   </py:match>
 </html>
