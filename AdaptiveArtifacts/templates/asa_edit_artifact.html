@@ -7,6 +7,23 @@
 
     <head><title></title></head>
     <body>
+        <div id="content" class="asa">
+            <h1>Artifact</h1>
+            <form method="post" action="${href(url_path)}">
+
+                <div id="dialog-content"></div>
+
+                <py:if test="not artifact">
+                  <input type="hidden" name="action" value="new" />
+                  <input type="submit" value="Create" />
+                </py:if>
+                <py:if test="artifact">
+                  <input type="hidden" name="action" value="edit" />
+                  <input type="submit" value="Edit" />
+                </py:if>
+                <br/><br/>
+            </form>
+        </div>
     </body>
 </html>
 

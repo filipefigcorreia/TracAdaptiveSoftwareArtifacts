@@ -17,10 +17,7 @@
       </td>
   </py:def>
 
-  <body>
-      <div id="content" class="asa">
-      <h1>Artifact</h1>
-      <form method="post" action="${href(url_path)}">
+  <py:match path="div[@id='dialog-content']" once="true">
           <label>Spec:</label> ${spec.get_name()} <br/>
           <label>Attributes:</label>
           <table class="attributes">
@@ -36,16 +33,5 @@
           </table>
           <a href="#" class="addvalue" title="Add one more value" style="margin-left: 12.5em;">[+]</a>
           <br/>
-          <py:if test="not artifact">
-            <input type="hidden" name="action" value="new" />
-            <input type="submit" value="Create" />
-          </py:if>
-          <py:if test="artifact">
-            <input type="hidden" name="action" value="edit" />
-            <input type="submit" value="Edit" />
-          </py:if>
-          <br/><br/>
-      </form>
-      </div>
-  </body>
+  </py:match>
 </html>

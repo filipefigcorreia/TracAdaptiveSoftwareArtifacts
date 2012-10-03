@@ -161,7 +161,7 @@ def get_new_artifact(request, dbp, obj, resource):
         'url_path': request.req.path_info,
     }
     if 'format' in request.req.args.keys() and request.req.args['format'].lower() == 'dialog':
-        return 'asa_dialog_edit_artifact.html', data, None
+        return 'dialog_edit_artifact.html', data, None
     else:
         return 'asa_edit_artifact.html', data, None
 
