@@ -1,25 +1,19 @@
 $(document).ready(function(){
-    $('.opendialog.newartifact').click( function() {showCreateArtifactDialog(this); return false;} );
+    $('.opendialog.newartifact').click( function() {
+        createASAFormDialogFromUrl('Artifact', this.href,
+                                    { "Create": function() { submitASAFormDialog($(this)) } }
+                                  ).dialog('open');
+        return false;
+    });
 });
 
-showCreateArtifactDialog = function(anchor){
-    var href = anchor.href + "&format=dialog";
-    createASADialogFromUrl(
-            href,
-            {
-                title: 'Artifact',
-                success: function(data, textStatus, jqXHR) { attachFormEventHandlers($(this)) },
-                buttons: { "Create": function() { submitDialogForm($(this)) } }
-            }
-        ).dialog('open');
-}
 
-/*
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Submits a jquery-ui dialog. The dialog is closed if
 submission goes flawlessly, and shows an error message
 otherwise.
  */
-submitDialogForm = function(dialogdiv) {
+function submitASAFormDialog(dialogdiv) {
     var form=dialogdiv.find('form');
     $.ajax({
         type: form.attr('method'),
@@ -47,14 +41,25 @@ submitDialogForm = function(dialogdiv) {
     });
 }
 
-function createASADialogFromUrl(url, options){
-    var dialogdiv = createDialogFromUrl(url, options, 'asa-dialog');
+function createASAFormDialogFromUrl(title, url, buttons){
+    var dialogdiv = createASADialogFromUrl(title, url, buttons);
     $('<input>').attr({
         type: 'hidden',
         name: 'format',
         value: 'dialog'
     }).appendTo(dialogdiv.find('form'));
     return dialogdiv;
+}
+
+function createASADialogFromUrl(title, url, buttons){
+    return createDialogFromUrl(
+                        url + "&format=dialog",
+                        {
+                            title: title,
+                            success: function(data, textStatus, jqXHR) { attachFormEventHandlers($(this)) },
+                            buttons: buttons
+                        },
+                        'asa-dialog');
 }
 
 function createDialogFromUrl(url, options, dialogdivclass){
