@@ -1,10 +1,11 @@
 $(document).ready(function(){
-    $('.opendialog.newartifact').click( function() { showCreateArtifactDialog() });
+    $('.opendialog.newartifact').click( function() {showCreateArtifactDialog(this); return false;} );
 });
 
-showCreateArtifactDialog = function(){
+showCreateArtifactDialog = function(anchor){
+    var href = anchor.href + "&format=dialog";
     createASADialogFromUrl(
-            "/my-trac-environment/adaptiveartifacts/artifact?action=new&format=dialog",
+            href,
             {
                 title: 'Artifact',
                 success: function(data, textStatus, jqXHR) { attachFormEventHandlers($(this)) },
