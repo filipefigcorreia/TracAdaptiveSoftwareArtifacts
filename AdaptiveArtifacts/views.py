@@ -3,9 +3,10 @@
 # This software is licensed as described in the file license.txt, which
 # you should have received as part of this distribution.
 
+import uuid
 from trac.mimeview.api import Context
 from trac.web.chrome import add_notice
-import uuid
+from trac.util import get_reporter_id
 from AdaptiveArtifacts.model.core import Entity, Instance, Attribute
 
 #All the methods here should return a `(template_name, data, content_type)` tuple
@@ -165,7 +166,7 @@ def post_new_artifact(request, dbp, obj, resource):
     brand_new_inst = obj(str_attr=str_attr, values=values)
 
     dbp.pool.add(brand_new_inst)
-    dbp.save('author', 'comment', 'address')
+    dbp.save(get_reporter_id(request.req), 'comment', request.req.remote_addr)
 
     if request.get_format() == 'page':
         add_notice(request.req, 'Your changes have been saved.')

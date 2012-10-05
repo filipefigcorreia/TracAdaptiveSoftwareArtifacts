@@ -4,8 +4,9 @@
 # you should have received as part of this distribution.
 
 import sys
+from datetime import datetime
 from trac.db import with_transaction
-from trac.util.datefmt import from_utimestamp, to_utimestamp
+from trac.util.datefmt import from_utimestamp, to_utimestamp, utc
 from AdaptiveArtifacts.model.core import Instance, Entity, Attribute
 
 class DBPool(object):
@@ -215,13 +216,14 @@ class DBPool(object):
     def save(self, author, comment, remote_addr, t=None):
         @with_transaction(self.env)
         def do_save(db):
+            time = t if not t is None else datetime.now(utc)
             uncommitted_items = [i for i in self.pool.get_items() if i.is_uncommitted()]
             if len(uncommitted_items) > 0:
                 cursor = db.cursor()
                 cursor.execute("""
                     INSERT INTO asa_version (time, author, ipnr, comment, readonly)
                     VALUES (%s,%s,%s,%s,%s)
-                    """, (to_utimestamp(t), author, remote_addr, comment, 0))
+                    """, (to_utimestamp(time), author, remote_addr, comment, 0))
                 version_id = db.get_last_id(cursor, 'asa_version')
 
                 for item in uncommitted_items:
@@ -279,10 +281,11 @@ class DBPool(object):
             if isinstance(item, Entity): # it's a spec
 
                 # get a new version number for all changes we may need to make
+                time = t if not t is None else datetime.now(utc)
                 cursor.execute("""
                     INSERT INTO asa_version (time, author, ipnr, comment, readonly)
                     VALUES (%s,%s,%s,%s,%s)
-                    """, (to_utimestamp(t), author, remote_addr, comment, 0))
+                    """, (to_utimestamp(time), author, remote_addr, comment, 0))
                 version_id = db.get_last_id(cursor, 'asa_version')
 
                 # change artifacts of the deleted spec to point to the "Instance" spec
