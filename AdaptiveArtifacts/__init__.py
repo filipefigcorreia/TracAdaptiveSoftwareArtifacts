@@ -5,7 +5,7 @@
 
 import re
 from trac.core import *
-from trac.resource import IResourceManager, ResourceNotFound
+from trac.resource import IResourceManager, Resource
 from trac.web.chrome import Chrome, INavigationContributor, ITemplateProvider, add_javascript, add_stylesheet
 from trac.web.main import IRequestHandler
 from trac.web.api import IRequestFilter
@@ -63,7 +63,6 @@ class Core(Component):
 
     @staticmethod
     def _get_resource(instance):
-        from trac.resource import Resource
         return Resource('asa', instance.get_id(), instance.version)
 
     # ITemplateProvider methods
@@ -80,7 +79,9 @@ class Core(Component):
         yield 'asa'
 
     def get_resource_url(self, resource, href, **kwargs):
-        return href.asa_resource(resource.id)
+        dbp = DBPool(self.env, InstancePool())
+        item = dbp.load_item(resource.id)
+        return href.adaptiveartifacts('artifact/%d' % (resource.id,), action='view')
 
     """
     def get_resource_description(self, resource, format='default', context=None, **kwargs):
@@ -100,3 +101,35 @@ class Core(Component):
     def post_process_request(self, req, template, data, content_type):
         add_javascript(req, "adaptiveartifacts/js/wiki.js")
         return (template, data, content_type)
+
+from trac.search import ISearchSource, search_to_sql
+from trac.resource import get_resource_url
+class Search(Component):
+    """Search asa resources."""
+
+    implements(ISearchSource)
+
+    # ISearchSource methods
+
+    def get_search_filters(self, req):
+        yield ('asa', 'Adaptive Artifacts', False)
+
+    def get_search_results(self, req, terms, filters):
+        if 'asa' in filters:
+            with self.env.db_query as db:
+                sql_query, args = search_to_sql(db, ['val.attr_value'], terms)
+
+                for id, attr_name, attr_value, vid, time, author in db("""
+                        SELECT a.id, val.attr_name, val.attr_value, max(v.id), v.time, v.author
+                        FROM asa_artifact_value val
+                            INNER JOIN asa_version v ON v.id=val.version_id
+                            INNER JOIN asa_artifact a ON a.id=val.artifact_id
+                        WHERE """ + sql_query +
+                        """GROUP BY a.id""", args):
+                    #args = '?owner=%s&or&reporter=%s' % (name, name)
+                    #link = req.href.query() #+ args
+                    res = Resource('asa', id, vid)
+                    link = get_resource_url(self.env, res, req.href)
+                    yield (link, "%s: %s" % (attr_name,attr_value), time, author, '')
+        return
+
