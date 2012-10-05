@@ -125,7 +125,7 @@ class Search(Component):
                             INNER JOIN asa_version v ON v.id=val.version_id
                             INNER JOIN asa_artifact a ON a.id=val.artifact_id
                         WHERE """ + sql_query +
-                        """GROUP BY a.id""", args):
+                        """ GROUP BY a.id""", args):
                     #args = '?owner=%s&or&reporter=%s' % (name, name)
                     #link = req.href.query() #+ args
                     res = Resource('asa', id, vid)
