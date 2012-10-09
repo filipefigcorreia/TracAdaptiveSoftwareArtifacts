@@ -105,7 +105,7 @@ class Core(Component):
 from trac.search import ISearchSource, search_to_sql
 from trac.resource import get_resource_url
 class Search(Component):
-    """Search asa resources."""
+    """Allows to search Adaptive-Artifacts resources."""
 
     implements(ISearchSource)
 
