@@ -11,6 +11,7 @@ from trac.web.main import IRequestHandler
 from trac.web.api import IRequestFilter
 from trac.util import Markup
 from AdaptiveArtifacts.persistence.data import DBPool
+from AdaptiveArtifacts.persistence.search import Searcher
 from AdaptiveArtifacts.model.pool import InstancePool
 from AdaptiveArtifacts.model.pool import Entity, Instance
 from AdaptiveArtifacts.requests.request import Request
@@ -116,19 +117,10 @@ class Search(Component):
 
     def get_search_results(self, req, terms, filters):
         if 'asa' in filters:
-            with self.env.db_query as db:
-                sql_query, args = search_to_sql(db, ['val.attr_value'], terms)
-
-                for id, attr_name, attr_value, vid, time, author in db("""
-                        SELECT a.id, val.attr_name, val.attr_value, max(v.id), v.time, v.author
-                        FROM asa_artifact_value val
-                            INNER JOIN asa_version v ON v.id=val.version_id
-                            INNER JOIN asa_artifact a ON a.id=val.artifact_id
-                        WHERE """ + sql_query +
-                        """ GROUP BY a.id""", args):
-                    res = Resource('asa', id, vid)
-                    link = get_resource_url(self.env, res, req.href)
-                    title = "%s: %s" % (attr_name,attr_value)
-                    yield (link, title, time, author, '')
+            for id, attr_name, attr_value, vid, time, author in Searcher.search(self.env, terms):
+                res = Resource('asa', id, vid)
+                link = get_resource_url(self.env, res, req.href)
+                title = "%s: %s" % (attr_name,attr_value)
+                yield (link, title, time, author, '')
         return
 
