@@ -112,7 +112,7 @@ class Search(Component):
     # ISearchSource methods
 
     def get_search_filters(self, req):
-        yield ('asa', 'Adaptive Artifacts', False)
+        yield ('asa', 'Adaptive Artifacts', True)
 
     def get_search_results(self, req, terms, filters):
         if 'asa' in filters:
@@ -126,10 +126,9 @@ class Search(Component):
                             INNER JOIN asa_artifact a ON a.id=val.artifact_id
                         WHERE """ + sql_query +
                         """ GROUP BY a.id""", args):
-                    #args = '?owner=%s&or&reporter=%s' % (name, name)
-                    #link = req.href.query() #+ args
                     res = Resource('asa', id, vid)
                     link = get_resource_url(self.env, res, req.href)
-                    yield (link, "%s: %s" % (attr_name,attr_value), time, author, '')
+                    title = "%s: %s" % (attr_name,attr_value)
+                    yield (link, title, time, author, '')
         return
 
