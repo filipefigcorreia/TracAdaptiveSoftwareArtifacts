@@ -70,9 +70,11 @@ def get_list_search_no_spec(request, dbp, obj, resource):
 def get_list_search_artifact_json(request, dbp, obj, resource):
     from AdaptiveArtifacts.persistence.search import Searcher
     import json
+    from trac.resource import get_resource_url
+    from trac.resource import Resource
 
     terms = request.req.args.get('q', '')
-    data = [{'id': artifact.get_id(), 'title': str(artifact)} for artifact in Searcher.search_artifacts(dbp, terms)]
+    data = [{'id': artifact.get_id(), 'title': str(artifact), 'url':get_resource_url(dbp.env, Resource('asa', artifact.get_id(), artifact.version), request.req.href)} for artifact in Searcher.search_artifacts(dbp, terms)]
 
     try:
         msg = json.dumps(data)
