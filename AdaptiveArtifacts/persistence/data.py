@@ -23,9 +23,9 @@ class DBPool(object):
             is_spec = True
 
         if not is_spec:
-            self.load_artifact(id)
+            self.load_artifact(id, db)
         else:
-            self.load_spec(id)
+            self.load_spec(id, db)
 
     def load_artifact(self, id, db=None):
         if not db:
