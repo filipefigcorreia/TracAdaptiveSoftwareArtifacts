@@ -6,7 +6,7 @@ class Request(object):
         self.req = req
 
         self.resource_type = req.args.get('asa_resource_type', None)
-        if not self.resource_type in ['spec', 'artifact', 'aggregate', None]:
+        if not self.resource_type in ['spec', 'artifact', 'search', None]:
             raise ValueError("Unknown type of resource '%s'" % (self.resource_type,))
 
         self.resource_id = req.args.get('asa_resource', None)
@@ -29,10 +29,10 @@ class Request(object):
         if self.resource_type is None:
             self.obj = None
             self.action = 'index'
-        elif self.resource_type == 'aggregate':
             if not self.resource_id == 'no_spec':
-                raise Exception("Unknown aggregate '%s'" % (self.resource_id,))
-            self.obj = None
+        elif self.resource_type == 'search':
+                raise Exception("Unknown search '%s'" % (self.resource_id,))
+            self.obj = self.resource_id
             self.action = 'list'
         elif self.resource_type in ['spec', 'artifact']:
             if self.resource_id is None:

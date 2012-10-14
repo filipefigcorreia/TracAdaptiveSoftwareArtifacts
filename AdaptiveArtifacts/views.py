@@ -54,7 +54,7 @@ def get_list_spec(request, dbp, obj, resource):
     }
     return 'list_spec_artifacts_page.html', data, None
 
-def get_list_aggregate(request, dbp, obj, resource):
+def get_list_search(request, dbp, obj, resource):
     dbp.load_artifacts_of(Instance.get_name())
     artifacts_with_no_spec = dbp.pool.get_instances_of(Instance.get_name(), direct_instances_only=True)
 

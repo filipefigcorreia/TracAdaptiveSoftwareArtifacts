@@ -9,7 +9,7 @@
           <li py:for="spec,count in specs"><a href="">+</a> <a href="${req.href.adaptiveartifacts('spec/' + spec.get_id(), action='view')}">${spec.get_name()}</a> (${count})</li>
       </ul>
       <ul>
-          <li><a href="">+</a> <a href="${req.href.adaptiveartifacts('aggregate/no_spec', action='list')}">Artifacts with no spec</a></li>
+          <li><a href="">+</a> <a href="${req.href.adaptiveartifacts('search/no_spec', action='list')}">Artifacts with no spec</a></li>
       </ul>
       <form method="get" action="${href.adaptiveartifacts('spec')}">
           <input type="hidden" name="action" value="new" />
