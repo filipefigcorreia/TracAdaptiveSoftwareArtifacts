@@ -54,7 +54,7 @@ def get_list_spec(request, dbp, obj, resource):
     }
     return 'list_spec_artifacts_page.html', data, None
 
-def get_list_search(request, dbp, obj, resource):
+def get_list_search_no_spec(request, dbp, obj, resource):
     dbp.load_artifacts_of(Instance.get_name())
     artifacts_with_no_spec = dbp.pool.get_instances_of(Instance.get_name(), direct_instances_only=True)
 
@@ -66,6 +66,33 @@ def get_list_search(request, dbp, obj, resource):
         'artifacts': artifacts_with_no_spec,
     }
     return 'list_spec_artifacts_page.html', data, None
+
+def get_list_search_artifact_json(request, dbp, obj, resource):
+    from AdaptiveArtifacts.persistence.search import Searcher
+    import json
+
+    terms = request.req.args.get('q', '')
+    data = [{'id': artifact.get_id(), 'title': str(artifact)} for artifact in Searcher.search_artifacts(dbp, terms)]
+
+    try:
+        msg = json.dumps(data)
+        request.req.send_response(200)
+        request.req.send_header('Content-Type', 'application/json')
+    except Exception:
+        import traceback;
+        msg = "Oops...\n" + traceback.format_exc()+"\n"
+        request.req.send_response(500)
+        request.req.send_header('Content-Type', 'text/plain')
+    request.req.send_header('Content-Length', len(msg))
+    request.req.end_headers()
+    request.req.write(msg)
+    return
+
+def get_list_search(request, dbp, obj, resource):
+    if obj == 'no_spec':
+        return get_list_search_no_spec(request, dbp, obj, resource)
+    elif obj == 'artifact':
+        return get_list_search_artifact_json(request, dbp, obj, resource)
 
 def get_new_spec(request, dbp, obj, resource):
     from model import Entity

@@ -58,7 +58,7 @@ class Core(Component):
         add_javascript(req, 'adaptiveartifacts/js/forms.js')
         add_javascript(req, 'adaptiveartifacts/js/dialogs.js')
         add_stylesheet(req, 'adaptiveartifacts/css/asa.css', media='screen')
-        res = Core._get_resource(request.obj) if not request.obj in (Entity, Instance, None) else None
+        res = Core._get_resource(request.obj) if not request.obj in (Entity, Instance, None) and not type(request.obj)==unicode else None
         return request.view(request, dbp, request.obj, res)
 
 
