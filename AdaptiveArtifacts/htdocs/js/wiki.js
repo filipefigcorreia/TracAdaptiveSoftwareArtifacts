@@ -8,6 +8,19 @@ var searchResultApplier ;
 var words_array = new Array("database", "extra", "simply", "TracEnvironment", "trac");
 
 
+function highlightRanges(ranges) {
+    for (var i = ranges.length - 1; i >= 0; i--) {
+        if ((words_array.indexOf(ranges[i].toString())) != -1) {
+            searchResultApplier.applyToRange(ranges[i]);
+        } else {
+            //TODO: retirar span no caso de estarmos dentro de um
+
+            if (searchResultApplier.isAppliedToRange(ranges[i]))
+                searchResultApplier.undoToRange(ranges[i]);
+
+        }
+    }
+}
 window.onload = function() {
     rangy.init();
 
@@ -35,77 +48,36 @@ window.onload = function() {
         }
     }));
 
-    var initialSearchScopeRange = rangy.createRange();
-    initialSearchScopeRange.selectNodeContents(document.getElementById("divtext").childNodes[0]);
-
-    //var divTextChildNodes  = initialSearchScopeRange.commonAncestorContainer.childNodes;
-
-    console.log(initialSearchScopeRange);
-
-
-    var splittedRanges1 = [];
-
-    var fullRange1 = initialSearchScopeRange;
-    var fullRangeText = fullRange1.toString().split('\n').join(' ');
-    console.log(fullRange1.toString().split('\n').join(' '));
-    var start = 0;
-    var idx = 0;
-    while(idx!=-1){
-        idx = fullRangeText.indexOf(' ', start);
-        var end;
-        if (idx!=-1)
-            end = idx;
-        else
-            end = fullRangeText.length;
-
-        var splittedRange1 = rangy.createRange();
-        //start=0;
-        //end=1;
-
-        splittedRange1.setStart(fullRange1.startContainer, fullRange1.startOffset + start);
-        splittedRange1.setEnd(fullRange1.endContainer, fullRange1.startOffset + end);
-        //splittedRange1.expand('word', {includeTrailingSpace: false});
-        splittedRanges1.push(splittedRange1);
-
-        start = idx+1;
-    }
-
-    for (var i=splittedRanges1.length-1; i>=0; i--){
-
-        if((words_array.indexOf(splittedRanges1[i].toString()))!=-1){
-            searchResultApplier.applyToRange(splittedRanges1[i]);
-        }else{
-            //TODO: retirar span no caso de estarmos dentro de um
-
-            if(searchResultApplier.isAppliedToRange(splittedRanges1[i]))
-                searchResultApplier.undoToRange(splittedRanges1[i]);
-
-        }
-    }
+    var fullRange = rangy.createRange();
+    fullRange.selectNodeContents(document.getElementById("divtext").childNodes[0]);
+    var splittedRanges = splitRange(fullRange);
+    highlightRanges(splittedRanges);
 };
 
 
-function highlightSelectedText() {
-    var newHighlights = highlighter.highlightSelection("highlight");
-    //alert("Created " + newHighlights.length + " highlights");
+function splitRange(fullRange) {
+    var fullRangeText = fullRange.toString().split('\n').join(' ');
+
+    var start = 0;
+    var idx = 0;
+    var splittedRanges = [];
+    while (idx != -1) {
+        idx = fullRangeText.indexOf(' ', start);
+        var end;
+        if (idx != -1)
+            end = idx;
+        else
+            end = fullRangeText.length;
+        var splittedRange = rangy.createRange();
+
+        splittedRange.setStart(fullRange.startContainer, fullRange.startOffset + start);
+        splittedRange.setEnd(fullRange.endContainer, fullRange.startOffset + end);
+        splittedRange.expand('word', {includeTrailingSpace:false});
+        splittedRanges.push(splittedRange);
+        start = idx + 1;
+    }
+    return splittedRanges;
 }
-
-function noteSelectedText() {
-    var newHighlights = highlighter.highlightSelection("note");
-    //alert("Created " + newHighlights.length + " notes");
-}
-
-function removeHighlightFromSelectedText() {
-    highlighter.unhighlightSelection();
-}
-
-function reloadPage(button) {
-    button.form.elements['serializedHighlights'].value = highlighter.serialize();
-    button.form.submit();
-}
-
-
-
 $(document).ready(function(){
 
     //Hide TextArea and show Div
@@ -226,44 +198,15 @@ $(document).ready(function(){
 
                 var i = 0;
                 var splittedRanges = [];
-                while (Ranges.length>0){
+                while (Ranges.length>0) {
 
                     var fullRange = Ranges.shift();
                     console.log("Consumi o seguinte: ");
                     console.log(fullRange.toString());
-                    var fullRangeText = fullRange.toString();
-
-                    var start = 0;
-                    var idx = 0;
-                    while(idx!=-1){
-                        idx = fullRangeText.indexOf(' ', start);
-                        var end;
-                        if (idx!=-1)
-                            end = idx;
-                        else
-                            end = fullRangeText.length;
-                        var splittedRange = rangy.createRange();
-
-                        splittedRange.setStart(fullRange.startContainer, fullRange.startOffset + start);
-                        splittedRange.setEnd(fullRange.endContainer, fullRange.startOffset + end);
-                        splittedRange.expand('word', {includeTrailingSpace: false});
-                        splittedRanges.push(splittedRange);
-                        start = idx+1;
-                    }
+                    var ranges = splitRange(fullRange);
+                    $.merge(splittedRanges, ranges);
                 }
-
-                for (var i=splittedRanges.length-1; i>=0; i--){
-                    //console.log(splittedRanges[i].toString());
-                    if((words_array.indexOf(splittedRanges[i].toString()))!=-1){
-                        searchResultApplier.applyToRange(splittedRanges[i]);
-                    }else{
-                        //TODO: retirar span no caso de estarmos dentro de um
-
-                        if(searchResultApplier.isAppliedToRange(splittedRanges[i]))
-                           searchResultApplier.undoToRange(splittedRanges[i]);
-
-                    }
-                }
+                highlightRanges(splittedRanges);
 
                 //
                 rangy.restoreSelection(selection1);
