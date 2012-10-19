@@ -2,11 +2,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
-  <xi:include href="layout.html" />
-  <head><title>${artifact.__class__.get_id()}</title></head>
-  <body>
-    <div id="content" class="asa">
-        <h1>Artifact <em>${str(artifact)}</em></h1>
+
+    <py:match path="div[@id='dialog-content']" once="true">
         <ul>
             <li>Identifier: ${artifact.get_id()}</li>
             <li>Spec: <a href="${req.href.adaptiveartifacts('spec/' + artifact.__class__.get_id(), action='view')}">${artifact.__class__.get_name()}</a></li>
@@ -16,16 +13,6 @@
                 </ul>
             </li>
         </ul>
+    </py:match>
 
-        <form method="get" action="${href.adaptiveartifacts('artifact/' + artifact.get_id())}" id="modifypage">
-            <input type="hidden" name="action" value="edit" />
-            <input type="submit" value="Edit" />
-        </form>
-        <form method="get" action="${href.adaptiveartifacts('artifact/' + artifact.get_id())}" id="modifypage">
-            <input type="hidden" name="action" value="delete" />
-            <input type="submit" value="Delete" />
-        </form>
-
-    </div>
-  </body>
 </html>

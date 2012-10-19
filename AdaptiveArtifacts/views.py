@@ -3,14 +3,15 @@
 # This software is licensed as described in the file license.txt, which
 # you should have received as part of this distribution.
 
+import uuid
 from trac.mimeview.api import Context
 from trac.web.chrome import add_notice
-import uuid
+from trac.util import get_reporter_id
 from AdaptiveArtifacts.model.core import Entity, Instance, Attribute
 
 #All the methods here should return a `(template_name, data, content_type)` tuple
 
-def get_index(req, dbp, obj, resource):
+def get_index(request, dbp, obj, resource):
     # Load *everything* TODO: make more efficient
     dbp.load_specs()
     dbp.load_artifacts_of(Instance.get_name())
@@ -20,82 +21,111 @@ def get_index(req, dbp, obj, resource):
         specs.append((spec, len(dbp.pool.get_instances_of(spec.get_name()))))
 
     data = {
-        'context': Context.from_request(req, resource),
+        'context': Context.from_request(request.req, resource),
         'action': 'list',
         'specs': specs,
     }
-    return 'asa_index.html', data, None
+    return 'index_page.html', data, None
 
-def get_view_spec(req, dbp, obj, resource):
+def get_view_spec(request, dbp, obj, resource):
     data = {
-        'context': Context.from_request(req, resource),
+        'context': Context.from_request(request.req, resource),
         'spec': obj,
     }
-    return 'asa_view_spec.html', data, None
+    return 'view_spec_page.html', data, None
 
-def get_view_artifact(req, dbp, obj, resource):
+def get_view_artifact(request, dbp, obj, resource):
     data = {
-        'context': Context.from_request(req, resource),
+        'context': Context.from_request(request.req, resource),
         'artifact': obj,
     }
-    return 'asa_view_artifact.html', data, None
+    return 'view_artifact_%s.html' % (request.get_format(),), data, None
 
-def get_list_spec(req, dbp, obj, resource):
+def get_list_spec(request, dbp, obj, resource):
     dbp.load_artifacts_of(obj.get_name())
     artifacts = dbp.pool.get_instances_of(obj.get_name())
 
     data = {
-        'context': Context.from_request(req, resource),
+        'context': Context.from_request(request.req, resource),
         'action': 'list',
         'list_title': obj.get_name() + "s",
         'spec': obj,
         'artifacts': artifacts,
     }
-    return 'asa_list_spec_artifacts.html', data, None
+    return 'list_spec_artifacts_page.html', data, None
 
-def get_list_aggregate(req, dbp, obj, resource):
+def get_list_search_no_spec(request, dbp, obj, resource):
     dbp.load_artifacts_of(Instance.get_name())
     artifacts_with_no_spec = dbp.pool.get_instances_of(Instance.get_name(), direct_instances_only=True)
 
     data = {
-        'context': Context.from_request(req, resource),
+        'context': Context.from_request(request.req, resource),
         'action': 'list',
         'list_title': 'Artifacts without a spec',
         'spec': Instance,
         'artifacts': artifacts_with_no_spec,
     }
-    return 'asa_list_spec_artifacts.html', data, None
+    return 'list_spec_artifacts_page.html', data, None
 
-def get_new_spec(req, dbp, obj, resource):
+def get_list_search_artifact_json(request, dbp, obj, resource):
+    from AdaptiveArtifacts.persistence.search import Searcher
+    import json
+    from trac.resource import get_resource_url
+    from trac.resource import Resource
+
+    terms = request.req.args.get('q', '')
+    data = [{'id': artifact.get_id(), 'title': str(artifact), 'url':get_resource_url(dbp.env, Resource('asa', artifact.get_id(), artifact.version), request.req.href)} for artifact in Searcher.search_artifacts(dbp, terms)]
+
+    try:
+        msg = json.dumps(data)
+        request.req.send_response(200)
+        request.req.send_header('Content-Type', 'application/json')
+    except Exception:
+        import traceback;
+        msg = "Oops...\n" + traceback.format_exc()+"\n"
+        request.req.send_response(500)
+        request.req.send_header('Content-Type', 'text/plain')
+    request.req.send_header('Content-Length', len(msg))
+    request.req.end_headers()
+    request.req.write(msg)
+    return
+
+def get_list_search(request, dbp, obj, resource):
+    if obj == 'no_spec':
+        return get_list_search_no_spec(request, dbp, obj, resource)
+    elif obj == 'artifact':
+        return get_list_search_artifact_json(request, dbp, obj, resource)
+
+def get_new_spec(request, dbp, obj, resource):
     from model import Entity
 
     if obj is Entity: # instantiating Entity (i.e., creating a spec)
         pass
     elif obj is Instance or isinstance(obj, Entity): # instantiating an existing spec
-        return get_new_artifact(req, dbp, obj, resource)
+        return get_new_artifact(request.req, dbp, obj, resource)
     else:
         raise Exception("Trying to instantiate something that can't be instantiated '%s'" % (obj,))
 
     data = {
-        'context': Context.from_request(req, resource),
+        'context': Context.from_request(request.req, resource),
         'types' : ['text', 'number', 'artifact'],
         'multiplicities' : ['1', '0..*', '1..*'],
-        'url_path': req.path_info,
+        'url_path': request.req.path_info,
     }
-    return 'asa_edit_spec.html', data, None
+    return 'edit_spec_page.html', data, None
 
-def post_new_spec(req, dbp, obj, resource):
+def post_new_spec(request, dbp, obj, resource):
     if obj is Entity: # instantiating Entity (i.e., creating a spec)
         pass
     elif obj is Instance or isinstance(obj, Entity): # instantiating an existing spec
-        return post_new_artifact(req, dbp, obj, resource)
+        return post_new_artifact(request.req, dbp, obj, resource)
     else:
         raise Exception("Trying to instantiate something that can't be instantiated '%s'" % (obj,))
 
-    name = req.args.get('name')
-    parent_name = req.args.get('parent')
+    name = request.req.args.get('name')
+    parent_name = request.req.args.get('parent')
 
-    attributes = [Attribute(n,m,t) for n,t,m in _group_spec_attributes(req)]
+    attributes = [Attribute(n,m,t) for n,t,m in _group_spec_attributes(request.req)]
 
     if parent_name:
         dbp.load_spec(parent_name)
@@ -106,15 +136,15 @@ def post_new_spec(req, dbp, obj, resource):
 
     dbp.pool.add(brand_new_inst)
     dbp.save('author', 'comment', 'address')
-    add_notice(req, 'Your changes have been saved.')
-    url = req.href.adaptiveartifacts('spec/%s' % (brand_new_inst.get_name(),), action='view')
-    req.redirect(url)
+    add_notice(request.req, 'Your changes have been saved.')
+    url = request.req.href.adaptiveartifacts('spec/%s' % (brand_new_inst.get_name(),), action='view')
+    request.req.redirect(url)
 
-def get_edit_spec(req, dbp, obj, resource):
+def get_edit_spec(request, dbp, obj, resource):
     assert(obj is Instance or isinstance(obj, Entity))
 
     data = {
-        'context': Context.from_request(req, resource),
+        'context': Context.from_request(request.req, resource),
         'spec': obj,
         'attributes': [(str(uuid.uuid4()),
                         attr.name,
@@ -123,94 +153,105 @@ def get_edit_spec(req, dbp, obj, resource):
                         attr.get_multiplicity_readable()) for attr in obj.get_attributes()],
         'types' : ['text', 'number', 'artifact'],
         'multiplicities' : ['1', '0..*', '1..*'],
-        'url_path': req.path_info,
+        'url_path': request.req.path_info,
     }
-    return 'asa_edit_spec.html', data, None
+    return 'edit_spec_page.html', data, None
 
-def post_edit_spec(req, dbp, obj, resource):
+def post_edit_spec(request, dbp, obj, resource):
     assert(obj is Instance or isinstance(obj, Entity))
 
-    attributes = [Attribute(n,m,t) for n,t,m in _group_spec_attributes(req)]
+    attributes = [Attribute(n,m,t) for n,t,m in _group_spec_attributes(request.req)]
 
     base = None
-    base_name = req.args['parent']
+    base_name = request.req.args['parent']
     if base_name:
         dbp.load_spec(base_name)
-        base = dbp.pool.get_item(req.args['parent'])
+        base = dbp.pool.get_item(request.req.args['parent'])
 
     obj.replace_state(
-        name=req.args['name'],
+        name=request.req.args['name'],
         base=base,
         attributes=attributes)
 
     dbp.save('author', 'comment', 'address')
-    add_notice(req, 'Your changes have been saved.')
-    url = req.href.adaptiveartifacts('spec/%s' % (obj.get_name(),), action='view')
-    req.redirect(url)
+    add_notice(request.req, 'Your changes have been saved.')
+    url = request.req.href.adaptiveartifacts('spec/%s' % (obj.get_name(),), action='view')
+    request.req.redirect(url)
 
-def get_new_artifact(req, dbp, obj, resource):
+def get_new_artifact(request, dbp, obj, resource):
     assert(obj is Instance or isinstance(obj, Entity)) # otherwise, we're trying to instantiate something that is not an artifact
 
     data = {
-        'context': Context.from_request(req, resource),
+        'context': Context.from_request(request.req, resource),
         'spec': obj,
-        'url_path': req.path_info,
+        'url_path': request.req.path_info,
     }
-    return 'asa_edit_artifact.html', data, None
+    return 'edit_artifact_%s.html' % (request.get_format(),), data, None
 
-def post_new_artifact(req, dbp, obj, resource):
+def post_new_artifact(request, dbp, obj, resource):
     assert(obj is Instance or isinstance(obj, Entity)) # otherwise, we're trying to instantiate something that is not an atifact
 
-    values, str_attr = _group_artifact_values(req)
+    values, str_attr = _group_artifact_values(request.req)
     brand_new_inst = obj(str_attr=str_attr, values=values)
 
     dbp.pool.add(brand_new_inst)
-    dbp.save('author', 'comment', 'address')
-    add_notice(req, 'Your changes have been saved.')
-    url = req.href.adaptiveartifacts('artifact/%d' % (brand_new_inst.get_id(),), action='view')
-    req.redirect(url)
+    dbp.save(get_reporter_id(request.req), 'comment', request.req.remote_addr)
 
-def get_edit_artifact(req, dbp, obj, resource):
+    if request.get_format() == 'page':
+        add_notice(request.req, 'Your changes have been saved.')
+        url = request.req.href.adaptiveartifacts('artifact/%d' % (brand_new_inst.get_id(),), action='view', format=request.get_format())
+        request.req.redirect(url)
+    else:
+        import json
+        url = request.req.href.adaptiveartifacts('artifact/%d' % (brand_new_inst.get_id(),), action='view')
+        msg = json.dumps([{'result': 'success', 'resource': url}])
+        request.req.send_response(200)
+        request.req.send_header('Content-Type', 'application/json')
+        request.req.send_header('Content-Length', len(msg))
+        request.req.end_headers()
+        request.req.write(msg)
+
+def get_edit_artifact(request, dbp, obj, resource):
     assert(isinstance(obj, Instance)) # otherwise, we're trying to edit something that is not an artifact
 
     data = {
-        'context': Context.from_request(req, resource),
+        'context': Context.from_request(request.req, resource),
         'spec': obj.__class__,
         'artifact': obj,
         'values': [(attr,val) for attr,val in obj.get_values()],
         'default': obj.str_attr,
-        'url_path': req.path_info,
+        'url_path': request.req.path_info,
     }
-    return 'asa_edit_artifact.html', data, None
+    return 'edit_artifact_page.html', data, None
 
-def post_edit_artifact(req, dbp, obj, resource):
+def post_edit_artifact(request, dbp, obj, resource):
     assert(isinstance(obj, Instance)) # otherwise, we're trying to edit something that is not an artifact
 
-    values, str_attr = _group_artifact_values(req)
+    values, str_attr = _group_artifact_values(request.req)
     obj.replace_values(values.items())
     obj.str_attr = str_attr if not str_attr is None else 'id'
 
     dbp.save('author', 'comment', 'address')
-    add_notice(req, 'Your changes have been saved.')
-    url = req.href.adaptiveartifacts('artifact/%s' % (obj.get_id(),), action='view')
-    req.redirect(url)
+    add_notice(request.req, 'Your changes have been saved.')
+    url = request.req.href.adaptiveartifacts('artifact/%s' % (obj.get_id(),), action='view')
+    request.req.redirect(url)
 
-def get_delete_spec(req, dbp, obj, resource):
+def get_delete_spec(request, dbp, obj, resource):
     assert(isinstance(obj, Entity)) # otherwise, we're trying to delete something that is not a spec
 
     dbp.delete(obj, 'author', 'comment', 'address')
 
-    url = req.href.adaptiveartifacts()
-    req.redirect(url)
+    url = request.req.href.adaptiveartifacts()
+    request.req.redirect(url)
 
-def get_delete_artifact(req, dbp, obj, resource):
+def get_delete_artifact(request, dbp, obj, resource):
     assert(isinstance(obj, Instance)) # otherwise, we're trying to delete something that is not an artifact
 
     spec = obj.__class__
     dbp.delete(obj, 'author', 'comment', 'address')
 
-    url = req.href.adaptiveartifacts('spec/%s' % (spec.get_name(),), action='list')
-    req.redirect(url)
+    url = request.req.href.adaptiveartifacts('spec/%s' % (spec.get_name(),), action='list')
+    request.req.redirect(url)
 
 def _group_artifact_values(req):
     # group posted values into a dict of attr_name:attr_value

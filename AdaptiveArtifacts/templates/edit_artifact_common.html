@@ -2,7 +2,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
-  <xi:include href="layout.html" />
 
   <py:def function="attr_value_markup(value_idx=None, attr_name=None, attr_value=None)">
       <td><a class="delvalue" href="#">[-]</a></td>
@@ -18,11 +17,7 @@
       </td>
   </py:def>
 
-  <head><title></title></head>
-  <body>
-      <div id="content" class="asa">
-      <h1>Artifact</h1>
-      <form method="post" action="${href(url_path)}">
+  <py:match path="div[@id='dialog-content']" once="true">
           <label>Spec:</label> ${spec.get_name()} <br/>
           <label>Attributes:</label>
           <table class="attributes">
@@ -39,16 +34,10 @@
           <a href="#" class="addvalue" title="Add one more value" style="margin-left: 12.5em;">[+]</a>
           <br/>
           <py:if test="not artifact">
-            <input type="hidden" name="action" value="new" />
-            <input type="submit" value="Create" />
+              <input type="hidden" name="action" value="new" />
           </py:if>
           <py:if test="artifact">
-            <input type="hidden" name="action" value="edit" />
-            <input type="submit" value="Edit" />
+              <input type="hidden" name="action" value="edit" />
           </py:if>
-          <br/><br/>
-      </form>
-      </div>
-  </body>
+  </py:match>
 </html>
-
