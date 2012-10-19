@@ -149,4 +149,16 @@ class Core(Component):
 
     def post_process_request(self, req, template, data, content_type):
         add_javascript(req, "adaptiveartifacts/js/wiki.js")
+        add_javascript(req, "adaptiveartifacts/js/log4javascript.js")
+        add_javascript(req, "adaptiveartifacts/js/rangy-1.3alpha.681/uncompressed/rangy-core.js")
+        add_javascript(req, "adaptiveartifacts/js/rangy-1.3alpha.681/uncompressed/rangy-cssclassapplier.js")
+        add_javascript(req, "adaptiveartifacts/js/rangy-1.3alpha.681/uncompressed/rangy-selectionsaverestore.js")
+        add_javascript(req, "adaptiveartifacts/js/rangy-1.3alpha.681/uncompressed/rangy-serializer.js")
+        add_javascript(req, "adaptiveartifacts/js/rangy-1.3alpha.681/uncompressed/rangy-textrange.js")
+        add_javascript(req, "adaptiveartifacts/js/rangy-1.3alpha.681/uncompressed/rangy-highlighter.js")
+        add_stylesheet(req, 'adaptiveartifacts/css/wiki.css')
+        add_javascript(req, "adaptiveartifacts/js/jquerypp-1.0b2/jquerypp.js")
+
+
+
         return (template, data, content_type)
