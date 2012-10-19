@@ -22,7 +22,6 @@ function highlightRanges(ranges) {
     }
 }
 
-
 function splitRange(fullRange) {
     var fullRangeText = fullRange.text().split('\n').join(' ');
 
@@ -57,9 +56,7 @@ $(document).ready(function(){
 
 
     rangy.init();
-
     searchResultApplier = rangy.createCssClassApplier("divtext_selected_word");
-
     highlighter = rangy.createHighlighter();
 
     highlighter.addCssClassApplier(rangy.createCssClassApplier("highlight", {
@@ -86,7 +83,6 @@ $(document).ready(function(){
     fullRange.selectNodeContents(document.getElementById("divtext").childNodes[0]);
     var splittedRanges = splitRange(fullRange);
     highlightRanges(splittedRanges);
-
 
 
     $("#strong").click(function() {
@@ -145,12 +141,9 @@ $(document).ready(function(){
 
 
     $('#divtext').keyup(function(event) {
-
-
         if (timeout) {
             clearTimeout(timeout);
         }
-
 
         var newRange = rangy.getSelection().getRangeAt(0);
 
@@ -171,11 +164,8 @@ $(document).ready(function(){
         reloadSearch();
     });
 
-
     function reloadSearch() {
         //Memory Leak alert!
-
-
         if (!isLoading) {
             timeout = setTimeout(function() {
                 try {
@@ -204,11 +194,7 @@ $(document).ready(function(){
                 finally {
                     isLoading = false;
                 }
-
-
-
             }, delay);
-
         }
         else {
             console.log("Still loading last search!");
