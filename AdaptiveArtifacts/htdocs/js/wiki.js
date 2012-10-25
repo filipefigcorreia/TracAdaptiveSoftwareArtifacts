@@ -47,12 +47,17 @@ function splitRange(fullRange) {
 }
 $(document).ready(function(){
 
+
     //Hide TextArea and show Div
     $('#text').hide().before('<div id="divtext" contenteditable="true"/>' );
     $('#divtext').text ( $('#text').val());
 
     //Analyze the text content and create spans
     var text = $('#divtext');
+
+    $('.wikitoolbar')[0].setAttribute('style', 'width:260px');
+    $('.wikitoolbar').append('<a href="#" id="asaselect" title="Create artifact through selection" tabindex="400"></a>');
+
 
 
     rangy.init();
@@ -121,6 +126,17 @@ $(document).ready(function(){
         changeTagOnSelectedString("[[Image(", ")]]");
     });
 
+    $("#asaselect").click(function() {
+        //changeTagOnSelectedString("[[Image(", ")]]");
+        if(rangy.getSelection().getRangeAt(0).startOffset!=rangy.getSelection().getRangeAt(0).endOffset){
+            createASAFormDialogFromUrl('Artifact',  "/trac/adaptiveartifacts/artifact?action=new",
+                { "Create": function() { alert(submitASAFormDialog($(this))); } }
+            ).dialog('open');
+        }
+    });
+
+
+
     setInterval(function(){
         $('#text').val( $('#divtext').text()  );
     },100);
@@ -141,6 +157,8 @@ $(document).ready(function(){
 
 
     $('#divtext').keyup(function(event) {
+
+
         if (timeout) {
             clearTimeout(timeout);
         }
@@ -205,6 +223,28 @@ $(document).ready(function(){
 
     });*/
 
+     $("span.divtext_selected_word").cluetip({arrows: true,width: 50, local:false,
+        closeText:'',
+        mouseOutClose: true,
+        sticky: true,
+        hoverClass:'span.divtext_selected_word',
+        onShow:   function(){
+            $(this).mouseout(function() {     // if I go out of the link, then...
+                var closing = setTimeout(" $(document).trigger('hideCluetip')",400);  // close the tip after 400ms
+                $("#cluetip").mouseover(function() { clearTimeout(closing); } );    // unless I got inside the cluetip
+            });
+        },
+        splitTitle: '|',
+        cluetipClass: 'rounded',
+        showTitle: false});
+
+
+    $("#cluetip").bind('click', function() {
+        createASAFormDialogFromUrl('Artifact',  "/trac/adaptiveartifacts/artifact?action=new",
+            { "Create": function() { submitASAFormDialog($(this)) } }
+        ).dialog('open');
+    });
+
 
 });
 
@@ -263,3 +303,5 @@ function insertHtmlAfterSelection(html) {
         document.selection.createRange().pasteHTML(html);
     }
 }
+
+

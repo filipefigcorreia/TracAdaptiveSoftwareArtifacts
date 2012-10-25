@@ -100,7 +100,16 @@ class Core(Component):
         return handler
 
     def post_process_request(self, req, template, data, content_type):
+
+        Chrome(self.env).add_jquery_ui(req)
         add_javascript(req, "adaptiveartifacts/js/wiki.js")
+        add_javascript(req, "adaptiveartifacts/js/dialogs.js")
+        add_javascript(req, 'adaptiveartifacts/js/util.js')
+        add_javascript(req, 'adaptiveartifacts/js/uuid.js')
+        add_javascript(req, 'adaptiveartifacts/js/forms.js')
+        add_javascript(req, 'adaptiveartifacts/js/jquery.cluetip.js')
+        add_stylesheet(req, 'adaptiveartifacts/css/jquery.cluetip.css', media='screen')
+        add_stylesheet(req, 'adaptiveartifacts/css/asa.css', media='screen')
         add_javascript(req, "adaptiveartifacts/js/log4javascript.js")
         add_javascript(req, "adaptiveartifacts/js/rangy-1.3alpha.681/uncompressed/rangy-core.js")
         add_javascript(req, "adaptiveartifacts/js/rangy-1.3alpha.681/uncompressed/rangy-cssclassapplier.js")
