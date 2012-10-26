@@ -6,7 +6,7 @@
 import re
 from trac.core import *
 from trac.resource import IResourceManager, Resource
-from trac.web.chrome import Chrome, INavigationContributor, ITemplateProvider, add_javascript, add_stylesheet
+from trac.web.chrome import Chrome, INavigationContributor, ITemplateProvider, add_javascript, add_stylesheet, add_script_data
 from trac.web.main import IRequestHandler
 from trac.web.api import IRequestFilter
 from trac.util import Markup
@@ -58,6 +58,7 @@ class Core(Component):
         add_javascript(req, 'adaptiveartifacts/js/forms.js')
         add_javascript(req, 'adaptiveartifacts/js/dialogs.js')
         add_stylesheet(req, 'adaptiveartifacts/css/asa.css', media='screen')
+
         res = Core._get_resource(request.obj) if not request.obj in (Entity, Instance, None) and not type(request.obj)==unicode else None
         return request.view(request, dbp, request.obj, res)
 
@@ -100,7 +101,6 @@ class Core(Component):
         return handler
 
     def post_process_request(self, req, template, data, content_type):
-
         Chrome(self.env).add_jquery_ui(req)
         add_javascript(req, "adaptiveartifacts/js/wiki.js")
         add_javascript(req, "adaptiveartifacts/js/dialogs.js")
@@ -119,8 +119,7 @@ class Core(Component):
         add_javascript(req, "adaptiveartifacts/js/rangy-1.3alpha.681/uncompressed/rangy-highlighter.js")
         add_stylesheet(req, 'adaptiveartifacts/css/wiki.css')
         #add_javascript(req, "adaptiveartifacts/js/jquerypp-1.0b2/jquerypp.js")
-
-
+        add_script_data(req, {'baseurl': req.href.adaptiveartifacts()})
 
         return (template, data, content_type)
 

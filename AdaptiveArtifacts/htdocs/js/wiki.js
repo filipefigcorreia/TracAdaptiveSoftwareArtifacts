@@ -132,7 +132,7 @@ $(document).ready(function(){
     $("#asaselect").click(function() {
         //changeTagOnSelectedString("[[Image(", ")]]");
         if(!rangy.getSelection().getRangeAt(0).collapsed){
-            createASAFormDialogFromUrl('Artifact',  "/trac/adaptiveartifacts/artifact?action=new",
+            createASAFormDialogFromUrl('Artifact',  baseurl+"/artifact?action=new",
                 { "Create": function() {
                     submitASAFormDialog(
                         $(this),
@@ -258,7 +258,7 @@ $(document).ready(function(){
 
 
     $("#cluetip").bind('click', function() {
-        createASAFormDialogFromUrl('Artifact',  "/trac/adaptiveartifacts/artifact?action=new",
+        createASAFormDialogFromUrl('Artifact',  baseurl+"/artifact?action=new",
             { "Create": function() { submitASAFormDialog($(this)) } }
         ).dialog('open');
     });
