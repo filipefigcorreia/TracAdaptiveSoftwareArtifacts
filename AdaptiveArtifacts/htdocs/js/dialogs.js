@@ -13,7 +13,7 @@ Submits a jquery-ui dialog. The dialog is closed if
 submission goes flawlessly, and shows an error message
 otherwise.
  */
-function submitASAFormDialog(dialogdiv) {
+function submitASAFormDialog(dialogdiv, options) {
     var form=dialogdiv.find('form');
     $.ajax({
         type: form.attr('method'),
@@ -24,6 +24,7 @@ function submitASAFormDialog(dialogdiv) {
             $(this).dialog("close");
             $(this).dialog("destroy");
             $(this).remove();
+            options['success']();
         },
         error: function(data){
             $(this).html("An error occurred, sorry.");
@@ -34,6 +35,7 @@ function submitASAFormDialog(dialogdiv) {
                         $(this).dialog("close");
                         $(this).dialog("destroy");
                         $(this).remove();
+                        options['error']();
                     }
                 }
             ] );
