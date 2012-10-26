@@ -1,9 +1,4 @@
-var serializedHighlights = decodeURIComponent(window.location.search.slice(window.location.search.indexOf("=") + 1));
-var highlighter;
-
-var initialDoc;
 var Ranges = new Array();
-var Selections = new Array();
 var searchResultApplier ;
 
 //Converter o array de ranges, depois de feito o split, para strings (toString() devolve-nos o texto de cada range)
@@ -11,7 +6,6 @@ var searchResultApplier ;
 //Tratar json recebido e retirar palavras selecionadas, fazer match com o array de ranges, e utilizar os ranges selecionados
 
 var words_array = new Array("database", "extra", "simply", "TracEnvironment", "trac");
-
 
 function highlightRanges(ranges) {
     for (var i = ranges.length - 1; i >= 0; i--) {
@@ -23,6 +17,7 @@ function highlightRanges(ranges) {
                 searchResultApplier.undoToRange(ranges[i]);
         }
     }
+    holdCluetipOnElement( $("span.divtext_selected_word") );
 }
 
 function splitRange(fullRange) {
@@ -49,8 +44,6 @@ function splitRange(fullRange) {
     return splittedRanges;
 }
 $(document).ready(function(){
-
-
     //Hide TextArea and show Div
     $('#text').hide().before('<div id="divtext" contenteditable="true"/>' );
     $('#divtext').text ( $('#text').val());
@@ -62,30 +55,22 @@ $(document).ready(function(){
     $('.wikitoolbar').append('<a href="#" id="asaselect" title="Create artifact through selection" tabindex="400"></a>');
 
 
-
     rangy.init();
-    searchResultApplier = rangy.createCssClassApplier("divtext_selected_word");
-    highlighter = rangy.createHighlighter();
-
-    highlighter.addCssClassApplier(rangy.createCssClassApplier("highlight", {
-        ignoreWhiteSpace: true,
-        tagNames: ["span", "a"]
-    }));
-
-    highlighter.addCssClassApplier(rangy.createCssClassApplier("note", {
-        ignoreWhiteSpace: true,
-        elementTagName: "a",
-        elementProperties: {
-            href: "#",
-            onclick: function() {
-                var highlight = highlighter.getHighlightForElement(this);
-                if (window.confirm("Delete this note (ID " + highlight.id + ")?")) {
-                    highlighter.removeHighlights( [highlight] );
+    searchResultApplier = rangy.createCssClassApplier("divtext_selected_word",
+        {
+            ignoreWhiteSpace: true,
+            elementTagName: "span"
+            /*elementProperties: {
+                href: "#",
+                onclick: function() {
+                    var highlight = highlighter.getHighlightForElement(this);
+                    if (window.confirm("Delete this note (ID " + highlight.id + ")?")) {
+                        highlighter.removeHighlights( [highlight] );
+                    }
+                    return false;
                 }
-                return false;
-            }
-        }
-    }));
+            }*/
+        });
 
     var fullRange = rangy.createRange();
     fullRange.selectNodeContents(document.getElementById("divtext").childNodes[0]);
@@ -154,7 +139,6 @@ $(document).ready(function(){
     });
 
 
-
     setInterval(function(){
         $('#text').val( $('#divtext').text()  );
     },100);
@@ -173,10 +157,7 @@ $(document).ready(function(){
         }
     );
 
-
     $('#divtext').keyup(function(event) {
-
-
         if (timeout) {
             clearTimeout(timeout);
         }
@@ -198,6 +179,12 @@ $(document).ready(function(){
             Ranges.push(newRange);
         }
         reloadSearch();
+    });
+
+    $("#cluetip").bind('click', function() {
+        createASAFormDialogFromUrl('Artifact',  "/trac/adaptiveartifacts/artifact?action=new",
+            { "Create": function() { submitASAFormDialog($(this)) } }
+        ).dialog('open');
     });
 
     function reloadSearch() {
@@ -240,32 +227,7 @@ $(document).ready(function(){
     /*$('#divtext').bind('click', function() {
 
     });*/
-
-     $("span.divtext_selected_word").cluetip({arrows: true,width: 50, local:false,
-        closeText:'',
-        mouseOutClose: true,
-        sticky: true,
-        hoverClass:'span.divtext_selected_word',
-        onShow:   function(){
-            $(this).mouseout(function() {     // if I go out of the link, then...
-                var closing = setTimeout(" $(document).trigger('hideCluetip')",400);  // close the tip after 400ms
-                $("#cluetip").mouseover(function() { clearTimeout(closing); } );    // unless I got inside the cluetip
-            });
-        },
-        splitTitle: '|',
-        cluetipClass: 'rounded',
-        showTitle: false});
-
-
-    $("#cluetip").bind('click', function() {
-        createASAFormDialogFromUrl('Artifact',  baseurl+"/artifact?action=new",
-            { "Create": function() { submitASAFormDialog($(this)) } }
-        ).dialog('open');
-    });
-
-
 });
-
 
 
 function changeTagOnSelectedString(prefix, sufix){
@@ -274,6 +236,10 @@ function changeTagOnSelectedString(prefix, sufix){
         var ret = firstRange.cloneContents();
         var html = prefix + ret.textContent + sufix;
         insertHtmlAfterSelection(html);
+        var currentRange = rangy.getSelection().getRangeAt(0);
+        currentRange.setStart(currentRange.startContainer, currentRange.startOffset-html.length);
+        var splittedRanges = splitRange(currentRange);
+        highlightRanges(splittedRanges);
     }
 };
 
@@ -312,4 +278,20 @@ function insertHtmlAfterSelection(html) {
     }
 }
 
-
+function holdCluetipOnElement(JQueryElement){
+    JQueryElement.cluetip({arrows: true,width: 50, local:false,
+        closeText:'',
+        mouseOutClose: true,
+        sticky: true,
+        hoverClass:'span.divtext_selected_word',
+        onShow:   function(){
+            $(this).mouseout(function() {     // if I go out of the link, then...
+                var closing = setTimeout(" $(document).trigger('hideCluetip')",400);  // close the tip after 400ms
+                $("#cluetip").mouseover(function() { clearTimeout(closing); } );    // unless I got inside the cluetip
+            });
+        },
+        splitTitle: '|',
+        cursor: 'text',
+        cluetipClass: 'rounded',
+        showTitle: false});
+}
