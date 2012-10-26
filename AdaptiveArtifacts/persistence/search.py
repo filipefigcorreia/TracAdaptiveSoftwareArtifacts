@@ -18,17 +18,17 @@ class Searcher(object):
     @classmethod
     def search_artifacts(cls, dbp, terms):
         with dbp.env.db_query as db:
-            sql_query, args = search_to_sql(db, ['val.attr_value'], terms)
+            sql_query, args = search_to_sql(db, ['val.attr_value'], [terms])
 
             results = []
-            for id, vid in db("""
-                    SELECT a.id, max(v.id)
+            for id, vid, term in db("""
+                    SELECT a.id, max(v.id), val.attr_value
                     FROM asa_artifact_value val
                         INNER JOIN asa_version v ON v.id=val.version_id
                         INNER JOIN asa_artifact a ON a.id=val.artifact_id
                     WHERE """ + sql_query +
                     """ GROUP BY a.id""", args):
                 dbp.load_artifact(id, db)
-                results.append(dbp.pool.get_item(id))
+                results.append((dbp.pool.get_item(id), term))
 
         return results
