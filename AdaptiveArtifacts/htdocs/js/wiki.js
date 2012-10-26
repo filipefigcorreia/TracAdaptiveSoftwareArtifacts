@@ -5,6 +5,11 @@ var initialDoc;
 var Ranges = new Array();
 var Selections = new Array();
 var searchResultApplier ;
+
+//Converter o array de ranges, depois de feito o split, para strings (toString() devolve-nos o texto de cada range)
+//Enviar array final por POST para o server
+//Tratar json recebido e retirar palavras selecionadas, fazer match com o array de ranges, e utilizar os ranges selecionados
+
 var words_array = new Array("database", "extra", "simply", "TracEnvironment", "trac");
 
 
@@ -12,12 +17,10 @@ function highlightRanges(ranges) {
     for (var i = ranges.length - 1; i >= 0; i--) {
         if ((words_array.indexOf(ranges[i].text())) != -1) {
             searchResultApplier.applyToRange(ranges[i]);
-        } else {
+        }else {
             //TODO: retirar span no caso de estarmos dentro de um
-
             if (searchResultApplier.isAppliedToRange(ranges[i]))
                 searchResultApplier.undoToRange(ranges[i]);
-
         }
     }
 }
@@ -128,9 +131,24 @@ $(document).ready(function(){
 
     $("#asaselect").click(function() {
         //changeTagOnSelectedString("[[Image(", ")]]");
-        if(rangy.getSelection().getRangeAt(0).startOffset!=rangy.getSelection().getRangeAt(0).endOffset){
+        if(!rangy.getSelection().getRangeAt(0).collapsed){
             createASAFormDialogFromUrl('Artifact',  "/trac/adaptiveartifacts/artifact?action=new",
-                { "Create": function() { alert(submitASAFormDialog($(this))); } }
+                { "Create": function() {
+                    submitASAFormDialog(
+                        $(this),
+                        {
+                            success: function(){
+                                console.log("Sucesso!");
+                                //console.log(rangy.getSelection().getRangeAt(0));
+                            },
+                            error: function(){
+                                    alert("Falhaaaaa!!");
+                            }
+                        }
+                    )}
+                }
+
+
             ).dialog('open');
         }
     });
@@ -251,21 +269,11 @@ $(document).ready(function(){
 
 
 function changeTagOnSelectedString(prefix, sufix){
-    var text = $('#divtext');
-    var selection = text.selection();
-    var width = selection.width;
-
-    if(width!=0){
-
-        var content = text.text();
-        //alert(content);
-        var start = selection.start;
-        var end = selection.end;
-
-        var selected  = content.substring(start, end);
-
-        var subst =  prefix + selected + sufix;
-        text.text( text.text().substring(0, start) + subst + text.text().substring(end) );
+    var firstRange = rangy.getSelection().getRangeAt(0);
+    if(!firstRange.collapsed){
+        var ret = firstRange.cloneContents();
+        var html = prefix + ret.textContent + sufix;
+        insertHtmlAfterSelection(html);
     }
 };
 

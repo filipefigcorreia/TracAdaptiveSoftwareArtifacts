@@ -118,7 +118,7 @@ class Core(Component):
         add_javascript(req, "adaptiveartifacts/js/rangy-1.3alpha.681/uncompressed/rangy-textrange.js")
         add_javascript(req, "adaptiveartifacts/js/rangy-1.3alpha.681/uncompressed/rangy-highlighter.js")
         add_stylesheet(req, 'adaptiveartifacts/css/wiki.css')
-        add_javascript(req, "adaptiveartifacts/js/jquerypp-1.0b2/jquerypp.js")
+        #add_javascript(req, "adaptiveartifacts/js/jquerypp-1.0b2/jquerypp.js")
 
 
 
