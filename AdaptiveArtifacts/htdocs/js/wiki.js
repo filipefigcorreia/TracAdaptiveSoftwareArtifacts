@@ -1,25 +1,68 @@
 var Ranges = new Array();
-var searchResultApplier ;
+var artifactSuggestionStyleApplier;
 
 //Converter o array de ranges, depois de feito o split, para strings (toString() devolve-nos o texto de cada range)
 //Enviar array final por POST para o server
 //Tratar json recebido e retirar palavras selecionadas, fazer match com o array de ranges, e utilizar os ranges selecionados
 
-var words_array = new Array("database", "extra", "simply", "TracEnvironment", "trac");
+function highlightSuggestions(ranges) {
+    var words_array = new Array("database", "extra", "simply", "TracEnvironment", "trac");
 
-function highlightRanges(ranges) {
+    if (artifactSuggestionStyleApplier == null) {
+        artifactSuggestionStyleApplier = rangy.createCssClassApplier("divtext_selected_word",
+            {
+                ignoreWhiteSpace: true,
+                elementTagName: "span"
+                /*elementProperties: {
+                    href: "#",
+                    onclick: function() {
+                        var highlight = highlighter.getHighlightForElement(this);
+                        if (window.confirm("Delete this note (ID " + highlight.id + ")?")) {
+                            highlighter.removeHighlights( [highlight] );
+                        }
+                        return false;
+                    }
+                }*/
+            });
+    }
+
     for (var i = ranges.length - 1; i >= 0; i--) {
         if ((words_array.indexOf(ranges[i].text())) != -1) {
-            searchResultApplier.applyToRange(ranges[i]);
+            artifactSuggestionStyleApplier.applyToRange(ranges[i]);
         }else {
             //TODO: retirar span no caso de estarmos dentro de um
-            if (searchResultApplier.isAppliedToRange(ranges[i]))
-                searchResultApplier.undoToRange(ranges[i]);
+            if (artifactSuggestionStyleApplier.isAppliedToRange(ranges[i]))
+                artifactSuggestionStyleApplier.undoToRange(ranges[i]);
         }
     }
-    holdCluetipOnElement( $("span.divtext_selected_word") );
+    addCluetipEventToElement($("span.divtext_selected_word") );
 }
 
+/*
+ * Adds a cluetip "hover" event handler to the specified element.
+ */
+function addCluetipEventToElement(element){
+    element.cluetip({arrows: true,width: 50, local:false,
+        closeText:'',
+        mouseOutClose: true,
+        sticky: true,
+        hoverClass:'span.divtext_selected_word',
+        onShow: function(){
+            $(this).mouseout(function() {     // if I go out of the link, then...
+                var closing = setTimeout(" $(document).trigger('hideCluetip')",400);  // close the tip after 400ms
+                $("#cluetip").mouseover(function() { clearTimeout(closing); } );    // unless I got inside the cluetip
+            });
+        },
+        splitTitle: '|',
+        cursor: 'text',
+        cluetipClass: 'rounded',
+        showTitle: false});
+}
+
+/*
+ * Receives a range and returns a list of ranges obtained
+ * by splitting the text of the original range by word
+ */
 function splitRange(fullRange) {
     var fullRangeText = fullRange.text().split('\n').join(' ');
 
@@ -43,41 +86,31 @@ function splitRange(fullRange) {
     }
     return splittedRanges;
 }
-$(document).ready(function(){
-    //Hide TextArea and show Div
-    $('#text').hide().before('<div id="divtext" contenteditable="true"/>' );
-    $('#divtext').text ( $('#text').val());
 
-    //Analyze the text content and create spans
-    var text = $('#divtext');
+function setupTextEditor(){
+    // Hide trac's textarea and show a contenteditable div in its place
+    var textarea = $('#text');
+    textarea.hide().before('<div id="divtext" contenteditable="true"/>' );
 
-    $('.wikitoolbar')[0].setAttribute('style', 'width:260px');
-    $('.wikitoolbar').append('<a href="#" id="asaselect" title="Create artifact through selection" tabindex="400"></a>');
+    var divtext = $('#divtext');
+    divtext.text(textarea.val());
 
+    setInterval(function(){
+         textarea.val(divtext.text());
+     },100);
 
-    rangy.init();
-    searchResultApplier = rangy.createCssClassApplier("divtext_selected_word",
-        {
-            ignoreWhiteSpace: true,
-            elementTagName: "span"
-            /*elementProperties: {
-                href: "#",
-                onclick: function() {
-                    var highlight = highlighter.getHighlightForElement(this);
-                    if (window.confirm("Delete this note (ID " + highlight.id + ")?")) {
-                        highlighter.removeHighlights( [highlight] );
-                    }
-                    return false;
-                }
-            }*/
-        });
+    $(document).bind('keydown', function (evt){
+            if (event.which == 13) {
+                evt.preventDefault();
+                //var enterRange = rangy.getSelection().getRangeAt(0);
+                insertHtmlAfterSelection('\n');
+                return true;
+            }
+            return true;
+        }
+    );
 
-    var fullRange = rangy.createRange();
-    fullRange.selectNodeContents(document.getElementById("divtext").childNodes[0]);
-    var splittedRanges = splitRange(fullRange);
-    highlightRanges(splittedRanges);
-
-
+    // Rewire the event handlers of the toolbat buttons to work with the div instead of the textarea
     $("#strong").click(function() {
         changeTagOnSelectedString("'''", "'''");
     });
@@ -114,6 +147,12 @@ $(document).ready(function(){
         changeTagOnSelectedString("[[Image(", ")]]");
     });
 
+    // Add custom buttons to the toolbar
+    var toolbar = $('.wikitoolbar');
+    toolbar[0].setAttribute('style', 'width:260px');
+    toolbar.append('<a href="#" id="asaselect" title="Create artifact through selection" tabindex="400"></a>');
+
+    // Events for the custom toolbar buttons
     $("#asaselect").click(function() {
         //changeTagOnSelectedString("[[Image(", ")]]");
         if(!rangy.getSelection().getRangeAt(0).collapsed){
@@ -131,31 +170,26 @@ $(document).ready(function(){
                             }
                         }
                     )}
-                }
-
-
+              }
             ).dialog('open');
         }
     });
+}
 
+$(document).ready(function(){
+    setupTextEditor();
 
-    setInterval(function(){
-        $('#text').val( $('#divtext').text()  );
-    },100);
+    rangy.init();
+
+    //Analyze the text content and create spans to highlight the proper words
+    var fullRange = rangy.createRange();
+    fullRange.selectNodeContents(document.getElementById("divtext").childNodes[0]);
+    var splittedRanges = splitRange(fullRange);
+    highlightSuggestions(splittedRanges);
 
     var timeout;
     var delay = 500;
     var isLoading = false;
-
-    jQuery(document).bind('keydown', function (evt){
-            if (event.which == 13) {
-                evt.preventDefault();
-                //var enterRange = rangy.getSelection().getRangeAt(0);
-                insertHtmlAfterSelection('\n');
-                return true;
-            }
-        }
-    );
 
     $('#divtext').keyup(function(event) {
         if (timeout) {
@@ -163,7 +197,6 @@ $(document).ready(function(){
         }
 
         var newRange = rangy.getSelection().getRangeAt(0);
-
         var oldRange = Ranges[Ranges.length-1];
         if(oldRange &&
               oldRange.endContainer == newRange.startContainer &&
@@ -206,7 +239,7 @@ $(document).ready(function(){
                         var ranges = splitRange(fullRange);
                         $.merge(splittedRanges, ranges);
                     }
-                    highlightRanges(splittedRanges);
+                    highlightSuggestions(splittedRanges);
                     rangy.restoreSelection(selection1);
                     //Fim da analise
                 }
@@ -229,7 +262,6 @@ $(document).ready(function(){
     });*/
 });
 
-
 function changeTagOnSelectedString(prefix, sufix){
     var firstRange = rangy.getSelection().getRangeAt(0);
     if(!firstRange.collapsed){
@@ -238,10 +270,9 @@ function changeTagOnSelectedString(prefix, sufix){
         insertHtmlAfterSelection(html);
         var currentRange = rangy.getSelection().getRangeAt(0);
         currentRange.setStart(currentRange.startContainer, currentRange.startOffset-html.length);
-        var splittedRanges = splitRange(currentRange);
-        highlightRanges(splittedRanges);
+        highlightSuggestions(splitRange(currentRange));
     }
-};
+}
 
 //Sera mesmo necessario? Substituir pelo rangy
 function insertHtmlAfterSelection(html) {
@@ -276,22 +307,4 @@ function insertHtmlAfterSelection(html) {
         // IE < 9
         document.selection.createRange().pasteHTML(html);
     }
-}
-
-function holdCluetipOnElement(JQueryElement){
-    JQueryElement.cluetip({arrows: true,width: 50, local:false,
-        closeText:'',
-        mouseOutClose: true,
-        sticky: true,
-        hoverClass:'span.divtext_selected_word',
-        onShow:   function(){
-            $(this).mouseout(function() {     // if I go out of the link, then...
-                var closing = setTimeout(" $(document).trigger('hideCluetip')",400);  // close the tip after 400ms
-                $("#cluetip").mouseover(function() { clearTimeout(closing); } );    // unless I got inside the cluetip
-            });
-        },
-        splitTitle: '|',
-        cursor: 'text',
-        cluetipClass: 'rounded',
-        showTitle: false});
 }
