@@ -26,6 +26,6 @@
 
 span.divtext_selected_word
 {
-    color:red;
-    /*text-decoration:underline;*/
+    border-bottom: 1px dashed blue;
+    color: blue;
 }​
