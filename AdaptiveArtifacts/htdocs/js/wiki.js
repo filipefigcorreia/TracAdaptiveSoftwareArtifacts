@@ -182,7 +182,7 @@ $(document).ready(function(){
     });
 
     $("#cluetip").bind('click', function() {
-        createASAFormDialogFromUrl('Artifact',  "/trac/adaptiveartifacts/artifact?action=new",
+        createASAFormDialogFromUrl('Artifact',  baseurl+"/artifact?action=new",
             { "Create": function() { submitASAFormDialog($(this)) } }
         ).dialog('open');
     });
