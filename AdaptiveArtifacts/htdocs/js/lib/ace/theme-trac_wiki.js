@@ -39,16 +39,15 @@ exports.cssText = "/* CSS style content from github's default pygments highlight
   position: relative;\
   border: 1px solid #D7D7D7;\
   border-radius: 0.3em 0.3em 0.3em 0.3em;\
-  font-family: 'Lucida Grande';\
-  font-size: 11px;\
-  font-style: normal;\
-  vertical-align: text-bottom;\
   background-color: white;\
-  margin-left: -1px;\
-  margin-right: -1px;\
+  vertical-align: text-bottom;\
   padding: 0;\
   width: 100%;\
   min-height: 12em;\
+}\
+\
+.ace_editor {\
+  font-size: 10px;\
 }\
 \
 .ace-trac-wiki .ace_gutter {\
