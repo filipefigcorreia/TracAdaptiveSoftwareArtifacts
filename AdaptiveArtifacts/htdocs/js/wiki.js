@@ -17,6 +17,82 @@ $(document).ready(function(){
       textarea.val(editor.getSession().getValue());
     });
 
+
+    function changeTagOnSelectedString(prefix, sufix){
+        //var selrange = editor.getSelectionRange();
+        var value = editor.getCopyText();
+        editor.insert(prefix + value + sufix);
+        editor.focus();
+    }
+
+  // Rewire the event handlers of the toolbat buttons to work with the div instead of the textarea
+    $("#strong").click(function() {
+        changeTagOnSelectedString("'''", "'''");
+    });
+
+    $("#heading").click(function() {
+        changeTagOnSelectedString("\n== ", " ==\n");
+    });
+
+    $("#em").click(function() {
+        changeTagOnSelectedString("''", "''");
+    });
+
+    $("#link").click(function() {
+        changeTagOnSelectedString("[", "]");
+    });
+
+    $("#code").click(function() {
+        changeTagOnSelectedString("\n{{{\n", "\n}}}\n");
+    });
+
+    $("#hr").click(function() {
+        changeTagOnSelectedString("\n----\n", "");
+    });
+
+    $("#np").click(function() {
+        changeTagOnSelectedString("\n\n", "");
+    });
+
+    $("#br").click(function() {
+        changeTagOnSelectedString("[[BR]]\n", "");
+    });
+
+    $("#img").click(function() {
+        changeTagOnSelectedString("[[Image(", ")]]");
+    });
+
+    // Add custom buttons to the toolbar
+    var toolbar = $('.wikitoolbar');
+    toolbar[0].setAttribute('style', 'width:260px');
+    toolbar.append('<a href="#" id="asaselect" title="Create artifact through selection" tabindex="400"></a>');
+
+    // Events for the custom toolbar buttons
+    $("#asaselect").click(function() {
+        editor.focus();
+        if(!editor.getSelection().isEmpty()){
+            createASAFormDialogFromUrl('Artifact',  baseurl+"/artifact?action=new",
+                { "Create": function() {
+                    submitASAFormDialog(
+                        $(this),
+                        {
+                            success: function(){
+                                console.log("Sucesso!");
+                                //console.log(rangy.getSelection().getRangeAt(0));
+                            },
+                            error: function(){
+                                    alert("Falhaaaaa!!");
+                            }
+                        }
+                    )}
+              }
+            ).dialog('open');
+        }
+    });
+
+
+
+
     var Tokenizer = require("ace/tokenizer").Tokenizer;
      // words in database
     var goodWords = Object.create(null);
