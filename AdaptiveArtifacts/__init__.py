@@ -112,8 +112,20 @@ class Core(Component):
         #add_javascript(req, "adaptiveartifacts/js/lib/rangy-1.3alpha.681/uncompressed/rangy-textrange.js")
         #add_javascript(req, "adaptiveartifacts/js/lib/rangy-1.3alpha.681/uncompressed/rangy-highlighter.js")
         #add_javascript(req, "adaptiveartifacts/js/lib/jquerypp-1.0b2/jquerypp.js")
+
+
+
         add_javascript(req, "adaptiveartifacts/js/lib/ace/ace.js")
         add_javascript(req, "adaptiveartifacts/js/lib/ace/theme-trac_wiki.js")
+
+        add_javascript(req, 'adaptiveartifacts/js/lib/jquery.balloon.js')
+
+        #add_javascript(req, 'adaptiveartifacts/js/lib/ace/demo/kitchen-sink/require.js')
+        #add_javascript(req, 'adaptiveartifacts/js/lib/ace/demo/kitchen-sink/util.js')
+        #add_javascript(req, 'adaptiveartifacts/js/lib/ace/demo/kitchen-sink/layout.js')
+        #add_javascript(req, 'adaptiveartifacts/js/lib/ace/demo/kitchen-sink/modelist.js')
+        #add_javascript(req, 'adaptiveartifacts/js/lib/ace/demo/kitchen-sink/doclist.js')
+        #add_javascript(req, 'adaptiveartifacts/js/lib/ace/demo/kitchen-sink/token_tooltip.js')
 
         add_javascript(req, "adaptiveartifacts/js/wiki.js")
         add_javascript(req, "adaptiveartifacts/js/dialogs.js")

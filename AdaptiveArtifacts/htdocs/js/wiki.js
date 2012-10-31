@@ -2,7 +2,7 @@ $(document).ready(function(){
 
     // Hide trac's textarea and show a contenteditable div in its place
     var textarea = $('#text');
-    textarea.hide().before('<div id="editor"/>' );
+    textarea.hide().before('<div id="editor"/>').before('<span class="buuu">Lorem ipsum</span>'); //.before('<div>Lorem <span class="ace_keyword">teste</span> ipsum <span class="ace_keyword">teste 2</span> lorem.</div>');
 
     var editor = ace.edit("editor");
     editor.setTheme("ace/theme/trac_wiki");
@@ -46,17 +46,17 @@ $(document).ready(function(){
     attachToSession = function(session) {
         var self = session.bgTokenizer;
         self.rehighlight = function() {
-            var states = this.states
-            var lines = this.lines
+            var states = this.states;
+            var lines = this.lines;
             for (var i = states.length; i--;){
                 if (states[i] || !lines[i])
-                    continue
-                states[i] = "start"
+                    continue;
+                states[i] = "start";
                 lines[i].forEach(function(t){
                     if (goodWords[t.value])
-                        t.type = "keyword"
+                        t.type = "keyword";
                     else if (words[t.value])
-                        t.type = "just-a-word"
+                        t.type = "just-a-word";
                 })
             }
             // this can be smarter and update only changed lines
@@ -134,4 +134,149 @@ $(document).ready(function(){
         grip.style.marginRight = (grip.offsetWidth - this.offsetWidth) +'px';
       }
       setupEditorResizing(editor, $('#editor'));
+
+
+
+    /*
+    var TokenIterator = require("ace/token_iterator").TokenIterator;
+    var iterator = new TokenIterator(editor.getSession(), 0, 0);
+    var token = iterator.getCurrentToken();
+    while (token){
+        console.log(token.type);
+        console.log(token.value);
+        if (token.type == 'keyword'){
+            var xpto = 1;
+            token.balloon({
+                  position: 'right',
+                  contents: '<img src="../media/loading.gif" alt="loading..." width="25" height="25" />',
+                  url: baseurl+'/adaptiveartifacts/artifact?action=new&format=dialog',
+                  ajaxComplete: function(res, sts, xhr) { alert(sts); }
+                });
+        }
+        token = iterator.stepForward();
+    }
+    */
+
+
+    var balloon;
+    editor.on('mousemove', function(e) {
+            var position = e.getDocumentPosition();
+            var session = editor.session;
+
+            // If the user clicked on a fold, then expand it.
+            var token = session.getTokenAt(position.row, position.column, 1);
+            if (token){
+                var canvasPos = editor.renderer.scroller.getBoundingClientRect();
+                var editordiv = $('#editor');
+                if (token.type == 'keyword') {
+                    balloon = editordiv.showBalloon(
+                        {
+                            position: "top left",
+                            offsetX: e.clientX - canvasPos.left,
+                            offsetY: canvasPos.top - e.clientY + 10,
+                            tipSize: 20,
+                            delay: 500,
+                            minLifetime: 500,
+                            showDuration: 1000,
+                            hideDuration: 200,
+                            showAnimation: function(d) { this.fadeIn(d); },
+                            contents: token.value
+                        }
+                    ).mouseenter(function(e) {
+                            editordiv.showBalloon();
+                        }).data("balloon");
+                    if(balloon) {
+                        balloon.mouseleave(function(e) {
+                            editordiv.hideBalloon();
+                        }).mouseenter(function(e) { editordiv.showBalloon(); });
+                    }
+                }else{
+                    balloon && editordiv.hideBalloon();
+                }
+                e.stop();
+            }
+        });
+
+/*
+
+      */
+
+    /*
+    editor.getSession().on('change', function(){
+        $('.ace_keyword').mouseup(function(){
+            alert("Bam!");
+        });
+    });
+    */
+
+                 /*
+        var kws = $(".buuu");
+        var cenas = {
+                    position: 'right',
+                    contents: '<img src="../media/loading.gif" alt="loading..." width="25" height="25" />',
+                    url: baseurl+'/adaptiveartifacts/artifact?action=new&format=dialog',
+                    ajaxComplete: function(res, sts, xhr) { alert(sts); }
+                  };
+        kws.balloon(cenas);
+        */
+
+    /*
+        //$(".buuu").click(function(e){
+    console.log("aaa");
+    var bl = $(".buuu").showBalloon(
+                {
+                    position: "left",
+                    offsetX: 50,
+                    offsetY: 50,
+                    tipSize: 20,
+                    css: {
+                        maxWidth: "17em",
+                        border: "solid 5px #463974",
+                        color: "#463974",
+                        fontWeight: "bold",
+                        fontSize: "130%",
+                        backgroundColor: "#efefef"
+                    },
+                    contents: "cenas"
+                }
+            );
+    bl.toggle(
+        function(){ $(this).hideBalloon(); },
+        function(){ $(this).showBalloon(); }
+      );
+
+        //});
+*/
+
+/*
+    var net = require("ace/lib/net");
+    var Range = require("ace/range").Range;
+    var util = require("ace/demo/kitchen-sink/util");
+    var layout = require("ace/demo/kitchen-sink/layout");
+    var modelist = require("ace/demo/kitchen-sink/modelist");
+    var doclist = require("ace/demo/kitchen-sink/doclist");
+    var TokenTooltip = require("ace/demo/kitchen-sink/token_tooltip").TokenTooltip;
+    */
+
+    //var ttt = new TokenTooltip(editor);
+
+    /*
+    var states = editor.session.bgTokenizer.states;
+    var lines = editor.session.bgTokenizer.lines;
+    for (var i = states.length; i--;){
+        if (!lines[i])
+            continue;
+        lines[i].forEach(function(t){
+            console.log(t.type);
+            console.log(t.value);
+        })
+    }
+    */
+
+    /*$('.ace_keyword').balloon({
+      position: 'right',
+      contents: '<img src="../media/loading.gif" alt="loading..." width="25" height="25" />',
+      url: baseurl+'/adaptiveartifacts/artifact?action=new&format=dialog',
+      ajaxComplete: function(res, sts, xhr) { alert(sts); }
+    });*/
 });
