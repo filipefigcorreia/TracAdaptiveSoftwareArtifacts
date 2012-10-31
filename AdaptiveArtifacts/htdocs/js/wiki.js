@@ -2,7 +2,7 @@ $(document).ready(function(){
 
     // Hide trac's textarea and show a contenteditable div in its place
     var textarea = $('#text');
-    textarea.hide().before('<div id="editor"/>').before('<span class="buuu">Lorem ipsum</span>'); //.before('<div>Lorem <span class="ace_keyword">teste</span> ipsum <span class="ace_keyword">teste 2</span> lorem.</div>');
+    textarea.hide().before('<div id="editor"/>');
 
     var editor = ace.edit("editor");
     editor.setTheme("ace/theme/trac_wiki");
@@ -137,27 +137,6 @@ $(document).ready(function(){
 
 
 
-    /*
-    var TokenIterator = require("ace/token_iterator").TokenIterator;
-    var iterator = new TokenIterator(editor.getSession(), 0, 0);
-    var token = iterator.getCurrentToken();
-    while (token){
-        console.log(token.type);
-        console.log(token.value);
-        if (token.type == 'keyword'){
-            var xpto = 1;
-            token.balloon({
-                  position: 'right',
-                  contents: '<img src="../media/loading.gif" alt="loading..." width="25" height="25" />',
-                  url: baseurl+'/adaptiveartifacts/artifact?action=new&format=dialog',
-                  ajaxComplete: function(res, sts, xhr) { alert(sts); }
-                });
-        }
-        token = iterator.stepForward();
-    }
-    */
-
-
     var balloon;
     editor.on('mousemove', function(e) {
             var position = e.getDocumentPosition();
@@ -196,87 +175,4 @@ $(document).ready(function(){
                 e.stop();
             }
         });
-
-/*
-
-      */
-
-    /*
-    editor.getSession().on('change', function(){
-        $('.ace_keyword').mouseup(function(){
-            alert("Bam!");
-        });
-    });
-    */
-
-                 /*
-        var kws = $(".buuu");
-        var cenas = {
-                    position: 'right',
-                    contents: '<img src="../media/loading.gif" alt="loading..." width="25" height="25" />',
-                    url: baseurl+'/adaptiveartifacts/artifact?action=new&format=dialog',
-                    ajaxComplete: function(res, sts, xhr) { alert(sts); }
-                  };
-        kws.balloon(cenas);
-        */
-
-    /*
-        //$(".buuu").click(function(e){
-    console.log("aaa");
-    var bl = $(".buuu").showBalloon(
-                {
-                    position: "left",
-                    offsetX: 50,
-                    offsetY: 50,
-                    tipSize: 20,
-                    css: {
-                        maxWidth: "17em",
-                        border: "solid 5px #463974",
-                        color: "#463974",
-                        fontWeight: "bold",
-                        fontSize: "130%",
-                        backgroundColor: "#efefef"
-                    },
-                    contents: "cenas"
-                }
-            );
-    bl.toggle(
-        function(){ $(this).hideBalloon(); },
-        function(){ $(this).showBalloon(); }
-      );
-
-        //});
-*/
-
-/*
-    var net = require("ace/lib/net");
-    var Range = require("ace/range").Range;
-    var util = require("ace/demo/kitchen-sink/util");
-    var layout = require("ace/demo/kitchen-sink/layout");
-    var modelist = require("ace/demo/kitchen-sink/modelist");
-    var doclist = require("ace/demo/kitchen-sink/doclist");
-    var TokenTooltip = require("ace/demo/kitchen-sink/token_tooltip").TokenTooltip;
-    */
-
-    //var ttt = new TokenTooltip(editor);
-
-    /*
-    var states = editor.session.bgTokenizer.states;
-    var lines = editor.session.bgTokenizer.lines;
-    for (var i = states.length; i--;){
-        if (!lines[i])
-            continue;
-        lines[i].forEach(function(t){
-            console.log(t.type);
-            console.log(t.value);
-        })
-    }
-    */
-
-    /*$('.ace_keyword').balloon({
-      position: 'right',
-      contents: '<img src="../media/loading.gif" alt="loading..." width="25" height="25" />',
-      url: baseurl+'/adaptiveartifacts/artifact?action=new&format=dialog',
-      ajaxComplete: function(res, sts, xhr) { alert(sts); }
-    });*/
 });
