@@ -60,7 +60,10 @@ class Core(Component):
         add_stylesheet(req, 'adaptiveartifacts/css/asa.css', media='screen')
 
         res = Core._get_resource(request.obj) if not request.obj in (Entity, Instance, None) and not type(request.obj)==unicode else None
-        return request.view(request, dbp, request.obj, res)
+        result = request.view(request, dbp, request.obj, res)
+        if not result:
+            raise Exception("No data returned from view '%s'." % request.view.__name__)
+        return result
 
 
     @staticmethod
