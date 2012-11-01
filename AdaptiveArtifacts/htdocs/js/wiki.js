@@ -1,12 +1,10 @@
-$(document).ready(function(){
-
+var setupEditor = function() {
     // Hide trac's textarea and show a contenteditable div in its place
     var textarea = $('#text');
     textarea.hide().before('<div id="editor"/>');
 
     var editor = ace.edit("editor");
     editor.setTheme("ace/theme/trac_wiki");
-    //editor.getSession().setMode("ace/mode/javascript");
     editor.getSession().setUseWrapMode(true);
     editor.setHighlightActiveLine(false);
     editor.setShowPrintMargin(false);
@@ -17,49 +15,82 @@ $(document).ready(function(){
       textarea.val(editor.getSession().getValue());
     });
 
+    // Initially a copy of trac/htdocs/js/resizer.js
+    // Allow resizing <textarea> elements through a drag bar
+    var setupEditorResizing = function(editor, editordiv) {
+        var offset = null;
 
-    function changeTagOnSelectedString(prefix, sufix){
-        //var selrange = editor.getSelectionRange();
+        function beginDrag(e) {
+          offset = editordiv.height() - e.pageY;
+          editordiv.blur();
+          $(document).mousemove(dragging).mouseup(endDrag);
+          return false;
+        }
+
+        function dragging(e) {
+          editordiv.height(Math.max(32, offset + e.pageY) + 'px');
+            editor.resize();
+          return false;
+        }
+
+        function endDrag(e) {
+          editordiv.focus();
+          $(document).unbind('mousemove', dragging).unbind('mouseup', endDrag);
+        }
+
+        var grip = $('.trac-grip').mousedown(beginDrag)[0];
+        editordiv.wrap('<div class="trac-resizable"><div></div></div>')
+                .parent().append(grip);
+        grip.style.marginLeft = (this.offsetLeft - grip.offsetLeft) + 'px';
+        grip.style.marginRight = (grip.offsetWidth - this.offsetWidth) +'px';
+    };
+    setupEditorResizing(editor, $('#editor'));
+
+    return editor;
+};
+
+var setupToolbar = function(editor){
+    var wrapSelection = function(prefix, sufix){
         var value = editor.getCopyText();
         editor.insert(prefix + value + sufix);
         editor.focus();
-    }
+    };
 
-  // Rewire the event handlers of the toolbat buttons to work with the div instead of the textarea
+    // Rewire the event handlers of the toolbat buttons to work with the div instead of the textarea
     $("#strong").click(function() {
-        changeTagOnSelectedString("'''", "'''");
+        wrapSelection("'''", "'''");
     });
 
     $("#heading").click(function() {
-        changeTagOnSelectedString("\n== ", " ==\n");
+        wrapSelection("\n== ", " ==\n");
     });
 
     $("#em").click(function() {
-        changeTagOnSelectedString("''", "''");
+        wrapSelection("''", "''");
     });
 
     $("#link").click(function() {
-        changeTagOnSelectedString("[", "]");
+        wrapSelection("[", "]");
     });
 
     $("#code").click(function() {
-        changeTagOnSelectedString("\n{{{\n", "\n}}}\n");
+        wrapSelection("\n{{{\n", "\n}}}\n");
     });
 
     $("#hr").click(function() {
-        changeTagOnSelectedString("\n----\n", "");
+        wrapSelection("\n----\n", "");
     });
 
     $("#np").click(function() {
-        changeTagOnSelectedString("\n\n", "");
+        wrapSelection("\n\n", "");
     });
 
     $("#br").click(function() {
-        changeTagOnSelectedString("[[BR]]\n", "");
+        wrapSelection("[[BR]]\n", "");
     });
 
     $("#img").click(function() {
-        changeTagOnSelectedString("[[Image(", ")]]");
+        wrapSelection("[[Image(", ")]]");
     });
 
     // Add custom buttons to the toolbar
@@ -89,10 +120,9 @@ $(document).ready(function(){
             ).dialog('open');
         }
     });
+};
 
-
-
-
+var setupTokenizer = function(editor){
     var Tokenizer = require("ace/tokenizer").Tokenizer;
      // words in database
     var goodWords = Object.create(null);
@@ -177,42 +207,9 @@ $(document).ready(function(){
 
     /// use this instead of setMode
     attachToSession(editor.session);
+};
 
-
-
-    // Initially a copy of trac/htdocs/js/resizer.js
-    // Allow resizing <textarea> elements through a drag bar
-    setupEditorResizing = function(editor, editordiv) {
-        var offset = null;
-
-        function beginDrag(e) {
-          offset = editordiv.height() - e.pageY;
-          editordiv.blur();
-          $(document).mousemove(dragging).mouseup(endDrag);
-          return false;
-        }
-
-        function dragging(e) {
-          editordiv.height(Math.max(32, offset + e.pageY) + 'px');
-            editor.resize();
-          return false;
-        }
-
-        function endDrag(e) {
-          editordiv.focus();
-          $(document).unbind('mousemove', dragging).unbind('mouseup', endDrag);
-        }
-
-        var grip = $('.trac-grip').mousedown(beginDrag)[0];
-        editordiv.wrap('<div class="trac-resizable"><div></div></div>')
-                .parent().append(grip);
-        grip.style.marginLeft = (this.offsetLeft - grip.offsetLeft) + 'px';
-        grip.style.marginRight = (grip.offsetWidth - this.offsetWidth) +'px';
-      }
-      setupEditorResizing(editor, $('#editor'));
-
-
-
+var setupBalloons = function(editor){
     var balloon;
     editor.on('mousemove', function(e) {
             var position = e.getDocumentPosition();
@@ -250,5 +247,12 @@ $(document).ready(function(){
                 }
                 e.stop();
             }
-        });
+    });
+};
+
+$(document).ready(function(){
+    var editor = setupEditor();
+    setupToolbar(editor);
+    setupTokenizer(editor);
+    setupBalloons(editor);
 });
