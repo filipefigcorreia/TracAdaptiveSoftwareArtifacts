@@ -61,9 +61,12 @@ class Core(Component):
 
         res = Core._get_resource(request.obj) if not request.obj in (Entity, Instance, None) and not type(request.obj)==unicode else None
         result = request.view(request, dbp, request.obj, res)
-        if not result:
-            raise Exception("No data returned from view '%s'." % request.view.__name__)
-        return result
+        if not request.req.get_header('Content-Length') is None: # we've written directly to the request object
+            pass
+        else:
+            if not result:
+                raise Exception("No data returned by view '%s'" % request.view.__name__)
+            return result
 
 
     @staticmethod
