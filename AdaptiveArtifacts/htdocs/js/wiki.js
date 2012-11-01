@@ -21,16 +21,16 @@ var setupEditor = function() {
         var offset = null;
 
         function beginDrag(e) {
-          offset = editordiv.height() - e.pageY;
-          editordiv.blur();
-          $(document).mousemove(dragging).mouseup(endDrag);
-          return false;
+            offset = editordiv.height() - e.pageY;
+            editordiv.blur();
+            $(document).mousemove(dragging).mouseup(endDrag);
+            return false;
         }
 
         function dragging(e) {
-          editordiv.height(Math.max(32, offset + e.pageY) + 'px');
+            editordiv.height(Math.max(32, offset + e.pageY) + 'px');
             editor.resize();
-          return false;
+            return false;
         }
 
         function endDrag(e) {
@@ -130,26 +130,26 @@ var setupTokenizer = function(editor){
     var words = Object.create(null);
 
     // cache for words pending resolution
-    var pending = []
+    var pending = [];
 
     var tokenizer = new Tokenizer({
         "start": [
             {token : function(val){
                 if (goodWords[val])
-                    return "keyword"
+                    return "keyword";
                 if (words[val])
-                    return "just-a-word"
+                    return "just-a-word";
                 if (pending.indexOf(val) == -1)
-                    pending.push(val)
-                return "unknown"
+                    pending.push(val);
+                return "unknown";
             }, regex : "\\w+"},
             {token : "text", regex : "[^\\w]+"}
         ]
     });
 
-    var queryTimeout = null
-    dirtySessions = []
-    attachToSession = function(session) {
+    var queryTimeout = null;
+    var dirtySessions = [];
+    var attachToSession = function(session) {
         var self = session.bgTokenizer;
         self.rehighlight = function() {
             var states = this.states;
@@ -163,43 +163,44 @@ var setupTokenizer = function(editor){
                         t.type = "keyword";
                     else if (words[t.value])
                         t.type = "just-a-word";
-                })
+                });
             }
             // this can be smarter and update only changed lines
-            this.fireUpdateEvent(0, states.length)
-        }
+            this.fireUpdateEvent(0, states.length);
+        };
         self.$tokenizeRow = function(row) {
             // tokenize
             var line = this.doc.getLine(row);
             var data = this.tokenizer.getLineTokens(line, "start").tokens;
             // if we found new words schedule server query
             if (pending.length && !queryTimeout)
-                queryTimeout = setTimeout(queryServer, 700)
+                queryTimeout = setTimeout(queryServer, 700);
             if (dirtySessions.indexOf(this) == -1)
-                dirtySessions.push(this)
+                dirtySessions.push(this);
             // set state to null to indicate that it needs updating
-            this.states[row] = null
+            this.states[row] = null;
 
             return this.lines[row] = data;
-        }
-        self.setTokenizer(tokenizer)
-    }
-    queryServer = function() {
+        };
+        self.setTokenizer(tokenizer);
+    };
+
+    var queryServer = function() {
         fetchData(pending, function(serverWords){
             // update goodWords and words based on serverWords
             goodWords = serverWords
             words = []
             // then
             dirtySessions.forEach(function(x){
-                x.rehighlight()
-            })
-            dirtySessions = []
+                x.rehighlight();
+            });
+            dirtySessions = [];
             // some code to reset queryTimeout
             // shedule again if there are more words in pending
             // etc...
-            pending = []
+            pending = [];
         })
-    }
+    };
 
     fetchData = function(needles, f) {
         f({'trac':true, 'simply':true});
