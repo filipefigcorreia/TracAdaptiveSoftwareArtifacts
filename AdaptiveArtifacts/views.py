@@ -109,7 +109,7 @@ def get_new_spec(request, dbp, obj, resource):
     if obj is Entity: # instantiating Entity (i.e., creating a spec)
         pass
     elif obj is Instance or isinstance(obj, Entity): # instantiating an existing spec
-        return get_new_artifact(request.req, dbp, obj, resource)
+        return get_new_artifact(request, dbp, obj, resource)
     else:
         raise Exception("Trying to instantiate something that can't be instantiated '%s'" % (obj,))
 
