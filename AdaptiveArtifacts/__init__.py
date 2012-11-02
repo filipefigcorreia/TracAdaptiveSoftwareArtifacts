@@ -135,6 +135,7 @@ class Core(Component):
         #add_javascript(req, 'adaptiveartifacts/js/lib/ace/demo/kitchen-sink/doclist.js')
         #add_javascript(req, 'adaptiveartifacts/js/lib/ace/demo/kitchen-sink/token_tooltip.js')
 
+        add_javascript(req, "adaptiveartifacts/js/requests.js")
         add_javascript(req, "adaptiveartifacts/js/wiki.js")
         add_javascript(req, "adaptiveartifacts/js/dialogs.js")
         add_javascript(req, 'adaptiveartifacts/js/util.js')
@@ -142,6 +143,7 @@ class Core(Component):
         add_javascript(req, 'adaptiveartifacts/js/forms.js')
 
         add_script_data(req, {'baseurl': req.href.adaptiveartifacts()})
+        add_script_data(req, {'form_token': req.form_token})
         add_stylesheet(req, 'adaptiveartifacts/css/asa.css', media='screen')
         add_stylesheet(req, 'adaptiveartifacts/css/wiki.css')
 

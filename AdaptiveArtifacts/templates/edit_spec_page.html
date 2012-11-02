@@ -46,7 +46,7 @@
   <body>
       <div id="content" class="asa">
       <h1>Artifact Specification</h1>
-      <form method="post" action="${href(url_path)}">
+      <form method="post" action="${url_path}">
           <label>Name:</label>
           <py:if test="spec"><input type="text" name="name" value="${spec.get_name()}" /></py:if>
           <py:if test="not spec"><input type="text" name="name" value="" /></py:if>

@@ -1,5 +1,13 @@
 $(document).ready(function(){
     attachFormEventHandlers($("body"));
+
+    $("input#spec").autocomplete(
+        {source: function(request, callback){
+            Requests.searchSpecNames([request.term], function(data){
+                callback(data);
+            });
+        }}
+    );
 });
 
 function attachFormEventHandlers(context){

@@ -190,7 +190,7 @@ var setupTokenizer = function(editor){
 
     var queryServer = function() {
         queryTimeout = null;
-        fetchData(pending, function(serverWords){
+        Requests.searchArtifacts(pending, function(serverWords){
             // update goodWords and words based on serverWords
             goodWords = Object.create(null);
             for(var i=0;i<serverWords.length; i++){
@@ -208,21 +208,6 @@ var setupTokenizer = function(editor){
             // etc...
             pending = [];
         })
-    };
-
-    var fetchData = function(needles, callback) {
-        $.ajax({
-            url: baseurl+'/search/artifact',
-            type: 'post',
-            dataType: 'json',
-            traditional: true,
-            success: function (data) {
-                console.log(data);
-                callback(data);
-            },
-            data: {'__FORM_TOKEN':form_token, 'q':needles}
-        });
-        //callback({'trac':true, 'simply':true});
     };
 
     /// use this instead of setMode
@@ -254,13 +239,13 @@ var setupBalloons = function(editor){
                             showAnimation: function(d) { this.fadeIn(d); },
                             contents: token.value
                         }
-                    ).mouseenter(function(e) {
-                            editordiv.showBalloon();
-                        }).data("balloon");
+                    ).data("balloon");
                     if(balloon) {
                         balloon.mouseleave(function(e) {
                             editordiv.hideBalloon();
-                        }).mouseenter(function(e) { editordiv.showBalloon(); });
+                        }).mouseenter(function(e) {
+                                editordiv.showBalloon();
+                            });
                     }
                 }else{
                     balloon && editordiv.hideBalloon();

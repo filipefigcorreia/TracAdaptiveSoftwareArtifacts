@@ -5,7 +5,7 @@
 
 import uuid
 from trac.mimeview.api import Context
-from trac.web.chrome import add_notice
+from trac.web.chrome import add_notice, add_warning
 from trac.util import get_reporter_id
 from AdaptiveArtifacts.model.core import Entity, Instance, Attribute
 
@@ -69,17 +69,31 @@ def get_list_search_no_spec(request, dbp, obj, resource):
 
 def post_list_search_artifact_json(request, dbp, obj, resource):
     from AdaptiveArtifacts.persistence.search import Searcher
-    import json
     from trac.resource import get_resource_url
     from trac.resource import Resource
 
     terms = request.req.args.get('q', '')
 
     data = []
+    if type(terms)!=list:
+        terms = [terms]
     for and_terms in terms:
         search_results = Searcher.search_artifacts(dbp, and_terms)
         data.extend([dict({'term' : term, 'id': artifact.get_id(), 'title': str(artifact), 'url':get_resource_url(dbp.env, Resource('asa', artifact.get_id(), artifact.version), request.req.href)}) for artifact, term in search_results])
 
+    _return_as_json(request, data)
+    return
+
+def post_list_search_spec_json(request, dbp, obj, resource):
+    from AdaptiveArtifacts.persistence.search import Searcher
+
+    term = request.req.args.get('q', '')
+    data = Searcher.search_spec_names(dbp, term)
+    _return_as_json(request, data)
+    return
+
+def _return_as_json(request, data):
+    import json
     try:
         msg = json.dumps(data)
         request.req.send_response(200)
@@ -92,7 +106,6 @@ def post_list_search_artifact_json(request, dbp, obj, resource):
     request.req.send_header('Content-Length', len(msg))
     request.req.end_headers()
     request.req.write(msg)
-    return
 
 def get_list_search(request, dbp, obj, resource):
     if obj == 'no_spec':
@@ -100,8 +113,9 @@ def get_list_search(request, dbp, obj, resource):
 
 def post_list_search(request, dbp, obj, resource):
     if obj == 'artifact':
-        a = post_list_search_artifact_json(request, dbp, obj, resource)
-        return a
+        return post_list_search_artifact_json(request, dbp, obj, resource)
+    elif obj == 'spec':
+        return post_list_search_spec_json(request, dbp, obj, resource)
 
 def get_new_spec(request, dbp, obj, resource):
     from model import Entity
@@ -109,7 +123,7 @@ def get_new_spec(request, dbp, obj, resource):
     if obj is Entity: # instantiating Entity (i.e., creating a spec)
         pass
     elif obj is Instance or isinstance(obj, Entity): # instantiating an existing spec
-        return get_new_artifact(request.req, dbp, obj, resource)
+        return get_new_artifact(request, dbp, obj, resource)
     else:
         raise Exception("Trying to instantiate something that can't be instantiated '%s'" % (obj,))
 
@@ -117,7 +131,7 @@ def get_new_spec(request, dbp, obj, resource):
         'context': Context.from_request(request.req, resource),
         'types' : ['text', 'number', 'artifact'],
         'multiplicities' : ['1', '0..*', '1..*'],
-        'url_path': request.req.path_info,
+        'url_path': request.req.href.adaptiveartifacts('spec', obj.get_name()),
     }
     return 'edit_spec_page.html', data, None
 
@@ -144,7 +158,7 @@ def post_new_spec(request, dbp, obj, resource):
     dbp.pool.add(brand_new_inst)
     dbp.save('author', 'comment', 'address')
     add_notice(request.req, 'Your changes have been saved.')
-    url = request.req.href.adaptiveartifacts('spec/%s' % (brand_new_inst.get_name(),), action='view')
+    url = request.req.href.adaptiveartifacts('spec', brand_new_inst.get_name(), action='view')
     request.req.redirect(url)
 
 def get_edit_spec(request, dbp, obj, resource):
@@ -160,7 +174,8 @@ def get_edit_spec(request, dbp, obj, resource):
                         attr.get_multiplicity_readable()) for attr in obj.get_attributes()],
         'types' : ['text', 'number', 'artifact'],
         'multiplicities' : ['1', '0..*', '1..*'],
-        'url_path': request.req.path_info,
+        'url_path': request.req.href.adaptiveartifacts('spec', obj.get_name()),
+
     }
     return 'edit_spec_page.html', data, None
 
@@ -182,7 +197,7 @@ def post_edit_spec(request, dbp, obj, resource):
 
     dbp.save('author', 'comment', 'address')
     add_notice(request.req, 'Your changes have been saved.')
-    url = request.req.href.adaptiveartifacts('spec/%s' % (obj.get_name(),), action='view')
+    url = request.req.href.adaptiveartifacts('spec', obj.get_name(), action='view')
     request.req.redirect(url)
 
 def get_new_artifact(request, dbp, obj, resource):
@@ -191,15 +206,26 @@ def get_new_artifact(request, dbp, obj, resource):
     data = {
         'context': Context.from_request(request.req, resource),
         'spec': obj,
-        'url_path': request.req.path_info,
+        'url_path': request.req.href.adaptiveartifacts('artifact'),
     }
     return 'edit_artifact_%s.html' % (request.get_format(),), data, None
 
 def post_new_artifact(request, dbp, obj, resource):
-    assert(obj is Instance or isinstance(obj, Entity)) # otherwise, we're trying to instantiate something that is not an atifact
+    assert(obj is Instance or isinstance(obj, Entity)) # otherwise, we're trying to instantiate something that is not an artifact
+
+    spec_name = request.req.args['spec']
+    if spec_name:
+        try:
+            dbp.load_spec(spec_name)
+            spec = dbp.pool.get_item(spec_name)
+        except ValueError:
+            add_warning(request.req, "Spec '%s' not found, assumed an empty spec instead." % spec_name)
+            spec = Instance
+    else:
+        spec = Instance
 
     values, str_attr = _group_artifact_values(request.req)
-    brand_new_inst = obj(str_attr=str_attr, values=values)
+    brand_new_inst = spec(str_attr=str_attr, values=values)
 
     dbp.pool.add(brand_new_inst)
     dbp.save(get_reporter_id(request.req), 'comment', request.req.remote_addr)
@@ -227,7 +253,7 @@ def get_edit_artifact(request, dbp, obj, resource):
         'artifact': obj,
         'values': [(attr,val) for attr,val in obj.get_values()],
         'default': obj.str_attr,
-        'url_path': request.req.path_info,
+        'url_path': request.req.href.adaptiveartifacts('artifact', obj.get_id()),
     }
     return 'edit_artifact_page.html', data, None
 

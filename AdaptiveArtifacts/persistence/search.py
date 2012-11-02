@@ -33,3 +33,17 @@ class Searcher(object):
                 results.append((dbp.pool.get_item(id), term))
 
         return results
+
+    @classmethod
+    def search_spec_names(cls, dbp, term):
+        with dbp.env.db_query as db:
+
+            results = []
+            for name, vid in db("""
+                  SELECT s.name, max(v.id)
+                  FROM asa_spec s
+                      INNER JOIN asa_version v ON v.id=s.version_id
+                  WHERE s.name """ + db.like() +
+                  """ GROUP BY v.id""", ("%" + db.like_escape(term) + "%",)):
+              results.append(name)
+        return results
