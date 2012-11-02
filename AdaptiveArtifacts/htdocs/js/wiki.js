@@ -95,11 +95,14 @@ var setupToolbar = function(editor){
 
     // Add custom buttons to the toolbar
     var toolbar = $('.wikitoolbar');
-    toolbar[0].setAttribute('style', 'width:260px');
-    toolbar.append('<a href="#" id="asaselect" title="Create artifact through selection" tabindex="400"></a>');
+
+    toolbar.after('<div class="wikitoolbar" id="asa_toolbar"></div>');
+    var asa_toolbar = $('#asa_toolbar');
+    asa_toolbar.append('<a href="#" id="asa_create_button" title="Create artifact through selection" tabindex="400"></a>');
+    asa_toolbar.append('<a href="#" id="asa_link_button" title="Link to existing artifact" tabindex="400"></a>');
 
     // Events for the custom toolbar buttons
-    $("#asaselect").click(function() {
+    $("#asa_create_button").click(function() {
         editor.focus();
         if(!editor.getSelection().isEmpty()){
             createASAFormDialogFromUrl('Artifact',  baseurl+"/artifact?action=new",

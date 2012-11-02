@@ -9,7 +9,9 @@ from trac.resource import IResourceManager, Resource
 from trac.web.chrome import Chrome, INavigationContributor, ITemplateProvider, add_javascript, add_stylesheet, add_script_data
 from trac.web.main import IRequestHandler
 from trac.web.api import IRequestFilter
+from trac.wiki import IWikiSyntaxProvider
 from trac.util import Markup
+from genshi.builder import tag
 from AdaptiveArtifacts.persistence.data import DBPool
 from AdaptiveArtifacts.persistence.search import Searcher
 from AdaptiveArtifacts.model.pool import InstancePool
@@ -19,7 +21,7 @@ from AdaptiveArtifacts.requests.request import Request
 
 class Core(Component):
     """Core module of the plugin. Provides the Adaptive-Artifacts themselves."""
-    implements(INavigationContributor, IRequestHandler, ITemplateProvider, IResourceManager, IRequestFilter)
+    implements(INavigationContributor, IRequestHandler, ITemplateProvider, IResourceManager, IRequestFilter, IWikiSyntaxProvider)
 
     def __init__(self):
         self.base_url = 'adaptiveartifacts'
@@ -141,9 +143,24 @@ class Core(Component):
 
         add_script_data(req, {'baseurl': req.href.adaptiveartifacts()})
         add_stylesheet(req, 'adaptiveartifacts/css/asa.css', media='screen')
-        #add_stylesheet(req, 'adaptiveartifacts/css/wiki.css')
+        add_stylesheet(req, 'adaptiveartifacts/css/wiki.css')
 
         return (template, data, content_type)
+
+    # IWikiSyntaxProvider methods
+    def get_link_resolvers(self):
+        return [ ("asa", self._format_asa_link) ]
+
+    def get_wiki_syntax(self):
+        # Note that group numbers don't work as the following is only a regexp
+        # fragment which will be part of a larger regexp, therefore one must
+        # use group names, with reasonably unique names
+        yield (r'\?(?P<domain>[asa])_(?P<word>.+?)\?', self._format_asa_link)
+
+
+    def _format_asa_link(self, formatter, ns, target, label):
+        return tag.a(label, href=formatter.href.adaptiveartifacts('artifact', target))
+
 
 from trac.search import ISearchSource, search_to_sql
 from trac.resource import get_resource_url

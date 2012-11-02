@@ -1,0 +1,7 @@
+.wikitoolbar#asa_toolbar{
+    width:52px;
+    margin-left:50px;
+}
+
+#asa_toolbar a#asa_create_button { background: transparent url(../media/link.png) no-repeat }
+#asa_toolbar a#asa_link_button { background: transparent url(../media/link.png) no-repeat }
