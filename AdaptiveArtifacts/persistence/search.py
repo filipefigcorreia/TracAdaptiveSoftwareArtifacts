@@ -28,7 +28,8 @@ class Searcher(object):
                         INNER JOIN asa_artifact a ON a.id=val.artifact_id
                     WHERE """ + sql_query +
                     """ GROUP BY a.id""", args):
-                dbp.load_artifact(id, db)
+                if dbp.pool.get_item(id) is None:
+                    dbp.load_artifact(id, db)
                 results.append((dbp.pool.get_item(id), term))
 
         return results
