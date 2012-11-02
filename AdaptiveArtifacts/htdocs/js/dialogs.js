@@ -74,10 +74,11 @@ function createDialogFromUrl(url, options, dialogdivclass){
     error: options.error,
     complete: options.complete,
     success: function(data, textStatus, jqXHR) {
+      var opts = {modal: options.modal, width: 500, buttons: options.buttons};
       if(typeof data == "object" && data.html) { //response is assumed to be JSON
-        dialogdiv.html(data.html).dialog({modal: options.modal, title: data.title, buttons: options.buttons});
+        dialogdiv.html(data.html).dialog($.extend(opts, {title: data.title}));
       } else { //response is assumed to be HTML
-        dialogdiv.html(data).dialog({modal: options.modal, title: options.title, buttons: options.buttons});
+        dialogdiv.html(data).dialog($.extend(opts, {title: options.title}));
       }
       $.isFunction(options.success) && (options.success).call(dialogdiv, data, textStatus, jqXHR);
     }

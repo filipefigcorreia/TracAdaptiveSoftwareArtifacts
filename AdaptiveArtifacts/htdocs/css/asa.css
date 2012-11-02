@@ -22,3 +22,7 @@
 }
 
 th {font-weight: bold;}
+
+table.attributes{
+    width: 100%;
+}
