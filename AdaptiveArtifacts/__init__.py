@@ -133,6 +133,7 @@ class Core(Component):
         #add_javascript(req, 'adaptiveartifacts/js/lib/ace/demo/kitchen-sink/doclist.js')
         #add_javascript(req, 'adaptiveartifacts/js/lib/ace/demo/kitchen-sink/token_tooltip.js')
 
+        add_javascript(req, "adaptiveartifacts/js/requests.js")
         add_javascript(req, "adaptiveartifacts/js/wiki.js")
         add_javascript(req, "adaptiveartifacts/js/dialogs.js")
         add_javascript(req, 'adaptiveartifacts/js/util.js')

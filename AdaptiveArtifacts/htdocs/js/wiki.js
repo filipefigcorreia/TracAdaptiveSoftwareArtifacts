@@ -187,7 +187,7 @@ var setupTokenizer = function(editor){
 
     var queryServer = function() {
         queryTimeout = null;
-        fetchData(pending, function(serverWords){
+        Requests.searchArtifacts(pending, function(serverWords){
             // update goodWords and words based on serverWords
             goodWords = Object.create(null);
             for(var i=0;i<serverWords.length; i++){
@@ -205,21 +205,6 @@ var setupTokenizer = function(editor){
             // etc...
             pending = [];
         })
-    };
-
-    var fetchData = function(needles, callback) {
-        $.ajax({
-            url: baseurl+'/search/artifact',
-            type: 'post',
-            dataType: 'json',
-            traditional: true,
-            success: function (data) {
-                console.log(data);
-                callback(data);
-            },
-            data: {'__FORM_TOKEN':form_token, 'q':needles}
-        });
-        //callback({'trac':true, 'simply':true});
     };
 
     /// use this instead of setMode
