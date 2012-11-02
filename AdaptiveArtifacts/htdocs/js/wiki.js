@@ -236,13 +236,13 @@ var setupBalloons = function(editor){
                             showAnimation: function(d) { this.fadeIn(d); },
                             contents: token.value
                         }
-                    ).mouseenter(function(e) {
-                            editordiv.showBalloon();
-                        }).data("balloon");
+                    ).data("balloon");
                     if(balloon) {
                         balloon.mouseleave(function(e) {
                             editordiv.hideBalloon();
-                        }).mouseenter(function(e) { editordiv.showBalloon(); });
+                        }).mouseenter(function(e) {
+                                editordiv.showBalloon();
+                            });
                     }
                 }else{
                     balloon && editordiv.hideBalloon();
