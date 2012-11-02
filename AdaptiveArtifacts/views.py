@@ -73,15 +73,12 @@ def post_list_search_artifact_json(request, dbp, obj, resource):
     from trac.resource import get_resource_url
     from trac.resource import Resource
 
-    json_terms = request.req.args.get('q', '')
-    try:
-        terms = json.loads(json_terms)
-    except ValueError as ex:
-        raise
+    terms = request.req.args.get('q', '')
 
     data = []
     for and_terms in terms:
-        data.extend([dict({'term' : term, 'id': artifact.get_id(), 'title': str(artifact), 'url':get_resource_url(dbp.env, Resource('asa', artifact.get_id(), artifact.version), request.req.href)}) for artifact, term in Searcher.search_artifacts(dbp, and_terms)])
+        search_results = Searcher.search_artifacts(dbp, and_terms)
+        data.extend([dict({'term' : term, 'id': artifact.get_id(), 'title': str(artifact), 'url':get_resource_url(dbp.env, Resource('asa', artifact.get_id(), artifact.version), request.req.href)}) for artifact, term in search_results])
 
     try:
         msg = json.dumps(data)
@@ -103,7 +100,8 @@ def get_list_search(request, dbp, obj, resource):
 
 def post_list_search(request, dbp, obj, resource):
     if obj == 'artifact':
-        return post_list_search_artifact_json(request, dbp, obj, resource)
+        a = post_list_search_artifact_json(request, dbp, obj, resource)
+        return a
 
 def get_new_spec(request, dbp, obj, resource):
     from model import Entity

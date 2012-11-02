@@ -186,10 +186,15 @@ var setupTokenizer = function(editor){
     };
 
     var queryServer = function() {
+        queryTimeout = null;
         fetchData(pending, function(serverWords){
             // update goodWords and words based on serverWords
-            goodWords = serverWords
-            words = []
+            goodWords = Object.create(null);
+            for(var i=0;i<serverWords.length; i++){
+                goodWords[serverWords[i].term] = true;
+            }
+            //goodWords = serverWords;
+            words = Object.create(null);
             // then
             dirtySessions.forEach(function(x){
                 x.rehighlight();
@@ -202,9 +207,20 @@ var setupTokenizer = function(editor){
         })
     };
 
-    fetchData = function(needles, f) {
-        f({'trac':true, 'simply':true});
-    }
+    var fetchData = function(needles, callback) {
+        $.ajax({
+            url: baseurl+'/search/artifact',
+            type: 'post',
+            dataType: 'json',
+            traditional: true,
+            success: function (data) {
+                console.log(data);
+                callback(data);
+            },
+            data: {'__FORM_TOKEN':form_token, 'q':needles}
+        });
+        //callback({'trac':true, 'simply':true});
+    };
 
     /// use this instead of setMode
     attachToSession(editor.session);
