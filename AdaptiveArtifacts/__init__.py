@@ -140,6 +140,7 @@ class Core(Component):
         add_javascript(req, 'adaptiveartifacts/js/forms.js')
 
         add_script_data(req, {'baseurl': req.href.adaptiveartifacts()})
+        add_script_data(req, {'form_token': req.form_token})
         add_stylesheet(req, 'adaptiveartifacts/css/asa.css', media='screen')
         #add_stylesheet(req, 'adaptiveartifacts/css/wiki.css')
 

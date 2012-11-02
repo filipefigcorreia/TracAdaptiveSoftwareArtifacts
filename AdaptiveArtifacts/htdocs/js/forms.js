@@ -1,5 +1,28 @@
 $(document).ready(function(){
     attachFormEventHandlers($("body"));
+
+    var fetchData = function(needles, callback) {
+        $.ajax({
+            url: baseurl+'/search/spec',
+            type: 'post',
+            dataType: 'json',
+            traditional: true,
+            success: function (data) {
+                console.log("Searched for " + needles + ". Got " + data.length + " results.");
+                callback(data);
+            },
+            data: {'__FORM_TOKEN':form_token, 'q':needles}
+        });
+    };
+
+    $("input#spec").autocomplete(
+        {source: function(request, callback){
+            fetchData([request.term], function(data){
+                callback(data);
+            });
+
+        }}
+    );
 });
 
 function attachFormEventHandlers(context){

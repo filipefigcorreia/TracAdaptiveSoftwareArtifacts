@@ -69,17 +69,31 @@ def get_list_search_no_spec(request, dbp, obj, resource):
 
 def post_list_search_artifact_json(request, dbp, obj, resource):
     from AdaptiveArtifacts.persistence.search import Searcher
-    import json
     from trac.resource import get_resource_url
     from trac.resource import Resource
 
     terms = request.req.args.get('q', '')
 
     data = []
+    if type(terms)!=list:
+        terms = [terms]
     for and_terms in terms:
         search_results = Searcher.search_artifacts(dbp, and_terms)
         data.extend([dict({'term' : term, 'id': artifact.get_id(), 'title': str(artifact), 'url':get_resource_url(dbp.env, Resource('asa', artifact.get_id(), artifact.version), request.req.href)}) for artifact, term in search_results])
 
+    _return_as_json(request, data)
+    return
+
+def post_list_search_spec_json(request, dbp, obj, resource):
+    from AdaptiveArtifacts.persistence.search import Searcher
+
+    term = request.req.args.get('q', '')
+    data = Searcher.search_spec_names(dbp, term)
+    _return_as_json(request, data)
+    return
+
+def _return_as_json(request, data):
+    import json
     try:
         msg = json.dumps(data)
         request.req.send_response(200)
@@ -92,7 +106,6 @@ def post_list_search_artifact_json(request, dbp, obj, resource):
     request.req.send_header('Content-Length', len(msg))
     request.req.end_headers()
     request.req.write(msg)
-    return
 
 def get_list_search(request, dbp, obj, resource):
     if obj == 'no_spec':
@@ -100,8 +113,9 @@ def get_list_search(request, dbp, obj, resource):
 
 def post_list_search(request, dbp, obj, resource):
     if obj == 'artifact':
-        a = post_list_search_artifact_json(request, dbp, obj, resource)
-        return a
+        return post_list_search_artifact_json(request, dbp, obj, resource)
+    elif obj == 'spec':
+        return post_list_search_spec_json(request, dbp, obj, resource)
 
 def get_new_spec(request, dbp, obj, resource):
     from model import Entity
