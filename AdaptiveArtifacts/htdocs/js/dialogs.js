@@ -5,6 +5,12 @@ $(document).ready(function(){
                                   ).dialog('open');
         return false;
     });
+    $('.opendialog.viewartifact').click( function() {
+        createASAFormDialogFromUrl('Artifact', this.href,
+                                    { "Close": function() { $(this).dialog("close"); } }
+                                  ).dialog('open');
+        return false;
+    });
 });
 
 

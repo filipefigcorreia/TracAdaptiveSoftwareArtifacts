@@ -37,6 +37,7 @@ def get_view_spec(request, dbp, obj, resource):
 def get_view_artifact(request, dbp, obj, resource):
     data = {
         'context': Context.from_request(request.req, resource),
+        'spec': obj.__class__,
         'artifact': obj,
     }
     return 'view_artifact_%s.html' % (request.get_format(),), data, None
