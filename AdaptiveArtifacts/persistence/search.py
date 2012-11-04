@@ -10,12 +10,20 @@ class Searcher(object):
     stopwords_pt = set([u"a", u"à", u"ao", u"aos", u"aquela", u"aquelas", u"aquele", u"aqueles", u"aquilo", u"as", u"às", u"até", u"com", u"como", u"da", u"das", u"de", u"dela", u"delas", u"dele", u"deles", u"depois", u"do", u"dos", u"e", u"ela", u"elas", u"ele", u"eles", u"em", u"entre", u"era", u"eram", u"éramos", u"essa", u"essas", u"esse", u"esses", u"está", u"esta", u"estamos", u"estão", u"estas", u"estava", u"estavam", u"estávamos", u"este", u"esteja", u"estejam", u"estejamos", u"estes", u"esteve", u"estive", u"estivemos", u"estiver", u"estivera", u"estiveram", u"estivéramos", u"estiverem", u"estivermos", u"estivesse", u"estivessem", u"estivéssemos", u"estou", u"eu", u"foi", u"fomos", u"for", u"fora", u"foram", u"fôramos", u"forem", u"formos", u"fosse", u"fossem", u"fôssemos", u"fui", u"há", u"haja", u"hajam", u"hajamos", u"hão", u"havemos", u"hei", u"houve", u"houvemos", u"houver", u"houvera", u"houverá", u"houveram", u"houvéramos", u"houverão", u"houverei", u"houverem", u"houveremos", u"houveria", u"houveriam", u"houveríamos", u"houvermos", u"houvesse", u"houvessem", u"houvéssemos", u"isso", u"isto", u"já", u"lhe", u"lhes", u"mais", u"mas", u"me", u"mesmo", u"meu", u"meus", u"minha", u"minhas", u"muito", u"na", u"não", u"nas", u"nem", u"no", u"nos", u"nós", u"nossa", u"nossas", u"nosso", u"nossos", u"num", u"numa", u"o", u"os", u"ou", u"para", u"pela", u"pelas", u"pelo", u"pelos", u"por", u"qual", u"quando", u"que", u"quem", u"são", u"se", u"seja", u"sejam", u"sejamos", u"sem", u"será", u"serão", u"serei", u"seremos", u"seria", u"seriam", u"seríamos", u"seu", u"seus", u"só", u"somos", u"sou", u"sua", u"suas", u"também", u"te", u"tem", u"tém", u"temos", u"tenha", u"tenham", u"tenhamos", u"tenho", u"terá", u"terão", u"terei", u"teremos", u"teria", u"teriam", u"teríamos", u"teu", u"teus", u"teve", u"tinha", u"tinham", u"tínhamos", u"tive", u"tivemos", u"tiver", u"tivera", u"tiveram", u"tivéramos", u"tiverem", u"tivermos", u"tivesse", u"tivessem", u"tivéssemos", u"tu", u"tua", u"tuas", u"um", u"uma", u"você", u"vocês", u"vos"])
 
     @classmethod
+    def _normalize_terms(cls, terms):
+        return list(cls._to_lowercase(cls._filter_stopwords(terms)))
+
+    @classmethod
     def _filter_stopwords(cls, terms):
-        return [t for t in terms if not t in cls.stopwords_en and not t in cls.stopwords_pt]
+        return (t for t in terms if not t in cls.stopwords_en and not t in cls.stopwords_pt)
+
+    @classmethod
+    def _to_lowercase(cls, terms):
+        return (t.lower() for t in terms)
 
     @classmethod
     def search(cls, env, terms):
-        terms = cls._filter_stopwords(terms)
+        terms = cls._normalize_terms(terms)
 
         with env.db_query as db:
             sql_query, args = search_to_sql(db, ['val.attr_value'], terms)
@@ -31,12 +39,12 @@ class Searcher(object):
 
     @classmethod
     def search_artifacts(cls, dbp, terms):
-        terms = cls._filter_stopwords([terms])
+        terms = cls._normalize_terms([terms])
         if not terms:
             return []
 
         with dbp.env.db_query as db:
-            sql_query, args = search_to_sql(db, ['val.attr_value'], terms)
+            sql_query, args = search_to_sql(db, ['LOWER(val.attr_value)'], terms)
 
             results = []
             for id, vid, term in db("""

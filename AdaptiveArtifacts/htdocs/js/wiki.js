@@ -138,6 +138,7 @@ var setupTokenizer = function(editor){
     var tokenizer = new Tokenizer({
         "start": [
             {token : function(val){
+                val = val.toLowerCase();
                 if (goodWords[val])
                     return "keyword";
                 if (words[val])
@@ -162,9 +163,10 @@ var setupTokenizer = function(editor){
                     continue;
                 states[i] = "start";
                 lines[i].forEach(function(t){
-                    if (goodWords[t.value])
+                    var term = t.value.toLowerCase();
+                    if (goodWords[term])
                         t.type = "keyword";
-                    else if (words[t.value])
+                    else if (words[term])
                         t.type = "just-a-word";
                 });
             }
@@ -194,7 +196,7 @@ var setupTokenizer = function(editor){
             // update goodWords and words based on serverWords
             goodWords = Object.create(null);
             for(var i=0;i<serverWords.length; i++){
-                goodWords[serverWords[i].term] = true;
+                goodWords[serverWords[i].term.toLowerCase()] = true;
             }
             //goodWords = serverWords;
             words = Object.create(null);
