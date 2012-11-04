@@ -63,6 +63,7 @@ function createASADialogFromUrl(title, url, buttons){
     return createDialogFromUrl(
                         url + "&format=dialog",
                         {
+                            modal: true,
                             title: title,
                             success: function(data, textStatus, jqXHR) { attachFormEventHandlers($(this)) },
                             buttons: buttons
