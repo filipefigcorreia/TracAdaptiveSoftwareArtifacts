@@ -233,7 +233,7 @@ var setupBalloons = function(editor){
                             position: "top left",
                             offsetX: e.clientX - canvasPos.left,
                             offsetY: canvasPos.top - e.clientY + 10,
-                            tipSize: 20,
+                            tipSize: 10,
                             delay: 500,
                             minLifetime: 500,
                             showDuration: 1000,
