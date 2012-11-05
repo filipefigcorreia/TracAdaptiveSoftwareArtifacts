@@ -111,11 +111,10 @@ var setupToolbar = function(editor){
                         $(this),
                         {
                             success: function(data){
-                                console.log("Sucesso!");
-                                //console.log(rangy.getSelection().getRangeAt(0));
+                                console.log("Success!");
                             },
                             error: function(data){
-                                    alert("Falhaaaaa!!");
+                                    alert("Failure!!");
                             }
                         }
                     )}
