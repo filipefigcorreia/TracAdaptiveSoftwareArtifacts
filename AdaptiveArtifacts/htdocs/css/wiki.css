@@ -3,5 +3,5 @@
     margin-left:50px;
 }
 
-#asa_toolbar a#asa_create_button { background: transparent url(../media/link.png) no-repeat }
-#asa_toolbar a#asa_link_button { background: transparent url(../media/link.png) no-repeat }
+#asa_toolbar a#asa_create_button { background: transparent url(../media/buttons/asa_add_16x24.png) no-repeat }
+#asa_toolbar a#asa_link_button { background: transparent url(../media/buttons/asa_link_16x24.png) no-repeat }
