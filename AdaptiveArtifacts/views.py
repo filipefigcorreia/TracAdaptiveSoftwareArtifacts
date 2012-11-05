@@ -238,7 +238,7 @@ def post_new_artifact(request, dbp, obj, resource):
     else:
         import json
         url = request.req.href.adaptiveartifacts('artifact/%d' % (brand_new_inst.get_id(),), action='view')
-        msg = json.dumps([{'result': 'success', 'resource': url}])
+        msg = json.dumps([{'result': 'success', 'resource_id': brand_new_inst.get_id(), 'resource_url': url}])
         request.req.send_response(200)
         request.req.send_header('Content-Type', 'application/json')
         request.req.send_header('Content-Length', len(msg))

@@ -110,11 +110,11 @@ var setupToolbar = function(editor){
                     submitASAFormDialog(
                         $(this),
                         {
-                            success: function(){
+                            success: function(data){
                                 console.log("Sucesso!");
                                 //console.log(rangy.getSelection().getRangeAt(0));
                             },
-                            error: function(){
+                            error: function(data){
                                     alert("Falhaaaaa!!");
                             }
                         }

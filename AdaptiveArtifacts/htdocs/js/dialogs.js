@@ -30,7 +30,7 @@ function submitASAFormDialog(dialogdiv, options) {
             $(this).dialog("close");
             $(this).dialog("destroy");
             $(this).remove();
-            options['success']();
+            options['success'](data);
         },
         error: function(data){
             $(this).html("An error occurred, sorry.");
@@ -41,7 +41,7 @@ function submitASAFormDialog(dialogdiv, options) {
                         $(this).dialog("close");
                         $(this).dialog("destroy");
                         $(this).remove();
-                        options['error']();
+                        options['error'](data);
                     }
                 }
             ] );
