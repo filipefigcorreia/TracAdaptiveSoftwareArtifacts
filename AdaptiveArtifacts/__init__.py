@@ -18,7 +18,6 @@ from AdaptiveArtifacts.model.pool import InstancePool
 from AdaptiveArtifacts.model.pool import Entity, Instance
 from AdaptiveArtifacts.requests.request import Request
 
-
 class Core(Component):
     """Core module of the plugin. Provides the Adaptive-Artifacts themselves."""
     implements(INavigationContributor, IRequestHandler, ITemplateProvider, IResourceManager, IRequestFilter, IWikiSyntaxProvider)
@@ -54,12 +53,9 @@ class Core(Component):
         dbp = DBPool(self.env, InstancePool())
         request = Request(dbp, req)
 
-        Chrome(self.env).add_jquery_ui(req)
-        add_javascript(req, 'adaptiveartifacts/js/util.js')
-        add_javascript(req, 'adaptiveartifacts/js/uuid.js')
-        add_javascript(req, 'adaptiveartifacts/js/forms.js')
-        add_javascript(req, 'adaptiveartifacts/js/dialogs.js')
-        add_stylesheet(req, 'adaptiveartifacts/css/asa.css', media='screen')
+        add_javascript(req, "adaptiveartifacts/js/lib/ace/ace.js")
+        add_javascript(req, "adaptiveartifacts/js/lib/ace/theme-trac_wiki.js")
+        add_javascript(req, 'adaptiveartifacts/js/lib/jquery.balloon.js')
 
         res = Core._get_resource(request.obj) if not request.obj in (Entity, Instance, None) and not type(request.obj)==unicode else None
         result = request.view(request, dbp, request.obj, res)
@@ -110,37 +106,13 @@ class Core(Component):
 
     def post_process_request(self, req, template, data, content_type):
         Chrome(self.env).add_jquery_ui(req)
-        #add_javascript(req, 'adaptiveartifacts/js/lib/jquery.cluetip.js')
-        #add_stylesheet(req, 'adaptiveartifacts/css/jquery.cluetip.css', media='screen')
-        #add_javascript(req, "adaptiveartifacts/js/lib/log4javascript.js")
-        #add_javascript(req, "adaptiveartifacts/js/lib/rangy-1.3alpha.681/uncompressed/rangy-core.js")
-        #add_javascript(req, "adaptiveartifacts/js/lib/rangy-1.3alpha.681/uncompressed/rangy-cssclassapplier.js")
-        #add_javascript(req, "adaptiveartifacts/js/lib/rangy-1.3alpha.681/uncompressed/rangy-selectionsaverestore.js")
-        #add_javascript(req, "adaptiveartifacts/js/lib/rangy-1.3alpha.681/uncompressed/rangy-serializer.js")
-        #add_javascript(req, "adaptiveartifacts/js/lib/rangy-1.3alpha.681/uncompressed/rangy-textrange.js")
-        #add_javascript(req, "adaptiveartifacts/js/lib/rangy-1.3alpha.681/uncompressed/rangy-highlighter.js")
-        #add_javascript(req, "adaptiveartifacts/js/lib/jquerypp-1.0b2/jquerypp.js")
-
-
-
-        add_javascript(req, "adaptiveartifacts/js/lib/ace/ace.js")
-        add_javascript(req, "adaptiveartifacts/js/lib/ace/theme-trac_wiki.js")
-
-        add_javascript(req, 'adaptiveartifacts/js/lib/jquery.balloon.js')
-
-        #add_javascript(req, 'adaptiveartifacts/js/lib/ace/demo/kitchen-sink/require.js')
-        #add_javascript(req, 'adaptiveartifacts/js/lib/ace/demo/kitchen-sink/util.js')
-        #add_javascript(req, 'adaptiveartifacts/js/lib/ace/demo/kitchen-sink/layout.js')
-        #add_javascript(req, 'adaptiveartifacts/js/lib/ace/demo/kitchen-sink/modelist.js')
-        #add_javascript(req, 'adaptiveartifacts/js/lib/ace/demo/kitchen-sink/doclist.js')
-        #add_javascript(req, 'adaptiveartifacts/js/lib/ace/demo/kitchen-sink/token_tooltip.js')
 
         add_javascript(req, "adaptiveartifacts/js/requests.js")
-        add_javascript(req, "adaptiveartifacts/js/wiki.js")
         add_javascript(req, "adaptiveartifacts/js/dialogs.js")
         add_javascript(req, 'adaptiveartifacts/js/util.js')
         add_javascript(req, 'adaptiveartifacts/js/uuid.js')
         add_javascript(req, 'adaptiveartifacts/js/forms.js')
+        add_javascript(req, "adaptiveartifacts/js/wiki.js")
 
         add_script_data(req, {'baseurl': req.href.adaptiveartifacts()})
         add_script_data(req, {'form_token': req.form_token})
