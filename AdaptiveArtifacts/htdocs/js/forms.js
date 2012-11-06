@@ -13,7 +13,7 @@ $(document).ready(function(){
 function attachFormEventHandlers(context){
     context.find("a.addattr").click(addAttribute);
     context.find("a.delattr").click(delAttribute);
-    context.find("a.addvalue").click(addValue);
+    context.find("a.addvalue").click(function() { addValue(context, "", "") });
     context.find("a.delvalue").click(delValue);
 }
 
@@ -37,19 +37,19 @@ function delAttribute(){
     $(this).parent().parent().remove()
 }
 
-function addValue(){
+function addValue(context, name, val){
     var newid = uuid.v4()
-    var copy = $("tr.attribute:last").clone(true)
+    var copy = context.find("tr.attribute:last").clone(true)
     copy.removeClass('prototype')
     var name_input = copy.find("input[name^='attr-name-']")
     name_input.attr("name", "attr-name-" + newid)
-    name_input.attr("value", "")
+    name_input.attr("value", name)
     var value_input = copy.find("input[name^='attr-value-']")
     value_input.attr("name", "attr-value-" + newid)
-    value_input.attr("value", "")
+    value_input.attr("value", val)
     var default_input = copy.find("input[name^='default']")
     default_input.attr("value", newid)
-    $("table.attributes").append(copy)
+    context.find("table.attributes").append(copy)
 }
 
 function delValue(){

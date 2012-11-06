@@ -118,7 +118,12 @@ var setupToolbar = function(editor){
                             }
                         }
                     )}
-              }
+                },
+                {
+                    open: function(){
+                        addValue(this, "Name", editor.getCopyText());
+                    }
+                }
             ).dialog('open');
         }
     });
