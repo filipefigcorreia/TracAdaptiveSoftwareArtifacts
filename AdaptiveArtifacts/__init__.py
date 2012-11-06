@@ -111,7 +111,8 @@ class Core(Component):
         add_javascript(req, 'adaptiveartifacts/js/util.js')
         add_javascript(req, 'adaptiveartifacts/js/uuid.js')
         add_javascript(req, 'adaptiveartifacts/js/forms.js')
-        add_javascript(req, "adaptiveartifacts/js/wiki.js")
+        if req.environ.get('PATH_INFO', '')[0:5] == '/wiki' and 'action' in req.args and req.args['action'] == 'edit':
+            add_javascript(req, "adaptiveartifacts/js/wiki.js")
 
         add_script_data(req, {'baseurl': req.href.adaptiveartifacts()})
         add_script_data(req, {'form_token': req.form_token})
