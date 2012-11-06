@@ -37,7 +37,7 @@ def get_view_spec(request, dbp, obj, resource):
 def get_view_artifact(request, dbp, obj, resource):
     data = {
         'context': Context.from_request(request.req, resource),
-        'spec': obj.__class__,
+        'spec_name': obj.__class__.get_name() if not obj.__class__ == Instance else "",
         'artifact': obj,
     }
     return 'view_artifact_%s.html' % (request.get_format(),), data, None
@@ -206,7 +206,7 @@ def get_new_artifact(request, dbp, obj, resource):
 
     data = {
         'context': Context.from_request(request.req, resource),
-        'spec': obj,
+        'spec_name': obj.get_name() if not obj == Instance else "",
         'url_path': request.req.href.adaptiveartifacts('artifact'),
     }
     return 'edit_artifact_%s.html' % (request.get_format(),), data, None
@@ -250,7 +250,7 @@ def get_edit_artifact(request, dbp, obj, resource):
 
     data = {
         'context': Context.from_request(request.req, resource),
-        'spec': obj.__class__,
+        'spec_name': obj.__class__.get_name() if not obj.__class__ == Instance else "",
         'artifact': obj,
         'values': [(attr,val) for attr,val in obj.get_values()],
         'default': obj.str_attr,
