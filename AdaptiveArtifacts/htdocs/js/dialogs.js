@@ -63,7 +63,7 @@ function createASAFormDialogFromUrl(title, url, buttons, functions){
                                 }).appendTo(dialogdiv.find('form'));
 
                                 attachFormEventHandlers($(this));
-                                $.isFunction(functions.open) && (functions.open).call(this);
+                                functions && $.isFunction(functions.open) && (functions.open).call(this);
                             },
                             buttons: buttons
                         },
