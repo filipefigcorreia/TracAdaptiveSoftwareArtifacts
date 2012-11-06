@@ -53,10 +53,6 @@ class Core(Component):
         dbp = DBPool(self.env, InstancePool())
         request = Request(dbp, req)
 
-        add_javascript(req, "adaptiveartifacts/js/lib/ace/ace.js")
-        add_javascript(req, "adaptiveartifacts/js/lib/ace/theme-trac_wiki.js")
-        add_javascript(req, 'adaptiveartifacts/js/lib/jquery.balloon.js')
-
         res = Core._get_resource(request.obj) if not request.obj in (Entity, Instance, None) and not type(request.obj)==unicode else None
         result = request.view(request, dbp, request.obj, res)
         if not request.req.get_header('Content-Length') is None: # we've written directly to the request object
@@ -106,6 +102,9 @@ class Core(Component):
 
     def post_process_request(self, req, template, data, content_type):
         Chrome(self.env).add_jquery_ui(req)
+        add_javascript(req, "adaptiveartifacts/js/lib/ace/ace.js")
+        add_javascript(req, "adaptiveartifacts/js/lib/ace/theme-trac_wiki.js")
+        add_javascript(req, 'adaptiveartifacts/js/lib/jquery.balloon.js')
 
         add_javascript(req, "adaptiveartifacts/js/requests.js")
         add_javascript(req, "adaptiveartifacts/js/dialogs.js")
