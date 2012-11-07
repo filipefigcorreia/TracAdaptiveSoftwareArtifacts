@@ -30,7 +30,7 @@ function submitASAFormDialog(dialogdiv, options) {
             $(this).dialog("close");
             $(this).dialog("destroy");
             $(this).remove();
-            options['success']();
+            options['success'](data);
         },
         error: function(data){
             $(this).html("An error occurred, sorry.");
@@ -41,7 +41,7 @@ function submitASAFormDialog(dialogdiv, options) {
                         $(this).dialog("close");
                         $(this).dialog("destroy");
                         $(this).remove();
-                        options['error']();
+                        options['error'](data);
                     }
                 }
             ] );
@@ -49,25 +49,26 @@ function submitASAFormDialog(dialogdiv, options) {
     });
 }
 
-function createASAFormDialogFromUrl(title, url, buttons){
-    var dialogdiv = createASADialogFromUrl(title, url, buttons);
-    $('<input>').attr({
-        type: 'hidden',
-        name: 'format',
-        value: 'dialog'
-    }).appendTo(dialogdiv.find('form'));
-    return dialogdiv;
-}
-
-function createASADialogFromUrl(title, url, buttons){
-    return createDialogFromUrl(
+function createASAFormDialogFromUrl(title, url, buttons, functions){
+    var dialogdiv = createDialogFromUrl(
                         url + "&format=dialog",
                         {
+                            modal: true,
                             title: title,
-                            success: function(data, textStatus, jqXHR) { attachFormEventHandlers($(this)) },
+                            success: function(data, textStatus, jqXHR) {
+                                $('<input>').attr({
+                                    type: 'hidden',
+                                    name: 'format',
+                                    value: 'dialog'
+                                }).appendTo(dialogdiv.find('form'));
+
+                                attachFormEventHandlers($(this));
+                                functions && $.isFunction(functions.open) && (functions.open).call(this);
+                            },
                             buttons: buttons
                         },
                         'asa-dialog');
+    return dialogdiv;
 }
 
 function createDialogFromUrl(url, options, dialogdivclass){

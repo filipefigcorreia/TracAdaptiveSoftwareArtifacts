@@ -6,7 +6,7 @@
     <py:match path="div[@id='dialog-content']" once="true">
         <ul>
             <li>Identifier: ${artifact.get_id()}</li>
-            <li>Spec: <a href="${req.href.adaptiveartifacts('spec/' + artifact.__class__.get_id(), action='view')}">${artifact.__class__.get_name()}</a></li>
+            <li>Spec: <a href="${req.href.adaptiveartifacts('spec/' + artifact.__class__.get_id(), action='view')}">${spec_name}</a></li>
             <li>Values:
                 <ul>
                     <li py:for="name, value in artifact.get_values()"><py:choose test=""><py:when test="name in [attribute.name for attribute in artifact.__class__.get_attributes()]"><strong>${name}</strong></py:when><py:otherwise>${name}</py:otherwise></py:choose>: ${value}</li>

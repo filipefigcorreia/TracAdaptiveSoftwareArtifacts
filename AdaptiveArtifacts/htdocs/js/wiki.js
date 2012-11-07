@@ -110,16 +110,20 @@ var setupToolbar = function(editor){
                     submitASAFormDialog(
                         $(this),
                         {
-                            success: function(){
-                                console.log("Sucesso!");
-                                //console.log(rangy.getSelection().getRangeAt(0));
+                            success: function(data){
+                                console.log("Success!");
                             },
-                            error: function(){
-                                    alert("Falhaaaaa!!");
+                            error: function(data){
+                                    alert("Failure!!");
                             }
                         }
                     )}
-              }
+                },
+                {
+                    open: function(){
+                        addValue(this, "Name", editor.getCopyText());
+                    }
+                }
             ).dialog('open');
         }
     });
@@ -138,6 +142,7 @@ var setupTokenizer = function(editor){
     var tokenizer = new Tokenizer({
         "start": [
             {token : function(val){
+                val = val.toLowerCase();
                 if (goodWords[val])
                     return "keyword";
                 if (words[val])
@@ -162,9 +167,10 @@ var setupTokenizer = function(editor){
                     continue;
                 states[i] = "start";
                 lines[i].forEach(function(t){
-                    if (goodWords[t.value])
+                    var term = t.value.toLowerCase();
+                    if (goodWords[term])
                         t.type = "keyword";
-                    else if (words[t.value])
+                    else if (words[term])
                         t.type = "just-a-word";
                 });
             }
@@ -194,7 +200,7 @@ var setupTokenizer = function(editor){
             // update goodWords and words based on serverWords
             goodWords = Object.create(null);
             for(var i=0;i<serverWords.length; i++){
-                goodWords[serverWords[i].term] = true;
+                goodWords[serverWords[i].term.toLowerCase()] = true;
             }
             //goodWords = serverWords;
             words = Object.create(null);
@@ -231,7 +237,7 @@ var setupBalloons = function(editor){
                             position: "top left",
                             offsetX: e.clientX - canvasPos.left,
                             offsetY: canvasPos.top - e.clientY + 10,
-                            tipSize: 20,
+                            tipSize: 10,
                             delay: 500,
                             minLifetime: 500,
                             showDuration: 1000,

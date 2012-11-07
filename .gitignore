@@ -3,6 +3,8 @@ build/*
 dist/*
 *egg-info*
 
+.DS_Store
+
 # also ignore test coverage output
 .coverage
 htmlcov/*
