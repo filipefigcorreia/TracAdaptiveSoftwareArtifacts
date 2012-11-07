@@ -129,7 +129,7 @@ var setupTokenizer = function(editor){
     var Tokenizer = require("ace/tokenizer").Tokenizer;
      // words in database
     var goodWords = Object.create(null);
-    // words checked to not be in datebase. this can be omitted if it is ok to check for same words several times
+    // words checked to not be in database. this can be omitted if it is ok to check for same words several times
     var words = Object.create(null);
 
     // cache for words pending resolution
