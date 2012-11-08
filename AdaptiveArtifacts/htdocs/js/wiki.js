@@ -111,10 +111,10 @@ var setupToolbar = function(editor){
                         $(this),
                         {
                             success: function(data){
-                                console.log("Success!");
+                                wrapSelection("[asa:"+data[0].resource_id+" ", "]");
                             },
                             error: function(data){
-                                    alert("Failure!!");
+                                    console.log("Ajax call failed!");
                             }
                         }
                     )}
@@ -243,7 +243,8 @@ var setupBalloons = function(editor){
                             showDuration: 1000,
                             hideDuration: 200,
                             showAnimation: function(d) { this.fadeIn(d); },
-                            contents: token.value
+                            contents: '<a href="javascript:link_to_existing_artifact_ajax_call();" id="asa_link_button_tooltip" title="Link to existing artifact" ></a>'
+
                         }
                     ).data("balloon");
                     if(balloon) {
@@ -251,15 +252,41 @@ var setupBalloons = function(editor){
                             editordiv.hideBalloon();
                         }).mouseenter(function(e) {
                                 editordiv.showBalloon();
-                            });
+                        });
                     }
+
                 }else{
                     balloon && editordiv.hideBalloon();
                 }
                 e.stop();
             }
     });
+
 };
+
+function link_to_existing_artifact_ajax_call(){
+    //This is not the right window to call in this context... waiting for link artifact window to be ready!!!!
+    createASAFormDialogFromUrl('Artifact',  baseurl+"/artifact?action=new",
+        { "Create": function() {
+            submitASAFormDialog(
+                $(this),
+                {
+                    success: function(data){
+                        console.log("Success!");
+                    },
+                    error: function(data){
+                        alert("Failure!!");
+                    }
+                }
+            )}
+        }/*,
+        {
+            open: function(){
+                addValue(this, "Name", editor.getCopyText());
+            }
+        }*/
+    ).dialog('open');
+}
 
 $(document).ready(function(){
     var editor = setupEditor();
