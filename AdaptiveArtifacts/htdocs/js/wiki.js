@@ -141,6 +141,7 @@ var setupTokenizer = function(editor){
 
     var tokenizer = new Tokenizer({
         "start": [
+            {token : "asa_artifact", regex : ".\[asa:[1-9]+\\s\\w+\]"},
             {token : function(val){
                 val = val.toLowerCase();
                 if (goodWords[val])
@@ -152,6 +153,7 @@ var setupTokenizer = function(editor){
                 return "unknown";
             }, regex : "\\w+"},
             {token : "text", regex : "[^\\w]+"}
+
         ]
     });
 
@@ -231,22 +233,41 @@ var setupBalloons = function(editor){
             if (token){
                 var canvasPos = editor.renderer.scroller.getBoundingClientRect();
                 var editordiv = $('#editor');
-                if (token.type == 'keyword') {
-                    balloon = editordiv.showBalloon(
-                        {
-                            position: "top left",
-                            offsetX: e.clientX - canvasPos.left,
-                            offsetY: canvasPos.top - e.clientY + 10,
-                            tipSize: 10,
-                            delay: 500,
-                            minLifetime: 500,
-                            showDuration: 1000,
-                            hideDuration: 200,
-                            showAnimation: function(d) { this.fadeIn(d); },
-                            contents: '<a href="javascript:link_to_existing_artifact_ajax_call();" id="asa_link_button_tooltip" title="Link to existing artifact" ></a>'
+                if (token.type == 'keyword' || token.type == 'asa_artifact') {
+                    if (token.type == 'keyword')
+                        balloon = editordiv.showBalloon(
+                            {
+                                position: "top left",
+                                offsetX: e.clientX - canvasPos.left,
+                                offsetY: canvasPos.top - e.clientY + 10,
+                                tipSize: 10,
+                                delay: 500,
+                                minLifetime: 500,
+                                showDuration: 1000,
+                                hideDuration: 200,
+                                showAnimation: function(d) { this.fadeIn(d); },
+                                contents: '<a href="javascript:link_to_existing_artifact_ajax_call();" id="asa_link_button_tooltip" title="Link to existing artifact" ></a>'
 
-                        }
-                    ).data("balloon");
+                            }
+                        ).data("balloon");
+                    else if (token.type == 'asa_artifact'){
+                        token_content = token.value;
+                        balloon = editordiv.showBalloon(
+                            {
+                                position: "top left",
+                                offsetX: e.clientX - canvasPos.left,
+                                offsetY: canvasPos.top - e.clientY + 10,
+                                tipSize: 10,
+                                delay: 500,
+                                minLifetime: 500,
+                                showDuration: 1000,
+                                hideDuration: 200,
+                                showAnimation: function(d) { this.fadeIn(d); },
+                                contents: '<a href="javascript:view_artifact_ajax_call();" id="asa_link_button_tooltip" title="Link to existing artifact" ></a>'
+
+                            }
+                        ).data("balloon");
+                    }
                     if(balloon) {
                         balloon.mouseleave(function(e) {
                             editordiv.hideBalloon();
@@ -264,6 +285,30 @@ var setupBalloons = function(editor){
 
 };
 
+function view_artifact_ajax_call(){
+
+    var ind_init = token_content.indexOf(":");
+    var sub = token_content.substr(ind_init+1, token_content.length);
+    var ind_end = sub.indexOf(" ");
+    var id = sub.substr(0, ind_end);
+
+    createASAFormDialogFromUrl('Artifact',  baseurl+"/artifact/"+id+"?action=view",
+        { "Create": function() {
+            submitASAFormDialog(
+                $(this),
+                {
+                    success: function(data){
+                        console.log("Success!");
+                    },
+                    error: function(data){
+                        console.log("Failure!!");
+                    }
+                }
+            )}
+        }
+    ).dialog('open');
+}
+
 function link_to_existing_artifact_ajax_call(){
     //This is not the right window to call in this context... waiting for link artifact window to be ready!!!!
     createASAFormDialogFromUrl('Artifact',  baseurl+"/artifact?action=new",
@@ -275,7 +320,7 @@ function link_to_existing_artifact_ajax_call(){
                         console.log("Success!");
                     },
                     error: function(data){
-                        alert("Failure!!");
+                        console.log("Failure!!");
                     }
                 }
             )}
