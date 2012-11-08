@@ -1,0 +1,55 @@
+#entry-points {
+	float:left;
+}
+
+#artifacts {
+	margin-left: 20em;
+}
+
+#aadetails, #sedit {
+	padding: 0.4em 2em 0.4em 2em;
+	background-color: #F7F7F7;
+	border: 1px solid #D7D7D7;
+	border-radius: .4em;
+	box-shadow: .1em .1em 1em 0 #E7E7E7 inset;
+}
+
+ul#tabs {
+	list-style-type: none;
+	margin: 0;
+	min-height: 2em;
+}
+
+ul#tabs li {
+	float: left;
+	border: 1px solid black;
+	padding: 0.2em;
+}
+
+#aadetails{
+	_display: none;
+}
+
+#sedit{
+	display: none;
+}
+
+table.listing {
+    clear: none;
+}
+
+table.listing thead tr {
+    background: #F7F7F0;
+}
+
+table.listing td {
+    background: white;
+}
+
+.jstree :link, .jstree :visited {
+    border-bottom: 0px;
+}
+
+.jstree-default.jstree-focused {
+    background: transparent !important;
+}

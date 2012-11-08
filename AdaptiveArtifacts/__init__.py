@@ -53,6 +53,10 @@ class Core(Component):
         dbp = DBPool(self.env, InstancePool())
         request = Request(dbp, req)
 
+        add_javascript(req, 'adaptiveartifacts/js/lib/jstree/jquery.jstree.js')
+        add_javascript(req, 'adaptiveartifacts/js/indextree.js')
+
+
         res = Core._get_resource(request.obj) if not request.obj in (Entity, Instance, None) and not type(request.obj)==unicode else None
         result = request.view(request, dbp, request.obj, res)
         if not request.req.get_header('Content-Length') is None: # we've written directly to the request object
@@ -118,6 +122,7 @@ class Core(Component):
         add_script_data(req, {'form_token': req.form_token})
         add_stylesheet(req, 'adaptiveartifacts/css/asa.css', media='screen')
         add_stylesheet(req, 'adaptiveartifacts/css/wiki.css')
+        add_stylesheet(req, 'adaptiveartifacts/css/index_page.css')
 
         return (template, data, content_type)
 

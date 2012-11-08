@@ -3,24 +3,73 @@
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
   <xi:include href="layout.html" />
+
+  <py:def function="spec_markup(specs)">
+      <ul py:if="specs">
+      <py:for each="spec,subspecs,arts_count in specs">
+          <li id="spec-${spec.get_id()}" >
+              <a href="${req.href.adaptiveartifacts('spec/' + spec.get_id(), action='view')}">${spec.get_name()} <py:if test="arts_count>0 or len(subspecs)>0">(<py:if test="arts_count>0">${len(subspecs)}❖</py:if> <py:if test="arts_count>0">${arts_count}⟐</py:if>)</py:if></a>
+              <py:if test="subspecs">
+                  ${spec_markup(subspecs)}
+              </py:if>
+          </li>
+      </py:for>
+      </ul>
+  </py:def>
+
+
   <head><title></title></head>
   <body>
-      <ul>
-          <li py:for="spec,count in specs"><a href="">+</a> <a href="${req.href.adaptiveartifacts('spec/' + spec.get_id(), action='view')}">${spec.get_name()}</a> (${count})</li>
-      </ul>
-      <ul>
-          <li><a href="">+</a> <a href="${req.href.adaptiveartifacts('search/no_spec', action='list')}">Artifacts with no spec</a></li>
-      </ul>
-      <form method="get" action="${href.adaptiveartifacts('spec')}">
-          <input type="hidden" name="action" value="new" />
-          <input type="submit" value="New Spec" />
-      </form>
-      <form method="get" action="${href.adaptiveartifacts('artifact')}">
-          <input type="hidden" name="action" value="new" />
-          <input type="submit" value="New Artifact" />
-      </form>
+        <h1>Adaptive Artifacts</h1>
+        <div id="entry-points" class="tree">
+            <h2>By Spec</h2>
+            <div id="specs">
+            ${spec_markup(specs)}
+            </div>
 
-      <a class="opendialog viewartifact" href="${href.adaptiveartifacts('artifact', 10, action='view')}">View artifact #10 (dialog)</a>
-      <br/><br/><br/>
+            <h2>By Other Features</h2>
+            <div id="others">
+                <ul>
+                    <li><a href="">+</a> <a href="${req.href.adaptiveartifacts('search/no_spec', action='list')}">Artifacts with no spec (63⟐)</a></li>
+                </ul>
+            </div>
+            <br/><br/>
+        </div>
+
+        <div id="artifacts">
+            <ul id="tabs">
+                <li><a href="">Adaptive Artifacts</a></li>
+                <li><a href="">View Spec</a></li>
+                <li><a href="">Edit Spec</a></li>
+            </ul>
+            <div id="aadetails">
+                <h2>Adaptive Artifacts for <em>Spec 3.1</em></h2>
+                <table class="listing">
+                    <thead>
+                        <tr><th>#</th><th>Attr1</th><th>Attr2</th><th>Attr3</th><th></th></tr>
+                    </thead>
+                    <tr><td>10</td><td>someting</td><td>someting more</td><td>Yet something more</td><td><a href="">[pages (32)]</a><a href="">[view]</a><a href="">[edit]</a></td></tr>
+                    <tr><td>11</td><td>someting</td><td>someting more</td><td>Yet something more</td><td><a href="">[pages (32)]</a><a href="">[view]</a><a href="">[edit]</a></td></tr>
+                    <tr><td>12</td><td>someting</td><td>someting more</td><td>Yet something more</td><td><a href="">[pages (32)]</a><a href="">[view]</a><a href="">[edit]</a></td></tr>
+                </table>
+            </div>
+            <div id="sedit">
+            </div>
+        </div>
+
+        <br/><br/>
+
+        <form method="get" action="${href.adaptiveartifacts('spec')}">
+            <input type="hidden" name="action" value="new" />
+            <input type="submit" value="New Spec" />
+        </form>
+        <form method="get" action="${href.adaptiveartifacts('artifact')}">
+            <input type="hidden" name="action" value="new" />
+            <input type="submit" value="New Artifact" />
+        </form>
+
+        <a class="opendialog viewartifact" href="${href.adaptiveartifacts('artifact', 10, action='view')}">View artifact #10 (dialog)</a>
+        <br/><br/><br/>
+
   </body>
 </html>

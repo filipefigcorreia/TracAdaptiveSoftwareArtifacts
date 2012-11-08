@@ -16,9 +16,13 @@ def get_index(request, dbp, obj, resource):
     dbp.load_specs()
     dbp.load_artifacts_of(Instance.get_name())
 
-    specs = []
-    for spec in dbp.pool.get_items((1,)):
-        specs.append((spec, len(dbp.pool.get_instances_of(spec.get_name()))))
+    def get_spec_data(base_spec):
+        specs = []
+        for spec in sorted(dbp.pool.get_items((1,), base_spec), key=lambda spec: spec.get_name()):
+            specs.append((spec, get_spec_data(spec.get_name()), len(dbp.pool.get_instances_of(spec.get_name()))))
+        return specs
+
+    specs = get_spec_data(Instance.get_name())
 
     data = {
         'context': Context.from_request(request.req, resource),
