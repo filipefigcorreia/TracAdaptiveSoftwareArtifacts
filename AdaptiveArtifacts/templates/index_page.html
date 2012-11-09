@@ -29,6 +29,10 @@
             <div id="specs">
             ${spec_markup(specs)}
             </div>
+            <form method="get" action="${href.adaptiveartifacts('spec')}">
+                <input type="hidden" name="action" value="new" />
+                <input type="submit" value="New Spec" />
+            </form>
 
             <h2>By Other Features</h2>
             <div id="others">
@@ -84,21 +88,14 @@
             </div>
             -->
             <br/><br/>
+            <form method="get" action="${href.adaptiveartifacts('artifact')}">
+                <input type="hidden" name="action" value="new" />
+                <input type="submit" value="New Artifact" />
+            </form>
         </div>
 
         <br/><br/>
 
-        <form method="get" action="${href.adaptiveartifacts('spec')}">
-            <input type="hidden" name="action" value="new" />
-            <input type="submit" value="New Spec" />
-        </form>
-        <form method="get" action="${href.adaptiveartifacts('artifact')}">
-            <input type="hidden" name="action" value="new" />
-            <input type="submit" value="New Artifact" />
-        </form>
-
-        <a class="opendialog viewartifact" href="${href.adaptiveartifacts('artifact', 10, action='view')}">View artifact #10 (dialog)</a>
-        <br/><br/><br/>
      </div>
   </body>
 </html>
