@@ -28,7 +28,7 @@ class Request(object):
 
     def _resolve_object_and_action(self, dbp):
         self.action = self.req.args.get('action', None)
-        if not self.action in ['view', 'edit', 'list', 'index', 'new', None]:
+        if not self.action in ['view', 'edit', 'list', 'index', 'new', 'delete', None]:
             raise ValueError("Unknown action '%s'" % (self.action,))
 
         if self.resource_type is None:
