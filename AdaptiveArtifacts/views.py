@@ -24,28 +24,33 @@ def get_index(request, dbp, obj, resource):
 
     specs = get_spec_data(Instance.get_name())
     selected_spec = dbp.pool.get_item(request.req.args.get('spec', ''))
-    artifacts = dbp.pool.get_instances_of(selected_spec.get_name())
+    if selected_spec is None:
+        spec_attrs = []
+        artifacts_attrs = []
+        artifacts_values = []
+    else:
+        artifacts = dbp.pool.get_instances_of(selected_spec.get_name())
 
-    # Get attributes defined at the spec level ...
-    spec_attrs = [attribute.name for attribute in selected_spec.get_attributes()]
-    # ... and those that only exist at the level of the artifacts themselves
-    artifacts_attrs = sorted(set([k for a in artifacts for k,v in a.get_values()]), key=unicode.lower)
-    for a in spec_attrs:
-        if a in artifacts_attrs:
-            artifacts_attrs.remove(a)
+        # Get attributes defined at the spec level ...
+        spec_attrs = [attribute.name for attribute in selected_spec.get_attributes()]
+        # ... and those that only exist at the level of the artifacts themselves
+        artifacts_attrs = sorted(set([k for a in artifacts for k,v in a.get_values()]), key=unicode.lower)
+        for a in spec_attrs:
+            if a in artifacts_attrs:
+                artifacts_attrs.remove(a)
 
-    # Build a matrix of the attribute values to be shown in the index page
-    artifacts_values = []
-    for artifact in artifacts:
-        values = dict(artifact.get_values())
-        ordered_values_lst = []
-        for attributes in [spec_attrs, artifacts_attrs]:
-            for attribute in attributes:
-                if attribute in values:
-                    ordered_values_lst.append(values[attribute])
-                else:
-                    ordered_values_lst.append("")
-        artifacts_values.append((artifact, ordered_values_lst))
+        # Build a matrix of the attribute values to be shown in the index page
+        artifacts_values = []
+        for artifact in artifacts:
+            values = dict(artifact.get_values())
+            ordered_values_lst = []
+            for attributes in [spec_attrs, artifacts_attrs]:
+                for attribute in attributes:
+                    if attribute in values:
+                        ordered_values_lst.append(values[attribute])
+                    else:
+                        ordered_values_lst.append("")
+            artifacts_values.append((artifact, ordered_values_lst))
 
     data = {
         'context': Context.from_request(request.req, resource),

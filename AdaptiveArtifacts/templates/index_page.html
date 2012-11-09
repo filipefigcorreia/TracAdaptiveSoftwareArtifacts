@@ -9,8 +9,8 @@
       <py:for each="spec,subspecs,arts_count in specs">
               <li id="spec-${spec.get_id()}">
                   <div py:choose="">
-                  <a py:when="spec.get_id() == selected_spec.get_id()" class="selected" href="${req.href.adaptiveartifacts(spec=spec.get_id(), page=page_nr)}">${spec.get_name()} <py:if test="arts_count>0 or len(subspecs)>0">(<py:if test="arts_count>0">${len(subspecs)}❖</py:if> <py:if test="arts_count>0">${arts_count}⟐</py:if>)</py:if></a>
-                  <a  py:otherwise="" href="${req.href.adaptiveartifacts(spec=spec.get_id(), page=page_nr)}">${spec.get_name()} <py:if test="arts_count>0 or len(subspecs)>0">(<py:if test="arts_count>0">${len(subspecs)}❖</py:if> <py:if test="arts_count>0">${arts_count}⟐</py:if>)</py:if></a>
+                  <a py:when="selected_spec and spec.get_id() == selected_spec.get_id()" class="selected" href="${req.href.adaptiveartifacts(spec=spec.get_id(), page=page_nr)}">${spec.get_name()} <py:if test="arts_count>0 or len(subspecs)>0">(<py:if test="arts_count>0">${len(subspecs)}❖</py:if> <py:if test="arts_count>0">${arts_count}⟐</py:if>)</py:if></a>
+                  <a py:otherwise="" href="${req.href.adaptiveartifacts(spec=spec.get_id(), page=page_nr)}">${spec.get_name()} <py:if test="arts_count>0 or len(subspecs)>0">(<py:if test="arts_count>0">${len(subspecs)}❖</py:if> <py:if test="arts_count>0">${arts_count}⟐</py:if>)</py:if></a>
                   <py:if test="subspecs">
                       ${spec_markup(subspecs)}
                   </py:if>
@@ -44,54 +44,63 @@
         </div>
 
         <div id="artifacts">
-            <h2>${selected_spec.get_name()}</h2> <span class="spec-options"><a href="${req.href.adaptiveartifacts('spec', selected_spec.get_id(), action='view')}">[details]</a><a href="${req.href.adaptiveartifacts('spec', selected_spec.get_id(), action='edit')}">[edit]</a></span>
-            <div class="spec-details">
-            ${len(spec_columns)} Attributes;
-            <!-- X Subspecs; -->
-            ${len(artifacts_values)} Adaptive Artifacts.
-            </div>
+            <py:choose test="">
+              <py:when test="not selected_spec">
+                  Please select a Spec.
+              </py:when>
+              <py:otherwise>
 
-            <!--
-            <div class="paging">
-                <span><span class="current">1</span></span>
-                <span><a href="/my-trac-environment/search?asa=on&amp;changeset=on&amp;milestone=on&amp;ticket=on&amp;wiki=on&amp;q=trac&amp;page=2&amp;noquickjump=1" title="page 2">2</a></span>
-                <span class="next"><a href="/my-trac-environment/search?asa=on&amp;changeset=on&amp;milestone=on&amp;ticket=on&amp;wiki=on&amp;q=trac&amp;page=2&amp;noquickjump=1" title="Next Page">→</a></span>
-            </div>
-            -->
-            <h3>Adaptive Artifacts</h3>
+                <h2>${selected_spec.get_name()}</h2> <span class="spec-options"><a href="${req.href.adaptiveartifacts('spec', selected_spec.get_id(), action='view')}">[details]</a><a href="${req.href.adaptiveartifacts('spec', selected_spec.get_id(), action='edit')}">[edit]</a></span>
+                <div class="spec-details">
+                ${len(spec_columns)} Attributes;
+                <!-- X Subspecs; -->
+                ${len(artifacts_values)} Adaptive Artifacts.
+                </div>
 
-            <table class="listing">
-                <thead>
-                    <tr>
-                        <py:for each="column in spec_columns"><th>${column}</th></py:for>
-                        <py:for each="column in arti_columns"><th style="font-style:italic;">${column}</th></py:for>
-                        <th class="artifact-pages">Pages</th>
-                        <th class="artifact-options">Options</th>
-                    </tr>
-                </thead>
-                <py:for each="artifact,values in artifacts_values">
-                    <tr>
-                        <py:for each="value in values">
-                            <td>${value}</td>
-                        </py:for>
-                        <td class="artifact-pages"><a href="#">42</a></td>
-                        <td class="artifact-options"><a href="${req.href.adaptiveartifacts('artifact', artifact.get_id(), action='view')}">[view]</a> <a href="${req.href.adaptiveartifacts('artifact', artifact.get_id(), action='edit')}">[edit]</a></td>
-                    </tr>
-                </py:for>
-            </table>
+                <!--
+                <div class="paging">
+                    <span><span class="current">1</span></span>
+                    <span><a href="/my-trac-environment/search?asa=on&amp;changeset=on&amp;milestone=on&amp;ticket=on&amp;wiki=on&amp;q=trac&amp;page=2&amp;noquickjump=1" title="page 2">2</a></span>
+                    <span class="next"><a href="/my-trac-environment/search?asa=on&amp;changeset=on&amp;milestone=on&amp;ticket=on&amp;wiki=on&amp;q=trac&amp;page=2&amp;noquickjump=1" title="Next Page">→</a></span>
+                </div>
+                -->
+                <h3>Adaptive Artifacts</h3>
 
-            <!--
-            <div class="paging">
-                <span><span class="current">1</span></span>
-                <span><a href="/my-trac-environment/search?asa=on&amp;changeset=on&amp;milestone=on&amp;ticket=on&amp;wiki=on&amp;q=trac&amp;page=2&amp;noquickjump=1" title="page 2">2</a></span>
-                <span class="next"><a href="/my-trac-environment/search?asa=on&amp;changeset=on&amp;milestone=on&amp;ticket=on&amp;wiki=on&amp;q=trac&amp;page=2&amp;noquickjump=1" title="Next Page">→</a></span>
-            </div>
-            -->
-            <br/><br/>
-            <form method="get" action="${href.adaptiveartifacts('artifact')}">
-                <input type="hidden" name="action" value="new" />
-                <input type="submit" value="New Artifact" />
-            </form>
+                <table class="listing">
+                    <thead>
+                        <tr>
+                            <py:for each="column in spec_columns"><th>${column}</th></py:for>
+                            <py:for each="column in arti_columns"><th style="font-style:italic;">${column}</th></py:for>
+                            <th class="artifact-pages">Pages</th>
+                            <th class="artifact-options">Options</th>
+                        </tr>
+                    </thead>
+                    <py:for each="artifact,values in artifacts_values">
+                        <tr>
+                            <py:for each="value in values">
+                                <td>${value}</td>
+                            </py:for>
+                            <td class="artifact-pages"><a href="#">42</a></td>
+                            <td class="artifact-options"><a href="${req.href.adaptiveartifacts('artifact', artifact.get_id(), action='view')}">[view]</a> <a href="${req.href.adaptiveartifacts('artifact', artifact.get_id(), action='edit')}">[edit]</a></td>
+                        </tr>
+                    </py:for>
+                </table>
+
+                <!--
+                <div class="paging">
+                    <span><span class="current">1</span></span>
+                    <span><a href="/my-trac-environment/search?asa=on&amp;changeset=on&amp;milestone=on&amp;ticket=on&amp;wiki=on&amp;q=trac&amp;page=2&amp;noquickjump=1" title="page 2">2</a></span>
+                    <span class="next"><a href="/my-trac-environment/search?asa=on&amp;changeset=on&amp;milestone=on&amp;ticket=on&amp;wiki=on&amp;q=trac&amp;page=2&amp;noquickjump=1" title="Next Page">→</a></span>
+                </div>
+                -->
+                <br/><br/>
+                <form method="get" action="${href.adaptiveartifacts('artifact')}">
+                    <input type="hidden" name="action" value="new" />
+                    <input type="submit" value="New Artifact" />
+                </form>
+
+              </py:otherwise>
+            </py:choose>
         </div>
 
         <br/><br/>
