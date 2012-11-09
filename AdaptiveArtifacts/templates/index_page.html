@@ -4,22 +4,25 @@
       xmlns:xi="http://www.w3.org/2001/XInclude">
   <xi:include href="layout.html" />
 
-  <py:def function="spec_markup(specs)">
+  <py:def function="spec_markup(specs, page_nr=0)">
       <ul py:if="specs">
       <py:for each="spec,subspecs,arts_count in specs">
-          <li id="spec-${spec.get_id()}" >
-              <a href="${req.href.adaptiveartifacts('spec/' + spec.get_id(), action='view')}">${spec.get_name()} <py:if test="arts_count>0 or len(subspecs)>0">(<py:if test="arts_count>0">${len(subspecs)}❖</py:if> <py:if test="arts_count>0">${arts_count}⟐</py:if>)</py:if></a>
-              <py:if test="subspecs">
-                  ${spec_markup(subspecs)}
-              </py:if>
+              <li id="spec-${spec.get_id()}">
+                  <div py:choose="">
+                  <a py:when="spec.get_id() == selected_spec.get_id()" class="selected" href="${req.href.adaptiveartifacts(spec=spec.get_id(), page=page_nr)}">${spec.get_name()} <py:if test="arts_count>0 or len(subspecs)>0">(<py:if test="arts_count>0">${len(subspecs)}❖</py:if> <py:if test="arts_count>0">${arts_count}⟐</py:if>)</py:if></a>
+                  <a  py:otherwise="" href="${req.href.adaptiveartifacts(spec=spec.get_id(), page=page_nr)}">${spec.get_name()} <py:if test="arts_count>0 or len(subspecs)>0">(<py:if test="arts_count>0">${len(subspecs)}❖</py:if> <py:if test="arts_count>0">${arts_count}⟐</py:if>)</py:if></a>
+                  <py:if test="subspecs">
+                      ${spec_markup(subspecs)}
+                  </py:if>
+              </div>
           </li>
       </py:for>
       </ul>
   </py:def>
 
-
   <head><title></title></head>
   <body>
+     <div id="content" class="search">
         <h1>Adaptive Artifacts</h1>
         <div id="entry-points" class="tree">
             <h2>By Spec</h2>
@@ -37,24 +40,50 @@
         </div>
 
         <div id="artifacts">
-            <ul id="tabs">
-                <li><a href="">Adaptive Artifacts</a></li>
-                <li><a href="">View Spec</a></li>
-                <li><a href="">Edit Spec</a></li>
-            </ul>
-            <div id="aadetails">
-                <h2>Adaptive Artifacts for <em>Spec 3.1</em></h2>
-                <table class="listing">
-                    <thead>
-                        <tr><th>#</th><th>Attr1</th><th>Attr2</th><th>Attr3</th><th></th></tr>
-                    </thead>
-                    <tr><td>10</td><td>someting</td><td>someting more</td><td>Yet something more</td><td><a href="">[pages (32)]</a><a href="">[view]</a><a href="">[edit]</a></td></tr>
-                    <tr><td>11</td><td>someting</td><td>someting more</td><td>Yet something more</td><td><a href="">[pages (32)]</a><a href="">[view]</a><a href="">[edit]</a></td></tr>
-                    <tr><td>12</td><td>someting</td><td>someting more</td><td>Yet something more</td><td><a href="">[pages (32)]</a><a href="">[view]</a><a href="">[edit]</a></td></tr>
-                </table>
+            <h2>${selected_spec.get_name()}</h2> <span class="spec-options"><a href="${req.href.adaptiveartifacts('spec', selected_spec.get_id(), action='view')}">[details]</a><a href="${req.href.adaptiveartifacts('spec', selected_spec.get_id(), action='edit')}">[edit]</a></span>
+            <div class="spec-details">
+            ${len(spec_columns)} Attributes;
+            <!-- X Subspecs; -->
+            ${len(artifacts_values)} Adaptive Artifacts.
             </div>
-            <div id="sedit">
+
+            <!--
+            <div class="paging">
+                <span><span class="current">1</span></span>
+                <span><a href="/my-trac-environment/search?asa=on&amp;changeset=on&amp;milestone=on&amp;ticket=on&amp;wiki=on&amp;q=trac&amp;page=2&amp;noquickjump=1" title="page 2">2</a></span>
+                <span class="next"><a href="/my-trac-environment/search?asa=on&amp;changeset=on&amp;milestone=on&amp;ticket=on&amp;wiki=on&amp;q=trac&amp;page=2&amp;noquickjump=1" title="Next Page">→</a></span>
             </div>
+            -->
+            <h3>Adaptive Artifacts</h3>
+
+            <table class="listing">
+                <thead>
+                    <tr>
+                        <py:for each="column in spec_columns"><th>${column}</th></py:for>
+                        <py:for each="column in arti_columns"><th style="font-style:italic;">${column}</th></py:for>
+                        <th class="artifact-pages">Pages</th>
+                        <th class="artifact-options">Options</th>
+                    </tr>
+                </thead>
+                <py:for each="artifact,values in artifacts_values">
+                    <tr>
+                        <py:for each="value in values">
+                            <td>${value}</td>
+                        </py:for>
+                        <td class="artifact-pages"><a href="#">42</a></td>
+                        <td class="artifact-options"><a href="${req.href.adaptiveartifacts('artifact', artifact.get_id(), action='view')}">[view]</a> <a href="${req.href.adaptiveartifacts('artifact', artifact.get_id(), action='edit')}">[edit]</a></td>
+                    </tr>
+                </py:for>
+            </table>
+
+            <!--
+            <div class="paging">
+                <span><span class="current">1</span></span>
+                <span><a href="/my-trac-environment/search?asa=on&amp;changeset=on&amp;milestone=on&amp;ticket=on&amp;wiki=on&amp;q=trac&amp;page=2&amp;noquickjump=1" title="page 2">2</a></span>
+                <span class="next"><a href="/my-trac-environment/search?asa=on&amp;changeset=on&amp;milestone=on&amp;ticket=on&amp;wiki=on&amp;q=trac&amp;page=2&amp;noquickjump=1" title="Next Page">→</a></span>
+            </div>
+            -->
+            <br/><br/>
         </div>
 
         <br/><br/>
@@ -70,6 +99,6 @@
 
         <a class="opendialog viewartifact" href="${href.adaptiveartifacts('artifact', 10, action='view')}">View artifact #10 (dialog)</a>
         <br/><br/><br/>
-
+     </div>
   </body>
 </html>

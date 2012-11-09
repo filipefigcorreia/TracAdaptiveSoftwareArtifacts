@@ -4,14 +4,30 @@
 
 #artifacts {
 	margin-left: 20em;
-}
-
-#aadetails, #sedit {
 	padding: 0.4em 2em 0.4em 2em;
 	background-color: #F7F7F7;
 	border: 1px solid #D7D7D7;
 	border-radius: .4em;
 	box-shadow: .1em .1em 1em 0 #E7E7E7 inset;
+}
+
+#artifacts h2 {
+    margin-bottom:4px;
+    display:inline-block;
+}
+
+#artifacts .spec-options{
+    font-size: 70%;
+    display:inline-block;
+}
+
+#artifacts .spec-details{
+    font-size: 70%;
+}
+
+#artifacts .paging {
+    float:right;
+    margin:0;
 }
 
 ul#tabs {
@@ -20,30 +36,30 @@ ul#tabs {
 	min-height: 2em;
 }
 
-ul#tabs li {
-	float: left;
-	border: 1px solid black;
-	padding: 0.2em;
-}
-
-#aadetails{
-	_display: none;
-}
-
-#sedit{
-	display: none;
-}
-
-table.listing {
+#artifacts table.listing {
     clear: none;
 }
 
-table.listing thead tr {
-    background: #F7F7F0;
+#artifacts table.listing th.artifact-options,
+#artifacts table.listing td.artifact-options,
+#artifacts table.listing th.artifact-pages,
+#artifacts table.listing td.artifact-pages {
+    text-align: center;
+    vertical-align: middle;
 }
 
-table.listing td {
-    background: white;
+#artifacts table.listing th.artifact-pages,
+#artifacts table.listing td.artifact-pages {
+    width: 2em;
+}
+
+#artifacts table.listing th.artifact-options,
+#artifacts table.listing td.artifact-options {
+    width: 5em;
+}
+
+#artifacts table.listing td.artifact-options {
+    font-size: 70%;
 }
 
 .jstree :link, .jstree :visited {
@@ -52,4 +68,8 @@ table.listing td {
 
 .jstree-default.jstree-focused {
     background: transparent !important;
+}
+
+div#specs li a.selected {
+    background-color: #add8e6;
 }
