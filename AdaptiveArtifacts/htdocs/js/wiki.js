@@ -112,6 +112,7 @@ var setupToolbar = function(editor){
                         {
                             success: function(data){
                                 wrapSelection("[asa:"+data[0].resource_id+" ", "]");
+                                editor.session.bgTokenizer.start(0);
                             },
                             error: function(data){
                                     console.log("Ajax call failed!");
@@ -141,6 +142,7 @@ var setupTokenizer = function(editor){
 
     var tokenizer = new Tokenizer({
         "start": [
+            {token : "asa_artifact", regex : ".\[asa:[0-9]+\\s+\\w+\]"},
             {token : function(val){
                 val = val.toLowerCase();
                 if (goodWords[val])
@@ -152,6 +154,7 @@ var setupTokenizer = function(editor){
                 return "unknown";
             }, regex : "\\w+"},
             {token : "text", regex : "[^\\w]+"}
+
         ]
     });
 
@@ -231,7 +234,20 @@ var setupBalloons = function(editor){
             if (token){
                 var canvasPos = editor.renderer.scroller.getBoundingClientRect();
                 var editordiv = $('#editor');
-                if (token.type == 'keyword') {
+                var tooltip_content;
+                if (token.type == 'keyword' || token.type == 'asa_artifact') {
+                   /* console.log("Aqui: ");
+                    console.log(session.getTabSize());
+
+                    console.log("Old");
+                    console.log(e.clientX);*/
+
+                    if (token.type == 'asa_artifact'){
+                        var token_content = token.value;
+                        tooltip_content = "<a href=\"javascript:view_artifact_ajax_call('" + token_content + "');\" id='asa_link_button_tooltip' title='Link to existing artifact' ></a>";
+                    }else if (token.type == 'keyword')
+                        tooltip_content = '<a href="javascript:link_to_existing_artifact_ajax_call();" id="asa_link_button_tooltip" title="Link to existing artifact" ></a>';
+
                     balloon = editordiv.showBalloon(
                         {
                             position: "top left",
@@ -243,10 +259,11 @@ var setupBalloons = function(editor){
                             showDuration: 1000,
                             hideDuration: 200,
                             showAnimation: function(d) { this.fadeIn(d); },
-                            contents: '<a href="javascript:link_to_existing_artifact_ajax_call();" id="asa_link_button_tooltip" title="Link to existing artifact" ></a>'
+                            contents: tooltip_content
 
                         }
                     ).data("balloon");
+
                     if(balloon) {
                         balloon.mouseleave(function(e) {
                             editordiv.hideBalloon();
@@ -264,6 +281,18 @@ var setupBalloons = function(editor){
 
 };
 
+function view_artifact_ajax_call(asa_token_content){
+
+    var ind_init = asa_token_content.indexOf(":");
+    var sub = asa_token_content.substr(ind_init+1, asa_token_content.length);
+    var ind_end = sub.indexOf(" ");
+    var id = sub.substr(0, ind_end);
+
+    createASAFormDialogFromUrl('Artifact', baseurl+"/artifact/"+id+"?action=view",
+        { "Close": function() { $(this).dialog("close"); } }
+    ).dialog('open');
+}
+
 function link_to_existing_artifact_ajax_call(){
     //This is not the right window to call in this context... waiting for link artifact window to be ready!!!!
     createASAFormDialogFromUrl('Artifact',  baseurl+"/artifact?action=new",
@@ -275,7 +304,7 @@ function link_to_existing_artifact_ajax_call(){
                         console.log("Success!");
                     },
                     error: function(data){
-                        alert("Failure!!");
+                        console.log("Failure!!");
                     }
                 }
             )}
