@@ -38,6 +38,15 @@ schema = [
         Column('attr_value'),
         Index(['artifact_id', 'version_id']),
     ],
+    # Keeps references of which artifacts are referenced by which pages
+    Table('asa_artifact_wiki', key=['artifact_id', 'artifact_version_id', 'page_name', 'page_version_id'])[
+        Column('artifact_id', type='int64'),
+        Column('artifact_version_id', type='int64'),
+        Column('page_name'),
+        Column('page_version_id', type='int'),
+        Column('ref_count', type='int64'),
+        Index(['artifact_id', 'artifact_version_id', 'page_name', 'page_version_id'], unique=True),
+    ],
     Table('asa_spec', key=['name', 'version_id'])[
         Column('name'),
         Column('version_id', type='int64'),

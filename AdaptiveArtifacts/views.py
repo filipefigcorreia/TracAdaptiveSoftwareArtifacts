@@ -28,6 +28,7 @@ def get_index(request, dbp, obj, resource):
         spec_attrs = []
         artifacts_attrs = []
         artifacts_values = []
+        artifacts_pages_count = {}
     else:
         artifacts = dbp.pool.get_instances_of(selected_spec.get_name())
 
@@ -52,6 +53,14 @@ def get_index(request, dbp, obj, resource):
                         ordered_values_lst.append("")
             artifacts_values.append((artifact, ordered_values_lst))
 
+        # get a count of the number of pages that are referenced by each artifact
+        artifacts_pages_count = {}
+        for artifact in artifacts:
+            page_count = 0
+            for page_name, page_version_id, ref_count in dbp.get_wiki_page_references(artifact):
+                page_count += ref_count
+            artifacts_pages_count[artifact] = page_count
+
     data = {
         'context': Context.from_request(request.req, resource),
         'action': 'list',
@@ -60,6 +69,7 @@ def get_index(request, dbp, obj, resource):
         'spec_columns': spec_attrs,
         'arti_columns': artifacts_attrs,
         'artifacts_values': artifacts_values,
+        'artifacts_pages_count': artifacts_pages_count,
     }
     return 'index_page.html', data, None
 

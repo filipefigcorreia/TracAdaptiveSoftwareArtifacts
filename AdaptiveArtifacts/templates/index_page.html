@@ -9,8 +9,8 @@
       <py:for each="spec,subspecs,arts_count in specs">
               <li id="spec-${spec.get_id()}">
                   <div py:choose="">
-                  <a py:when="selected_spec and spec.get_id() == selected_spec.get_id()" class="selected" href="${req.href.adaptiveartifacts(spec=spec.get_id(), page=page_nr)}">${spec.get_name()} <py:if test="arts_count>0 or len(subspecs)>0">(<py:if test="arts_count>0">${len(subspecs)}❖</py:if> <py:if test="arts_count>0">${arts_count}⟐</py:if>)</py:if></a>
-                  <a py:otherwise="" href="${req.href.adaptiveartifacts(spec=spec.get_id(), page=page_nr)}">${spec.get_name()} <py:if test="arts_count>0 or len(subspecs)>0">(<py:if test="arts_count>0">${len(subspecs)}❖</py:if> <py:if test="arts_count>0">${arts_count}⟐</py:if>)</py:if></a>
+                  <a py:when="selected_spec and spec.get_id() == selected_spec.get_id()" class="selected" href="${req.href.adaptiveartifacts(spec=spec.get_id(), page=page_nr)}">${spec_anchor_content_markup(spec, arts_count, len(subspecs))}</a>
+                  <a py:otherwise="" href="${req.href.adaptiveartifacts(spec=spec.get_id(), page=page_nr)}">${spec_anchor_content_markup(spec, arts_count, len(subspecs))}</a>
                   <py:if test="subspecs">
                       ${spec_markup(subspecs)}
                   </py:if>
@@ -18,6 +18,10 @@
           </li>
       </py:for>
       </ul>
+  </py:def>
+
+  <py:def function="spec_anchor_content_markup(spec, arts_count, subspecs_count)">
+      ${spec.get_name()} <py:if test="arts_count>0 or subspecs_count>0">(<py:if test="subspecs_count>0">${subspecs_count}❖</py:if> <py:if test="arts_count>0">${arts_count}⟐</py:if>)</py:if>
   </py:def>
 
   <head><title></title></head>
@@ -80,7 +84,16 @@
                             <py:for each="value in values">
                                 <td>${value}</td>
                             </py:for>
-                            <td class="artifact-pages"><a href="#">42</a></td>
+                            <td class="artifact-pages">
+                                <py:choose test="">
+                                  <py:when test="artifacts_pages_count[artifact]>0">
+                                      <a href="#">${artifacts_pages_count[artifact]}</a>
+                                  </py:when>
+                                  <py:otherwise>
+                                      ${artifacts_pages_count[artifact]}
+                                  </py:otherwise>
+                                </py:choose>
+                            </td>
                             <td class="artifact-options"><a href="${req.href.adaptiveartifacts('artifact', artifact.get_id(), action='view')}">[view]</a> <a href="${req.href.adaptiveartifacts('artifact', artifact.get_id(), action='edit')}">[edit]</a></td>
                         </tr>
                     </py:for>

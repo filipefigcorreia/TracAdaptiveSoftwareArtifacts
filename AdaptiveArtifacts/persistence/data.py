@@ -353,4 +353,53 @@ class DBPool(object):
         for version, ts, author, ipnr, comment in cursor:
             yield version, from_utimestamp(ts), author, ipnr, comment
 
+    # Returns list of wiki page names that reference the specified artifact
+    def update_wiki_page_references(self, page, artifacts_ids, db=None):
+        # delete references count for the last version of the page
+        # insert references count for the last version of the page
+        if db is None:
+            db = self.env.get_db_cnx()
 
+        artifacts_ids_count = [(aid,artifacts_ids.count(aid)) for aid in artifacts_ids]
+        artifacts_ids_versions = [(aid,vid,ref_count) for aid,vid,ref_count in ((aid, self._get_latest_artifact_version(aid), ref_count) for aid,ref_count in artifacts_ids_count) if not vid is None]
+
+        cursor = db.cursor()
+        query = """
+                DELETE FROM asa_artifact_wiki
+                WHERE page_name=%s AND page_version_id=%s;"""
+        cursor.execute(query, (page.name, page.version))
+
+        for aid,vid,ref_count in artifacts_ids_versions:
+            query = """
+                    INSERT INTO asa_artifact_wiki(artifact_id, artifact_version_id, page_name, page_version_id, ref_count)
+                    VALUES (%s,%s,%s,%s,%s);"""
+            cursor.execute(query, (int(aid), vid, page.name, page.version, ref_count))
+
+        db.commit()
+
+    # Returns list of wiki page names that reference the specified artifact
+    def get_wiki_page_references(self, artifact, db=None):
+        if not artifact in self.pool.get_items():
+            raise Exception("Item not in pool")
+
+        assert not isinstance(artifact, Entity)
+
+        if artifact.is_new():
+            return
+
+        if db is None:
+            db = self.env.get_db_cnx()
+
+        version = self._get_latest_artifact_version(artifact.get_id(), db)
+        if version is None:
+            raise ValueError("No version found for artifact with id '%s'" % (artifact.get_id(),))
+
+        cursor = db.cursor()
+        query = """
+                SELECT page_name, page_version_id, ref_count
+                FROM asa_artifact_wiki aw
+                WHERE aw.artifact_id=%d and aw.artifact_version_id=%d""" % (artifact.get_id(), version)
+
+        cursor.execute(query)
+        for page_name, page_version_id, ref_count in cursor:
+            yield page_name, page_version_id, ref_count

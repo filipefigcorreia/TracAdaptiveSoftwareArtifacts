@@ -9,7 +9,7 @@ from trac.resource import IResourceManager, Resource
 from trac.web.chrome import Chrome, INavigationContributor, ITemplateProvider, add_javascript, add_stylesheet, add_script_data
 from trac.web.main import IRequestHandler
 from trac.web.api import IRequestFilter
-from trac.wiki import IWikiSyntaxProvider
+from trac.wiki import IWikiSyntaxProvider, IWikiChangeListener
 from trac.util import Markup
 from genshi.builder import tag
 from AdaptiveArtifacts.persistence.data import DBPool
@@ -18,9 +18,10 @@ from AdaptiveArtifacts.model.pool import InstancePool
 from AdaptiveArtifacts.model.pool import Entity, Instance
 from AdaptiveArtifacts.requests.request import Request
 
+
 class Core(Component):
     """Core module of the plugin. Provides the Adaptive-Artifacts themselves."""
-    implements(INavigationContributor, IRequestHandler, ITemplateProvider, IResourceManager, IRequestFilter, IWikiSyntaxProvider)
+    implements(INavigationContributor, IRequestHandler, ITemplateProvider, IResourceManager, IRequestFilter, IWikiSyntaxProvider, IWikiChangeListener)
 
     def __init__(self):
         self.base_url = 'adaptiveartifacts'
@@ -136,9 +137,32 @@ class Core(Component):
         # use group names, with reasonably unique names
         yield (r'\?(?P<domain>[asa])_(?P<word>.+?)\?', self._format_asa_link)
 
-
     def _format_asa_link(self, formatter, ns, target, label):
         return tag.a(label, href=formatter.href.adaptiveartifacts('artifact', target))
+
+    # IWikiChangeListener methods
+    def wiki_page_added(self, page):
+        self._update_wiki_page_ref_count(page)
+
+    def wiki_page_changed(self, page, version, t, comment, author, ipnr):
+        self._update_wiki_page_ref_count(page)
+
+    def wiki_page_deleted(self, page):
+        self._update_wiki_page_ref_count(page)
+
+    def wiki_page_version_deleted(self, page):
+        self._update_wiki_page_ref_count(page)
+
+    def wiki_page_renamed(self, page, old_name):
+        # self._update_wiki_page_ref_count(old_name) TODO: transfer history linked to the old page name to the new page name
+        self._update_wiki_page_ref_count(page)
+
+    def _update_wiki_page_ref_count(self, page):
+        artifacts_ids = re.findall('\[asa:(\d+)\ [\w ]+\]', page.text)
+
+        dbp = DBPool(self.env, InstancePool())
+        dbp.update_wiki_page_references(page, artifacts_ids)
+
 
 
 from trac.search import ISearchSource, search_to_sql
