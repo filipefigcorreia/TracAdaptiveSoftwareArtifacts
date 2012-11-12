@@ -4,6 +4,19 @@ var setupEditor = function() {
     textarea.hide().before('<div id="editor"/>');
 
     var editor = ace.edit("editor");
+    //Get Ace Keyboard Handler and remove Find Events
+    var khandler = editor.getKeyboardHandler();
+    for(var key in khandler.commmandKeyBinding) {
+        for(var prop in khandler.commmandKeyBinding[key]) {
+            if(khandler.commmandKeyBinding[key].hasOwnProperty(prop))
+                var control = khandler.commmandKeyBinding[key][prop].bindKey.win;
+                var SupressingList = ["Ctrl-Shift-R", "Ctrl-R","Ctrl-F", "Command-F", "Command-Option-F","Command-Shift-Option-F"];
+                if(SupressingList.indexOf(control) != -1 )
+                    khandler.commmandKeyBinding[key][prop] = null;
+        }
+    }
+    editor.setKeyboardHandler(khandler);
+
     editor.setTheme("ace/theme/trac_wiki");
     editor.getSession().setUseWrapMode(true);
     editor.setHighlightActiveLine(false);
@@ -14,6 +27,7 @@ var setupEditor = function() {
     editor.getSession().on('change', function(){
       textarea.val(editor.getSession().getValue());
     });
+
 
     // Initially a copy of trac/htdocs/js/resizer.js
     // Allow resizing <textarea> elements through a drag bar
@@ -233,57 +247,71 @@ var setupTokenizer = function(editor){
 var setupBalloons = function(editor){
     var balloon;
     editor.on('mousemove', function(e) {
-            var position = e.getDocumentPosition();
-            var session = editor.session;
+        var canvasPos = editor.renderer.scroller.getBoundingClientRect();
+        // Originally adapted from the code of screenToTextCoordinates()
+        // Accounts for whitespace columns on the end of lines.
+        var position = {
+            row:e.getDocumentPosition().row ,
+            column: Math.round((e.clientX + editor.renderer.scrollLeft - canvasPos.left - editor.renderer.$padding) / editor.renderer.characterWidth)};
+        var session = editor.session;
 
-            // If the user clicked on a fold, then expand it.
-            var token = session.getTokenAt(position.row, position.column, 1);
-            if (token){
-                var canvasPos = editor.renderer.scroller.getBoundingClientRect();
-                var editordiv = $('#editor');
-                var tooltip_content;
-                if (token.type == 'keyword' || token.type == 'asa_artifact') {
-                   /* console.log("Aqui: ");
-                    console.log(session.getTabSize());
+        //Testes para ajustar posicionamento do balao
+        //console.log("Janela: "+ editor.offsetLeft+ "   "+editor.offsetTop);
+        //console.log(position.row+"      " +position.column ) ;
+        //var range = editor.session.getAWordRange(position.row, position.column);
+        //console.log(range.start);
+        //console.log(range.toScreenRange(editor.session).start);
+        //range.end.column-position.column
 
-                    console.log("Old");
-                    console.log(e.clientX);*/
 
-                    if (token.type == 'asa_artifact'){
-                        var token_content = token.value;
-                        tooltip_content = "<a href=\"javascript:view_artifact_ajax_call('" + token_content + "');\" id='asa_link_button_tooltip' title='Link to existing artifact' ></a>";
-                    }else if (token.type == 'keyword')
-                        tooltip_content = '<a href="javascript:link_to_existing_artifact_ajax_call();" id="asa_link_button_tooltip" title="Link to existing artifact" ></a>';
+        // If the user clicked on a fold, then expand it.
+        var token = session.getTokenAt(position.row, position.column, 1);
+        if (token){
 
-                    balloon = editordiv.showBalloon(
-                        {
-                            position: "top left",
-                            offsetX: e.clientX - canvasPos.left,
-                            offsetY: canvasPos.top - e.clientY + 10,
-                            tipSize: 10,
-                            delay: 500,
-                            minLifetime: 500,
-                            showDuration: 1000,
-                            hideDuration: 200,
-                            showAnimation: function(d) { this.fadeIn(d); },
-                            contents: tooltip_content
+            var editordiv = $('#editor');
+            var tooltip_content;
+            if (token.type == 'keyword' || token.type == 'asa_artifact') {
+               /* console.log("Aqui: ");
+                console.log(session.getTabSize());
 
-                        }
-                    ).data("balloon");
+                console.log("Old");
+                console.log(e.clientX);*/
 
-                    if(balloon) {
-                        balloon.mouseleave(function(e) {
-                            editordiv.hideBalloon();
-                        }).mouseenter(function(e) {
-                                editordiv.showBalloon();
-                        });
+                if (token.type == 'asa_artifact'){
+                    var token_content = token.value;
+                    tooltip_content = "<a href=\"javascript:view_artifact_ajax_call('" + token_content + "');\" id='asa_link_button_tooltip' title='Link to existing artifact' ></a>";
+                }else if (token.type == 'keyword')
+                    tooltip_content = '<a href="javascript:link_to_existing_artifact_ajax_call();" id="asa_link_button_tooltip" title="Link to existing artifact" ></a>';
+
+                balloon = editordiv.showBalloon(
+                    {
+                        position: "top left",
+                        offsetX: e.clientX - canvasPos.left ,
+                        offsetY: canvasPos.top - e.clientY + 10,
+                        tipSize: 10,
+                        delay: 500,
+                        minLifetime: 500,
+                        showDuration: 1000,
+                        hideDuration: 200,
+                        showAnimation: function(d) { this.fadeIn(d); },
+                        contents: tooltip_content
+
                     }
+                ).data("balloon");
 
-                }else{
-                    balloon && editordiv.hideBalloon();
+                if(balloon) {
+                    balloon.mouseleave(function(e) {
+                        editordiv.hideBalloon();
+                    }).mouseenter(function(e) {
+                        editordiv.showBalloon();
+                    });
                 }
-                e.stop();
+
+            }else{
+                balloon && editordiv.hideBalloon();
             }
+            e.stop();
+        }
     });
 
 };
