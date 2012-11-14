@@ -21,7 +21,7 @@
   </py:def>
 
   <py:def function="spec_anchor_content_markup(spec, arts_count, subspecs_count)">
-      ${spec.get_name()} <py:if test="arts_count>0 or subspecs_count>0">(<py:if test="subspecs_count>0">${subspecs_count}❖</py:if> <py:if test="arts_count>0">${arts_count}⟐</py:if>)</py:if>
+      ${spec.get_name()} <py:if test="arts_count>0 or subspecs_count>0"><small>(<py:if test="arts_count>0">${arts_count}</py:if>)</small></py:if>
   </py:def>
 
   <head><title></title></head>
@@ -41,7 +41,12 @@
             <h2>By Other Features</h2>
             <div id="others">
                 <ul>
-                    <li><a href="">+</a> <a href="${req.href.adaptiveartifacts('search/no_spec', action='list')}">Artifacts with no spec (63⟐)</a></li>
+                    <li>
+                        <py:choose test="">
+                        <a py:when="selected_search == 'no_spec'" class="selected" href="${req.href.adaptiveartifacts(search='no_spec')}">Artifacts with no spec <small>(${len(artifacts_values)})</small></a>
+                        <a py:otherwise="" href="${req.href.adaptiveartifacts(search='no_spec')}">Artifacts with no spec <small>(${len(artifacts_values)})</small></a>
+                        </py:choose>
+                    </li>
                 </ul>
             </div>
             <br/><br/>
@@ -49,17 +54,25 @@
 
         <div id="artifacts">
             <py:choose test="">
-              <py:when test="not selected_spec">
+              <py:when test="not selected_spec and not selected_search">
                   Please select a Spec.
               </py:when>
               <py:otherwise>
 
-                <h2>${selected_spec.get_name()}</h2> <span class="spec-options"><a href="${req.href.adaptiveartifacts('spec', selected_spec.get_id(), action='view')}">[details]</a><a href="${req.href.adaptiveartifacts('spec', selected_spec.get_id(), action='edit')}">[edit]</a></span>
-                <div class="spec-details">
-                ${len(spec_columns)} Attributes;
-                <!-- X Subspecs; -->
-                ${len(artifacts_values)} Adaptive Artifacts.
-                </div>
+                <py:if test="selected_spec and not selected_search">
+                    <h2>${selected_spec.get_name()}</h2> <span class="spec-options"><a href="${req.href.adaptiveartifacts('spec', selected_spec.get_id(), action='view')}">[details]</a><a href="${req.href.adaptiveartifacts('spec', selected_spec.get_id(), action='edit')}">[edit]</a></span>
+                    <div class="spec-details">
+                    ${len(spec_columns)} Attributes;
+                    <!-- X Subspecs; -->
+                    ${len(artifacts_values)} Adaptive Artifacts.
+                    </div>
+                </py:if>
+                <py:if test="selected_search and selected_search=='no_spec'">
+                    <h2>Artifacts with no Spec</h2>
+                    <div class="spec-details">
+                    ${len(artifacts_values)} Adaptive Artifacts.
+                    </div>
+                </py:if>
 
                 <!--
                 <div class="paging">
@@ -73,7 +86,7 @@
                 <table class="listing">
                     <thead>
                         <tr>
-                            <py:for each="column in spec_columns"><th>${column}</th></py:for>
+                            <py:for each="column in spec_columns"><th title="'${column}' attribute, defined by the '${selected_spec.get_name()}' Spec.">${column}</th></py:for>
                             <py:for each="column in arti_columns"><th style="font-style:italic;">${column}</th></py:for>
                             <th class="artifact-pages">Pages</th>
                             <th class="artifact-options">Options</th>

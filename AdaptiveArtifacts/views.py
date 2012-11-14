@@ -23,14 +23,23 @@ def get_index(request, dbp, obj, resource):
         return specs
 
     specs = get_spec_data(Instance.get_name())
+
     selected_spec = dbp.pool.get_item(request.req.args.get('spec', ''))
+    selected_search = request.req.args.get('search', None)
+
+    if selected_spec is None and not selected_search is None and selected_search == 'no_spec':
+        selected_spec = Instance
+
     if selected_spec is None:
         spec_attrs = []
         artifacts_attrs = []
         artifacts_values = []
         artifacts_pages_count = {}
     else:
-        artifacts = dbp.pool.get_instances_of(selected_spec.get_name())
+        if not selected_search is None and selected_search == 'no_spec':
+            artifacts = dbp.pool.get_instances_of(selected_spec.get_name(), direct_instances_only=True)
+        else:
+            artifacts = dbp.pool.get_instances_of(selected_spec.get_name())
 
         # Get attributes defined at the spec level ...
         spec_attrs = [attribute.name for attribute in selected_spec.get_attributes()]
@@ -63,6 +72,7 @@ def get_index(request, dbp, obj, resource):
         'action': 'list',
         'specs': specs,
         'selected_spec': selected_spec,
+        'selected_search': selected_search,
         'spec_columns': spec_attrs,
         'arti_columns': artifacts_attrs,
         'artifacts_values': artifacts_values,
