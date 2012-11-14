@@ -56,10 +56,7 @@ def get_index(request, dbp, obj, resource):
         # get a count of the number of pages that are referenced by each artifact
         artifacts_pages_count = {}
         for artifact in artifacts:
-            page_count = 0
-            for page_name, page_version_id, ref_count in dbp.get_wiki_page_references(artifact):
-                page_count += ref_count
-            artifacts_pages_count[artifact] = page_count
+            artifacts_pages_count[artifact] = len(list(dbp.get_wiki_page_ref_counts(artifact)))
 
     data = {
         'context': Context.from_request(request.req, resource),
