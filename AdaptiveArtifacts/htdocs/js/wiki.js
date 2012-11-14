@@ -98,14 +98,14 @@ var setupToolbar = function(editor){
 
     toolbar.after('<div class="wikitoolbar" id="asa_toolbar"></div>');
     var asa_toolbar = $('#asa_toolbar');
-    asa_toolbar.append('<a href="#" id="asa_create_button" title="Create artifact through selection" tabindex="400"></a>');
-    asa_toolbar.append('<a href="#" id="asa_link_button" title="Link to existing artifact" tabindex="400"></a>');
+    asa_toolbar.append('<a href="#" id="asa_create_button" title="Create Adaptive Artifact with text selection" tabindex="400"></a>');
+    asa_toolbar.append('<a href="#" id="asa_link_button" title="Link text selection to existing Adaptive Artifact" tabindex="400"></a>');
 
     // Events for the custom toolbar buttons
     $("#asa_create_button").click(function() {
         editor.focus();
         if(!editor.getSelection().isEmpty()){
-            createASAFormDialogFromUrl('Artifact',  baseurl+"/artifact?action=new",
+            createASAFormDialogFromUrl('Create Adaptive Artifact',  baseurl+"/artifact?action=new",
                 { "Create": function() {
                     submitASAFormDialog(
                         $(this),
@@ -244,9 +244,9 @@ var setupBalloons = function(editor){
 
                     if (token.type == 'asa_artifact'){
                         var token_content = token.value;
-                        tooltip_content = "<a href=\"javascript:view_artifact_ajax_call('" + token_content + "');\" id='asa_view_button_tooltip' title='View artifact' ></a>";
+                        tooltip_content = "<a href=\"javascript:view_artifact_ajax_call('" + token_content + "');\" id='asa_view_button_tooltip' title='View Adaptive Artifact' ></a>";
                     }else if (token.type == 'keyword')
-                        tooltip_content = '<a href="javascript:link_to_existing_artifact_ajax_call();" id="asa_link_button_tooltip" title="Link to existing artifact" ></a>';
+                        tooltip_content = '<a href="javascript:link_to_existing_artifact_ajax_call();" id="asa_link_button_tooltip" title="Link to existing Adaptive Artifact" ></a>';
 
                     balloon = editordiv.showBalloon(
                         {
@@ -288,14 +288,14 @@ function view_artifact_ajax_call(asa_token_content){
     var ind_end = sub.indexOf(" ");
     var id = sub.substr(0, ind_end);
 
-    createASAFormDialogFromUrl('Artifact', baseurl+"/artifact/"+id+"?action=view",
+    createASAFormDialogFromUrl('View Adaptive Artifact', baseurl+"/artifact/"+id+"?action=view",
         { "Close": function() { $(this).dialog("close"); } }
     ).dialog('open');
 }
 
 function link_to_existing_artifact_ajax_call(){
     //This is not the right window to call in this context... waiting for link artifact window to be ready!!!!
-    createASAFormDialogFromUrl('Artifact',  baseurl+"/artifact?action=new",
+    createASAFormDialogFromUrl('Create Adaptive Artifact',  baseurl+"/artifact?action=new",
         { "Create": function() {
             submitASAFormDialog(
                 $(this),
