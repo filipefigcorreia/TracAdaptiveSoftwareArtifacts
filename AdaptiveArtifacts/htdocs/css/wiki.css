@@ -6,10 +6,16 @@
 #asa_toolbar a#asa_create_button { background: transparent url(../media/buttons/asa_add_16x24.png) no-repeat }
 #asa_toolbar a#asa_link_button { background: transparent url(../media/buttons/asa_link_16x24.png) no-repeat }
 
-a#asa_link_button_tooltip{
+a#asa_link_button_tooltip {
     background: transparent url(../media/buttons/asa_link_16x24.png) no-repeat;
     width: 25px;
     height: 16px;
     display:block;
 }
 
+a#asa_view_button_tooltip {
+    background: transparent url(../media/buttons/asa_view_16x24.png) no-repeat;
+    width: 25px;
+    height: 16px;
+    display:block;
+}

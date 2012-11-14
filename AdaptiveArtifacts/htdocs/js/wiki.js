@@ -244,7 +244,7 @@ var setupBalloons = function(editor){
 
                     if (token.type == 'asa_artifact'){
                         var token_content = token.value;
-                        tooltip_content = "<a href=\"javascript:view_artifact_ajax_call('" + token_content + "');\" id='asa_link_button_tooltip' title='Link to existing artifact' ></a>";
+                        tooltip_content = "<a href=\"javascript:view_artifact_ajax_call('" + token_content + "');\" id='asa_view_button_tooltip' title='View artifact' ></a>";
                     }else if (token.type == 'keyword')
                         tooltip_content = '<a href="javascript:link_to_existing_artifact_ajax_call();" id="asa_link_button_tooltip" title="Link to existing artifact" ></a>';
 
