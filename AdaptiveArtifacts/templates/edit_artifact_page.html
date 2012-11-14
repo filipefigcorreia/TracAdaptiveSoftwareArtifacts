@@ -8,18 +8,30 @@
     <head><title></title></head>
     <body>
         <div id="content" class="asa">
-            <div id="asa">
-                <h1>Artifact</h1>
-                <form method="post" action="${url_path}">
-
-                    <div id="dialog-content"></div>
-
+            <div>
+                <h1>
                     <py:if test="not artifact">
-                      <input type="submit" value="Create" />
+                        Create Adaptive Artifact
                     </py:if>
                     <py:if test="artifact">
-                      <input type="submit" value="Edit" />
+                        Edit Adaptive Artifact #${artifact.get_id()}
                     </py:if>
+                </h1>
+                <form method="post" action="${url_path}">
+                    <fieldset id="properties">
+                        <legend>Details</legend>
+
+                        <div id="dialog-content"></div>
+                    </fieldset>
+
+                    <div class="buttons">
+                        <py:if test="not artifact">
+                          <input type="submit" value="Create" />
+                        </py:if>
+                        <py:if test="artifact">
+                          <input type="submit" value="Edit" />
+                        </py:if>
+                    </div>
                     <br/><br/>
                 </form>
             </div>

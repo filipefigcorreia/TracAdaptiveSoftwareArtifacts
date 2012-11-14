@@ -5,23 +5,26 @@
     <xi:include href="layout.html" />
     <xi:include href="view_artifact_common.html" />
 
-    <head><title>${artifact.__class__.get_id()}</title></head>    
+    <head>
+        <title>Adaptive Artifact #${artifact.get_id()} <py:if test="spec_name">(${spec_name})</py:if></title>
+    </head>
     <body>
         <div id="content" class="asa">
             <div id="asa">
-                <h1>Artifact <em>${str(artifact)}</em></h1>
-
                 <div id="dialog-content"></div>
+            </div>
 
-                <form method="get" action="${href.adaptiveartifacts('artifact/' + artifact.get_id())}" id="modifypage">
+            <div class="buttons">
+                <form method="get" action="${href.adaptiveartifacts('artifact/' + artifact.get_id())}">
                     <input type="hidden" name="action" value="edit" />
                     <input type="submit" value="Edit" />
                 </form>
-                <form method="get" action="${href.adaptiveartifacts('artifact/' + artifact.get_id())}" id="modifypage">
+                <form method="get" action="${href.adaptiveartifacts('artifact/' + artifact.get_id())}">
                     <input type="hidden" name="action" value="delete" />
                     <input type="submit" value="Delete" />
                 </form>
             </div>
+            <br/><br/>
         </div>
     </body>
 </html>

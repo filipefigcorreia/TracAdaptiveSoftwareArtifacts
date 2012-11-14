@@ -6,12 +6,65 @@
 }
 
 #asa {
-    background: #FFD;
-    border: 1px solid #DD9;
+    background: #ddebff;
+    border: 1px solid #99b5dd;
     border-radius: .4em;
     margin-top: 1em;
     padding: .5em 1em;
     position: relative;
+}
+
+#asa h1 {
+    padding-bottom: 0.5em;
+    margin-bottom: 0em;
+    /*border-bottom: 1px solid #99b5dd;*/
+    width: 100%;
+}
+
+ul.artifact-details {
+    list-style-type: none;
+    padding-left: 0;
+    margin:0;
+}
+
+ul.artifact-details li {
+    padding-bottom: 0.4em;
+}
+#asa .label {
+    color: #334866;
+    font-size: 100%;
+    font-weight: normal;
+    margin-bottom: 0;
+}
+
+table.attributes {
+    clear: both;
+    border-top: 1px solid #99b5dd;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+table.attributes tr {
+    border-bottom: 1px dotted #bbd0ee;
+}
+
+table.attributes th {
+    color: #334866;
+    font-weight: normal;
+    text-align: left;
+    width: 3em;
+    white-space: nowrap;
+}
+
+table.attributes td {
+    width: auto;
+}
+
+table.attributes th,
+table.attributes td {
+    font-size: 80%;
+    padding: .5em 1em;
+    vertical-align: top;
 }
 
 #content.asa label{
@@ -26,12 +79,16 @@
     display: inline-block;
 }
 
+#content.asa .buttons input {
+    width: auto;
+}
+
 .prototype{
     display: none;
 }
 
 th {font-weight: bold;}
 
-table.attributes{
+table.attrs{
     width: 100%;
 }

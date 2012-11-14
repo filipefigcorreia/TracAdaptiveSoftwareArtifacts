@@ -79,14 +79,16 @@
                   <a href="#" class="addattr" title="Add one more attribute" style="margin-left: 12.5em;">[+]</a>
 
                   <br/>
-                  <py:if test="not spec">
-                    <input type="hidden" name="action" value="new" />
-                    <input type="submit" value="Create" />
-                  </py:if>
-                  <py:if test="spec">
-                    <input type="hidden" name="action" value="edit" />
-                    <input type="submit" value="Edit" />
-                  </py:if>
+                  <div class="buttons">
+                      <py:if test="not spec">
+                        <input type="hidden" name="action" value="new" />
+                        <input type="submit" value="Create" />
+                      </py:if>
+                      <py:if test="spec">
+                        <input type="hidden" name="action" value="edit" />
+                        <input type="submit" value="Edit" />
+                      </py:if>
+                  </div>
                   <br/><br/>
               </form>
           </div>

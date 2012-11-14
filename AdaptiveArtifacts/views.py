@@ -111,9 +111,16 @@ def get_view_spec(request, dbp, obj, resource):
     return 'view_spec_page.html', data, None
 
 def get_view_artifact(request, dbp, obj, resource):
+    if not obj.__class__ == Instance:
+        spec_name = obj.__class__.get_name()
+        spec_url = request.req.href.adaptiveartifacts('spec/' + obj.__class__.get_id(), action='view')
+    else:
+        spec_name = spec_url = ""
+
     data = {
         'context': Context.from_request(request.req, resource),
-        'spec_name': obj.__class__.get_name() if not obj.__class__ == Instance else "",
+        'spec_name': spec_name,
+        'spec_url': spec_url,
         'artifact': obj,
     }
     return 'view_artifact_%s.html' % (request.get_format(),), data, None
