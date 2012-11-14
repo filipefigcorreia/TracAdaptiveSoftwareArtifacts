@@ -89,6 +89,8 @@ table.attributes td {
 
 th {font-weight: bold;}
 
-table.attrs{
+/* TODO: needs refactoring. "fieldset#properties" is currently used to match the "create" but not the "view" page/dialog */
+fieldset#properties table.attributes{
     width: 100%;
+    border-top: 0;
 }
