@@ -57,6 +57,8 @@ class Core(Component):
         add_javascript(req, 'adaptiveartifacts/js/lib/jstree/jquery.jstree.js')
         add_javascript(req, 'adaptiveartifacts/js/indextree.js')
 
+        if req.environ.get('PATH_INFO', '')[-5:] == 'pages':
+            add_stylesheet(req, 'common/css/search.css')
 
         res = Core._get_resource(request.obj) if not request.obj in (Entity, Instance, None) and not type(request.obj)==unicode else None
         result = request.view(request, dbp, request.obj, res)

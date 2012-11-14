@@ -70,6 +70,39 @@ def get_index(request, dbp, obj, resource):
     }
     return 'index_page.html', data, None
 
+def get_list_pages(request, dbp, obj, resource):
+    from trac.util.datefmt import format_datetime, user_time, utc
+    from datetime import datetime
+
+    artifact_id = request.req.args.get('artifact', None)
+    if artifact_id is None:
+        raise Exception("No artifact was specified.")
+    dbp.load_artifact(artifact_id)
+    artifact = dbp.pool.get_item(artifact_id)
+
+    results = []
+    from trac.wiki.model import WikiPage
+    from trac.resource import get_resource_url
+    from trac.search import shorten_result
+    for pagename, page_version_id, ref_count in dbp.get_wiki_page_ref_counts(artifact):
+        page = WikiPage(dbp.env, pagename)
+
+        results.append(
+            {'href': get_resource_url(dbp.env, page.resource, request.req.href),
+             'title': pagename,
+             'date': user_time(request.req, format_datetime, datetime.now(utc)),
+             'author': page.author,
+             'excerpt': shorten_result(page.text)}
+        )
+
+    data = {
+        'context': Context.from_request(request.req, resource),
+        'artifact': artifact,
+        'results': results,
+    }
+    return 'list_pages.html', data, None
+
+
 def get_view_spec(request, dbp, obj, resource):
     data = {
         'context': Context.from_request(request.req, resource),

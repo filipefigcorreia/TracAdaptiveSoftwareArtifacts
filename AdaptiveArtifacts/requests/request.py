@@ -11,7 +11,7 @@ class Request(object):
         self.req = req
 
         self.resource_type = req.args.get('asa_resource_type', None)
-        if not self.resource_type in ['spec', 'artifact', 'search', None]:
+        if not self.resource_type in ['spec', 'artifact', 'search', 'pages', None]:
             raise ValueError("Unknown type of resource '%s'" % (self.resource_type,))
 
         self.resource_id = req.args.get('asa_resource', None)
@@ -28,7 +28,7 @@ class Request(object):
 
     def _resolve_object_and_action(self, dbp):
         self.action = self.req.args.get('action', None)
-        if not self.action in ['view', 'edit', 'list', 'index', 'new', 'delete', None]:
+        if not self.action in ['view', 'edit', 'list', 'new', 'delete', None]:
             raise ValueError("Unknown action '%s'" % (self.action,))
 
         if self.resource_type is None:
@@ -38,6 +38,9 @@ class Request(object):
             if not self.resource_id in ['no_spec', 'artifact', 'spec']:
                 raise Exception("Unknown search '%s'" % (self.resource_id,))
             self.obj = self.resource_id
+            self.action = 'list'
+        elif self.resource_type == 'pages':
+            self.obj = None
             self.action = 'list'
         elif self.resource_type in ['spec', 'artifact']:
             if self.resource_id is None:

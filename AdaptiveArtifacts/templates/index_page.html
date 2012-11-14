@@ -87,7 +87,7 @@
                             <td class="artifact-pages">
                                 <py:choose test="">
                                   <py:when test="artifacts_pages_count[artifact]>0">
-                                      <a href="#">${artifacts_pages_count[artifact]}</a>
+                                      <a href="${req.href.adaptiveartifacts('pages', artifact=artifact.get_id())}">${artifacts_pages_count[artifact]}</a>
                                   </py:when>
                                   <py:otherwise>
                                       ${artifacts_pages_count[artifact]}

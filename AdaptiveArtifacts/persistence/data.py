@@ -142,6 +142,19 @@ class DBPool(object):
         row = rows.fetchone()
         return row[0] if not row is None and len(row)>0 else None
 
+    def _get_latest_wiki_page_version(self, pagename, db=None):
+        if not db:
+            db = self.env.get_read_db()
+        cursor = db.cursor()
+        query = """
+                SELECT max(version) version
+                FROM wiki
+                WHERE name='%s' """  % (pagename,)
+        query += """GROUP BY name"""
+        rows = cursor.execute(query)
+        row = rows.fetchone()
+        return row[0] if not row is None and len(row)>0 else None
+
     def load_specs(self, db=None):
         if not db:
             db = self.env.get_read_db()
@@ -360,8 +373,11 @@ class DBPool(object):
         if db is None:
             db = self.env.get_db_cnx()
 
-        artifacts_ids_count = [(aid,artifacts_ids.count(aid)) for aid in artifacts_ids]
-        artifacts_ids_versions = [(aid,vid,ref_count) for aid,vid,ref_count in ((aid, self._get_latest_artifact_version(aid), ref_count) for aid,ref_count in artifacts_ids_count) if not vid is None]
+        artifacts_ids_count = set([(aid,artifacts_ids.count(aid)) for aid in artifacts_ids])
+        artifacts_ids_versions = [(aid,vid,ref_count)
+                                  for aid,vid,ref_count in ((aid, self._get_latest_artifact_version(aid), ref_count)
+                                      for aid,ref_count in artifacts_ids_count)
+                                          if not vid is None]
 
         cursor = db.cursor()
         query = """
@@ -377,8 +393,8 @@ class DBPool(object):
 
         db.commit()
 
-    # Returns list of wiki page names that reference the specified artifact
-    def get_wiki_page_references(self, artifact, db=None):
+    # Returns list of wiki page names that reference the specified artifact and the number of times that it references it.
+    def get_wiki_page_ref_counts(self, artifact, db=None):
         if not artifact in self.pool.get_items():
             raise Exception("Item not in pool")
 
@@ -396,10 +412,11 @@ class DBPool(object):
 
         cursor = db.cursor()
         query = """
-                SELECT page_name, page_version_id, ref_count
+                SELECT page_name, max(page_version_id), ref_count
                 FROM asa_artifact_wiki aw
-                WHERE aw.artifact_id=%d and aw.artifact_version_id=%d""" % (artifact.get_id(), version)
+                WHERE aw.artifact_id=%d and aw.artifact_version_id=%d
+                GROUP BY page_name""" % (int(artifact.get_id()), version)
 
         cursor.execute(query)
-        for page_name, page_version_id, ref_count in cursor:
-            yield page_name, page_version_id, ref_count
+        for pagename, page_version_id, ref_count in cursor:
+            yield pagename, page_version_id, ref_count
