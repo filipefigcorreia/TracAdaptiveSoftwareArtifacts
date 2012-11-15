@@ -119,7 +119,7 @@ var setupToolbar = function(editor){
     $("#asa_create_button").click(function() {
         editor.focus();
         if(!editor.getSelection().isEmpty()){
-            createASAFormDialogFromUrl('Artifact',  baseurl+"/artifact?action=new",
+            createASAFormDialogFromUrl('Create Adaptive Artifact',  baseurl+"/artifact?action=new",
                 { "Create": function() {
                     submitASAFormDialog(
                         $(this),
@@ -323,14 +323,14 @@ function view_artifact_ajax_call(asa_token_content){
     var ind_end = sub.indexOf(" ");
     var id = sub.substr(0, ind_end);
 
-    createASAFormDialogFromUrl('Artifact', baseurl+"/artifact/"+id+"?action=view",
+    createASAFormDialogFromUrl('View Adaptive Artifact', baseurl+"/artifact/"+id+"?action=view",
         { "Close": function() { $(this).dialog("close"); } }
     ).dialog('open');
 }
 
 function link_to_existing_artifact_ajax_call(){
     //This is not the right window to call in this context... waiting for link artifact window to be ready!!!!
-    createASAFormDialogFromUrl('Artifact',  baseurl+"/artifact?action=new",
+    createASAFormDialogFromUrl('Select Adaptive Artifact',  baseurl+"/artifact?action=new",
         { "Create": function() {
             submitASAFormDialog(
                 $(this),
