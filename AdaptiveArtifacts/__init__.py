@@ -140,7 +140,19 @@ class Core(Component):
         yield (r'\?(?P<domain>[asa])_(?P<word>.+?)\?', self._format_asa_link)
 
     def _format_asa_link(self, formatter, ns, target, label):
-        return tag.a(label, href=formatter.href.adaptiveartifacts('artifact', target))
+        try:
+            pool = InstancePool()
+            dbp = DBPool(self.env, pool)
+            dbp.load_artifact(id=target)
+            artifact = pool.get_item(id=target)
+            spec_name = artifact.__class__.__name__ if not artifact.__class__ is Instance else None
+            if spec_name is None:
+                title = "Adaptive Software Artifact '%s'" % (label,)
+            else:
+                title = "Adaptive Software Artifact '%s' of spec '%s'" % (label,spec_name)
+        except ValueError:
+            title = "Adaptive Software Artifact with ID '%s' does not exist" % (target,)
+        return tag.a(label, href=formatter.href.adaptiveartifacts('artifact', target), title=title)
 
     # IWikiChangeListener methods
     def wiki_page_added(self, page):
