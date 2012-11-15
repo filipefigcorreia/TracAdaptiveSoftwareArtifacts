@@ -163,7 +163,7 @@ var setupTokenizer = function(editor){
 
     var tokenizer = new Tokenizer({
         "start": [
-            {token : "asa_artifact", regex : ".\[asa:[0-9]+\\s+\\w+\]"},
+            {token : "asa_artifact", regex : ".\[asa:[0-9]+\\s+[\\s\\w]+\]"},
             {token : function(val){
                 val = val.toLowerCase();
                 if (goodWords[val])
