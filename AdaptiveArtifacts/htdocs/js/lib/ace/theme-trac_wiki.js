@@ -60,12 +60,10 @@ exports.cssText = "/* CSS style content from github's default pygments highlight
 }\
 \
 .ace-trac-wiki .ace_keyword {\
-    border-bottom: 1px dashed blue;\
-    color: blue;\
+    border-bottom: 1px dashed #026AFF;\
 }\
 .ace-trac-wiki .ace_asa_artifact {\
-    border-bottom: 1px dashed blue;\
-    color: green;\
+    color: #026AFF;\
 }\
 \
 .ace-trac-wiki .ace_string {\
