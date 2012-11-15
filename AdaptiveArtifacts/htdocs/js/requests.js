@@ -31,7 +31,7 @@ Requests.searchArtifacts = function(spec, attributes, callback) {
         success: function (data) {
             callback(data);
         },
-        data: {'__FORM_TOKEN':form_token, 'q':JSON.stringify(attributes)}
+        data: {'__FORM_TOKEN':form_token, 'attributes':JSON.stringify(attributes)}
     });
 };
 

@@ -38,13 +38,35 @@ class Searcher(object):
                 yield (id, attr_name, attr_value, vid, time, author)
 
     @classmethod
-    def search_artifacts(cls, dbp, terms):
-        terms = cls._normalize_terms([terms])
-        if not terms:
-            return []
+    def search_artifacts(cls, dbp, spec=None, attributes=None):
+        if '__any' in attributes:
+            any_attribute_values = attributes['__any']
+            del(attributes['__any'])
+        else:
+            any_attribute_values = []
+
+        any_attribute_values = cls._normalize_terms(any_attribute_values)
+        for attr_name,attr_values in attributes:
+            attributes[attr_name] = cls._normalize_terms(attributes[attr_name])
 
         with dbp.env.db_query as db:
-            sql_query, args = search_to_sql(db, ['LOWER(val.attr_value)'], terms)
+            sql_names = ""
+            sql_values = []
+            for terms in any_attribute_values:
+                sql_names_partial, sql_values_partial = search_to_sql(db, ['LOWER(val.attr_value)'], terms.split())
+                if sql_names_partial:
+                    if sql_names:
+                        sql_names += " OR "
+                    sql_names += "(" + sql_names_partial + ")"
+                    sql_values.extend(sql_values_partial)
+
+            for attr_name, attr_values in attributes:
+                for terms in attr_values:
+                    sql_names_partial, sql_values_partial = search_to_sql(db, ['LOWER(val.attr_value)'], terms)
+                    if sql_names:
+                        sql_names += " OR "
+                    sql_names += "([LOWER(val.attr_name) %s) AND (%s)) " % (db.like() % (attr_name,), sql_names_partial)
+                    sql_values.extend(sql_values_partial)
 
             results = []
             for id, vid, term in db("""
@@ -52,8 +74,8 @@ class Searcher(object):
                     FROM asa_artifact_value val
                         INNER JOIN asa_version v ON v.id=val.version_id
                         INNER JOIN asa_artifact a ON a.id=val.artifact_id
-                    WHERE """ + sql_query +
-                    """ GROUP BY a.id""", args):
+                    WHERE """ + sql_names +
+                    """ GROUP BY a.id""", sql_values):
                 if dbp.pool.get_item(id) is None:
                     dbp.load_artifact(id, db)
                 results.append((dbp.pool.get_item(id), term))

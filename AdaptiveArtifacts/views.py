@@ -166,18 +166,13 @@ def post_list_search_artifact_json(request, dbp, obj, resource):
     from trac.resource import get_resource_url
     from trac.resource import Resource
 
-    unparsed_terms = request.req.args.get('q', [])
+    unparsed_attributes = request.req.args.get('attributes', [])
     import json
-    terms_by_attribute = json.loads(unparsed_terms)
-    assert '__any' in terms_by_attribute and len(terms_by_attribute)==1
-    terms = terms_by_attribute['__any']
+    terms = json.loads(unparsed_attributes)
 
     data = []
-    if type(terms)!=list:
-        terms = [terms]
-    for and_terms in terms:
-        search_results = Searcher.search_artifacts(dbp, and_terms)
-        data.extend([dict({'term' : term, 'id': artifact.get_id(), 'title': str(artifact), 'url':get_resource_url(dbp.env, Resource('asa', artifact.get_id(), artifact.version), request.req.href)}) for artifact, term in search_results])
+    search_results = Searcher.search_artifacts(dbp, attributes=terms)
+    data.extend([dict({'term' : term, 'id': artifact.get_id(), 'title': str(artifact), 'url':get_resource_url(dbp.env, Resource('asa', artifact.get_id(), artifact.version), request.req.href)}) for artifact, term in search_results])
 
     _return_as_json(request, data)
     return
