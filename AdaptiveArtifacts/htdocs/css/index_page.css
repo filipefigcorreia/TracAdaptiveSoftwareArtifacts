@@ -73,6 +73,6 @@ ul#tabs {
     background: transparent !important;
 }
 
-div#specs li a.selected {
+div#entry-points li a.selected {
     background-color: #add8e6;
 }

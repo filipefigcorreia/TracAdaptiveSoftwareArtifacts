@@ -27,16 +27,24 @@
   <head><title></title></head>
   <body>
      <div id="content" class="asa-index">
+
+         <div class="buttons" style="float:right;">
+             <form method="get" action="${href.adaptiveartifacts('spec')}">
+                 <input type="hidden" name="action" value="new" />
+                 <input type="submit" value="New Spec" />
+             </form>
+             <form method="get" action="${href.adaptiveartifacts('artifact')}">
+                 <input type="hidden" name="action" value="new" />
+                 <input type="submit" value="New Artifact" />
+             </form>
+         </div>
         <h1>Adaptive Artifacts</h1>
+
         <div id="entry-points" class="tree">
             <h2>By Spec</h2>
             <div id="specs">
             ${spec_markup(specs)}
             </div>
-            <form method="get" action="${href.adaptiveartifacts('spec')}">
-                <input type="hidden" name="action" value="new" />
-                <input type="submit" value="New Spec" />
-            </form>
 
             <h2>By Other Features</h2>
             <div id="others">
@@ -119,12 +127,7 @@
                     <span class="next"><a href="/my-trac-environment/search?asa=on&amp;changeset=on&amp;milestone=on&amp;ticket=on&amp;wiki=on&amp;q=trac&amp;page=2&amp;noquickjump=1" title="Next Page">→</a></span>
                 </div>
                 -->
-                <br/><br/>
-                <form method="get" action="${href.adaptiveartifacts('artifact')}">
-                    <input type="hidden" name="action" value="new" />
-                    <input type="submit" value="New Artifact" />
-                </form>
-
+                <br/>
               </py:otherwise>
             </py:choose>
         </div>

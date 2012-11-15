@@ -2,96 +2,105 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
-  <xi:include href="layout.html" />
+    <xi:include href="layout.html" />
 
-  <py:def function="attr_markup(idx=None, attr_name=None, attr_type=None, attr_multiplicity=None)">
-      <td><a class="delattr" href="#">[-]</a></td>
-      <td><input type="text" name="attr-name-${idx}" value="${attr_name}" /></td>
-      <td>
-          <select name="attr-type-${idx}">
-            <option value=""></option>
-            <py:for each="t in types">
-                <py:if test="t==attr_type">
-                    <option value="${t}" selected="selected">${t}</option>
+    <py:def function="attr_markup(idx=None, attr_name=None, attr_type=None, attr_multiplicity=None)">
+        <td><a class="delattr" href="#">[-]</a></td>
+        <td><input type="text" name="attr-name-${idx}" value="${attr_name}" /></td>
+        <td>
+            <select name="attr-type-${idx}">
+                <option value=""></option>
+                <py:for each="t in types">
+                    <py:if test="t==attr_type">
+                        <option value="${t}" selected="selected">${t}</option>
+                    </py:if>
+                    <py:if test="t!=attr_type">
+                        <option value="${t}">${t}</option>
+                    </py:if>
+                </py:for>
+            </select>
+        </td>
+        <td>
+            <select name="attr-multiplicity-${idx}">
+                <option value=""></option>
+                <py:for each="m in multiplicities">
+                    <py:if test="m==attr_multiplicity">
+                        <option value="${m}" selected="selected">${m}</option>
+                    </py:if>
+                    <py:if test="m!=attr_multiplicity">
+                        <option value="${m}">${m}</option>
+                    </py:if>
+                </py:for>
+            </select>
+        </td>
+    </py:def>
+
+    <py:def function="attr_markup_readonly(idx=None, attr_name=None, attr_type=None, attr_multiplicity=None)">
+        <td></td>
+        <td>${attr_name}</td>
+        <td>${attr_type}</td>
+        <td>${attr_multiplicity}</td>
+    </py:def>
+
+    <head><title></title></head>
+    <body>
+        <div id="content" class="asa">
+            <h1>
+                <py:if test="not spec">
+                    Create Adaptive Artifact Specification
                 </py:if>
-                <py:if test="t!=attr_type">
-                    <option value="${t}">${t}</option>
+                <py:if test="spec">
+                    Edit Adaptive Artifact Specification
                 </py:if>
-              </py:for>
-          </select>
-      </td>
-      <td>
-           <select name="attr-multiplicity-${idx}">
-               <option value=""></option>
-               <py:for each="m in multiplicities">
-                   <py:if test="m==attr_multiplicity">
-                       <option value="${m}" selected="selected">${m}</option>
-                   </py:if>
-                   <py:if test="m!=attr_multiplicity">
-                       <option value="${m}">${m}</option>
-                   </py:if>
-               </py:for>
-           </select>
-       </td>
-  </py:def>
+            </h1>
+            <form method="post" action="${url_path}">
+                <fieldset id="properties">
+                    <legend>Details</legend>
+                    <label>Name:</label>
+                    <py:if test="spec"><input type="text" name="name" value="${spec.get_name()}" /></py:if>
+                    <py:if test="not spec"><input type="text" name="name" value="" /></py:if>
+                    <br/>
+                    <label>Inherits:</label>
+                    <py:if test="not spec or spec.get_parent() is None">
+                        <input type="text" name="parent" value="" />
+                    </py:if>
+                    <py:if test="spec and not spec.get_parent() is None">
+                        <input type="text" name="parent" value="${spec.get_parent().get_name()}" />
+                    </py:if><br/>
+                    <label>Attributes:</label>
+                    <table class="attributes">
+                        <tr><th></th><th>Name</th><th>Type</th><th>Multiplicity</th></tr>
+                        <tr class="attribute prototype">
+                            ${attr_markup(idx="X")}
+                        </tr>
+                        <py:if test="spec">
+                            <tr py:for="uuid, name, owner, type, multiplicity, in attributes" class="attribute">
+                                <py:if test="owner == spec">
+                                    ${attr_markup(idx=uuid, attr_name=name, attr_type=type, attr_multiplicity=multiplicity)}
+                                </py:if>
+                                <py:if test="owner != spec">
+                                    ${attr_markup_readonly(idx=uuid, attr_name=name, attr_type=type, attr_multiplicity=multiplicity)}
+                                </py:if>
+                            </tr>
+                        </py:if>
+                    </table>
+                    <a href="#" class="addattr" title="Add one more attribute" style="margin-left: 12.5em;">[+]</a>
 
-  <py:def function="attr_markup_readonly(idx=None, attr_name=None, attr_type=None, attr_multiplicity=None)">
-      <td></td>
-      <td>${attr_name}</td>
-      <td>${attr_type}</td>
-      <td>${attr_multiplicity}</td>
-  </py:def>
+                    <br/>
+                </fieldset>
 
-  <head><title></title></head>
-  <body>
-      <div id="content" class="asa">
-          <div id="asa">
-              <h1>Artifact Specification</h1>
-              <form method="post" action="${url_path}">
-                  <label>Name:</label>
-                  <py:if test="spec"><input type="text" name="name" value="${spec.get_name()}" /></py:if>
-                  <py:if test="not spec"><input type="text" name="name" value="" /></py:if>
-                  <br/>
-                  <label>Inherits:</label>
-                  <py:if test="not spec or spec.get_parent() is None">
-                      <input type="text" name="parent" value="" />
-                  </py:if>
-                  <py:if test="spec and not spec.get_parent() is None">
-                      <input type="text" name="parent" value="${spec.get_parent().get_name()}" />
-                  </py:if><br/>
-                  <label>Attributes:</label>
-                  <table class="attributes">
-                      <tr><th></th><th>Name</th><th>Type</th><th>Multiplicity</th></tr>
-                      <tr class="attribute prototype">
-                          ${attr_markup(idx="X")}
-                      </tr>
-                      <py:if test="spec">
-                          <tr py:for="uuid, name, owner, type, multiplicity, in attributes" class="attribute">
-                              <py:if test="owner == spec">
-                                  ${attr_markup(idx=uuid, attr_name=name, attr_type=type, attr_multiplicity=multiplicity)}
-                              </py:if>
-                              <py:if test="owner != spec">
-                                  ${attr_markup_readonly(idx=uuid, attr_name=name, attr_type=type, attr_multiplicity=multiplicity)}
-                              </py:if>
-                          </tr>
-                      </py:if>
-                  </table>
-                  <a href="#" class="addattr" title="Add one more attribute" style="margin-left: 12.5em;">[+]</a>
-
-                  <br/>
-                  <div class="buttons">
-                      <py:if test="not spec">
+                <div class="buttons">
+                    <py:if test="not spec">
                         <input type="hidden" name="action" value="new" />
                         <input type="submit" value="Create" />
-                      </py:if>
-                      <py:if test="spec">
+                    </py:if>
+                    <py:if test="spec">
                         <input type="hidden" name="action" value="edit" />
                         <input type="submit" value="Edit" />
-                      </py:if>
-                  </div>
-                  <br/><br/>
-              </form>
-          </div>
-      </div>
-  </body>
+                    </py:if>
+                </div>
+                <br/><br/>
+            </form>
+        </div>
+    </body>
 </html>

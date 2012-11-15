@@ -83,6 +83,10 @@ table.attributes td {
     width: auto;
 }
 
+#content.asa-index .buttons input {
+    margin: 0;
+}
+
 .prototype{
     display: none;
 }
