@@ -166,7 +166,11 @@ def post_list_search_artifact_json(request, dbp, obj, resource):
     from trac.resource import get_resource_url
     from trac.resource import Resource
 
-    terms = request.req.args.get('q', '')
+    unparsed_terms = request.req.args.get('q', [])
+    import json
+    terms_by_attribute = json.loads(unparsed_terms)
+    assert '__any' in terms_by_attribute and len(terms_by_attribute)==1
+    terms = terms_by_attribute['__any']
 
     data = []
     if type(terms)!=list:

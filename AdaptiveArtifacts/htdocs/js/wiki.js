@@ -220,7 +220,7 @@ var setupTokenizer = function(editor){
 
     var queryServer = function() {
         queryTimeout = null;
-        Requests.searchArtifacts(pending, function(serverWords){
+        Requests.searchArtifacts(null, {'__any': pending}, function(serverWords){
             // update goodWords and words based on serverWords
             goodWords = Object.create(null);
             for(var i=0;i<serverWords.length; i++){
