@@ -29,13 +29,13 @@
      <div id="content" class="asa-index">
 
          <div class="buttons" style="float:right;">
-             <form method="get" action="${href.adaptiveartifacts('spec')}">
-                 <input type="hidden" name="action" value="new" />
-                 <input type="submit" value="New Spec" />
-             </form>
              <form method="get" action="${href.adaptiveartifacts('artifact')}">
                  <input type="hidden" name="action" value="new" />
                  <input type="submit" value="New Artifact" />
+             </form>
+             <form method="get" action="${href.adaptiveartifacts('spec')}">
+                 <input type="hidden" name="action" value="new" />
+                 <input type="submit" value="New Spec" />
              </form>
          </div>
         <h1>Adaptive Artifacts</h1>
@@ -51,8 +51,8 @@
                 <ul>
                     <li>
                         <py:choose test="">
-                        <a py:when="selected_search == 'no_spec'" class="selected" href="${req.href.adaptiveartifacts(search='no_spec')}">Artifacts with no spec <small>(${len(artifacts_values)})</small></a>
-                        <a py:otherwise="" href="${req.href.adaptiveartifacts(search='no_spec')}">Artifacts with no spec <small>(${len(artifacts_values)})</small></a>
+                        <a py:when="selected_search == 'no_spec'" class="selected" href="${req.href.adaptiveartifacts(search='no_spec')}">Artifacts with no Spec <small>(${len(artifacts_values)})</small></a>
+                        <a py:otherwise="" href="${req.href.adaptiveartifacts(search='no_spec')}">Artifacts with no Spec <small>(${len(artifacts_values)})</small></a>
                         </py:choose>
                     </li>
                 </ul>
@@ -63,7 +63,7 @@
         <div id="artifacts">
             <py:choose test="">
               <py:when test="not selected_spec and not selected_search">
-                  Please select a Spec.
+                  Please select one of the options on the left or use create new Adaptive Artifacts or Specifications using the buttons on the right.
               </py:when>
               <py:otherwise>
 
