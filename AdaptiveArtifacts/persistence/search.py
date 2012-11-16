@@ -39,34 +39,54 @@ class Searcher(object):
 
     @classmethod
     def search_artifacts(cls, dbp, spec=None, attributes=None):
-        if '__any' in attributes:
-            any_attribute_values = attributes['__any']
-            del(attributes['__any'])
-        else:
-            any_attribute_values = []
 
-        any_attribute_values = cls._normalize_terms(any_attribute_values)
-        for attr_name,attr_values in attributes:
+        def attr_name_sql(db, attr_name):
+            return "(LOWER(val.attr_name) %s)" % (db.like() % ("'%" + attr_name + "%'",),)
+
+        def attr_values_sql(db, attr_values):
+            sql_query = ""
+            sql_values = []
+            for terms in attr_values:
+                if sql_query:
+                    sql_query += ' OR '
+                names, values = search_to_sql(db, ['LOWER(val.attr_value)'], terms.split())
+                sql_query += names
+                sql_values.extend(values)
+            return "(" + sql_query + ")", sql_values
+
+        for attr_name,attr_values in attributes.iteritems():
             attributes[attr_name] = cls._normalize_terms(attributes[attr_name])
 
         with dbp.env.db_query as db:
             sql_names = ""
             sql_values = []
-            for terms in any_attribute_values:
-                sql_names_partial, sql_values_partial = search_to_sql(db, ['LOWER(val.attr_value)'], terms.split())
-                if sql_names_partial:
-                    if sql_names:
-                        sql_names += " OR "
-                    sql_names += "(" + sql_names_partial + ")"
-                    sql_values.extend(sql_values_partial)
 
-            for attr_name, attr_values in attributes:
-                for terms in attr_values:
-                    sql_names_partial, sql_values_partial = search_to_sql(db, ['LOWER(val.attr_value)'], terms)
-                    if sql_names:
-                        sql_names += " OR "
-                    sql_names += "([LOWER(val.attr_name) %s) AND (%s)) " % (db.like() % (attr_name,), sql_names_partial)
-                    sql_values.extend(sql_values_partial)
+            if spec:
+                sql_names += "(LOWER(a.meta_class) %s)" % (db.like() % ("'%" + spec + "%'",),)
+
+            for attr_name, attr_values in attributes.iteritems():
+                if not attr_name and (not attr_values or not attr_values[0]):
+                    continue
+
+                sql_query_partial = ""
+                sql_values_partial = []
+
+                if attr_name and (attr_values and attr_values[0]):
+                    query, values = attr_values_sql(db, attr_values)
+                    sql_query_partial += "(" + attr_name_sql(db, attr_name) + " AND " + query + ")"
+                    sql_values_partial.extend(values)
+                elif attr_name:
+                    sql_query_partial += attr_name_sql(db, attr_name)
+                elif (attr_values and attr_values[0]):
+                    query, values = attr_values_sql(db, attr_values)
+                    sql_query_partial += query
+                    sql_values_partial.extend(values)
+
+                if sql_names:
+                    sql_names += " AND "
+
+                sql_names += sql_query_partial
+                sql_values.extend(sql_values_partial)
 
             results = []
             for id, vid, term in db("""

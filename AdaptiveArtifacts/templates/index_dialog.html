@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+    <xi:include href="layout.html" />
+
+    <form method="post" action="${url_path}">
+        <div class="filter">
+            <label for="spec">Has Artifact Spec</label>
+            <label for="attribute">Has Attribute ...</label>
+            <label for="value">... with Value</label><br/>
+            <input id="spec" name="spec" type="text" />
+            <input id="attribute" name="attribute" type="text" />
+            <input id="value" name="value" type="text" />
+        </div>
+
+        <div class="artifacts">
+            <table class="listing">
+                <thead>
+                    <tr><th style="width:1em;"></th><th>Spec</th><th>Title</th></tr>
+                </thead>
+                <tbody>
+                <tr class="prototype"><td><input type="radio" name="selected" value="$id" /></td><td>$spec</td><td>$title</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </form>
+</html>

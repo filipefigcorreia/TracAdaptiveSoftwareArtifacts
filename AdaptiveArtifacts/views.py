@@ -4,10 +4,13 @@
 # you should have received as part of this distribution.
 
 import uuid
+import json
 from trac.mimeview.api import Context
 from trac.web.chrome import add_notice, add_warning
 from trac.util import get_reporter_id
+from trac.resource import Resource, get_resource_url
 from AdaptiveArtifacts.model.core import Entity, Instance, Attribute
+from AdaptiveArtifacts.persistence.search import Searcher
 
 #All the methods here should return a `(template_name, data, content_type)` tuple
 
@@ -161,19 +164,23 @@ def get_list_search_no_spec(request, dbp, obj, resource):
     }
     return 'list_spec_artifacts_page.html', data, None
 
+def get_list_search_by_filter(request, dbp, obj, resource):
+    dbp.load_artifacts_of(Instance.get_name())
+    artifacts_with_no_spec = dbp.pool.get_instances_of(Instance.get_name(), direct_instances_only=True)
+
+    data = {
+        'context': Context.from_request(request.req, resource),
+        'url_path': '',
+    }
+    return 'index_dialog.html', data, None
+
 def post_list_search_artifact_json(request, dbp, obj, resource):
-    from AdaptiveArtifacts.persistence.search import Searcher
-    from trac.resource import get_resource_url
-    from trac.resource import Resource
+    unparsed_spec = request.req.args.get('spec', '')
+    spec_name = json.loads(unparsed_spec) if unparsed_spec else ''
+    attributes = json.loads(request.req.args.get('attributes', '[]'))
 
-    unparsed_attributes = request.req.args.get('attributes', [])
-    import json
-    terms = json.loads(unparsed_attributes)
-
-    data = []
-    search_results = Searcher.search_artifacts(dbp, attributes=terms)
-    data.extend([dict({'term' : term, 'id': artifact.get_id(), 'title': str(artifact), 'url':get_resource_url(dbp.env, Resource('asa', artifact.get_id(), artifact.version), request.req.href)}) for artifact, term in search_results])
-
+    search_results = Searcher.search_artifacts(dbp, spec=spec_name, attributes=attributes)
+    data = [dict({'term' : term, 'id': artifact.get_id(), 'title': str(artifact), 'spec': artifact.__class__.get_name() if artifact.__class__ != Instance else '', 'url':get_resource_url(dbp.env, Resource('asa', artifact.get_id(), artifact.version), request.req.href)}) for artifact, term in search_results]
     _return_as_json(request, data)
     return
 
@@ -203,6 +210,8 @@ def _return_as_json(request, data):
 def get_list_search(request, dbp, obj, resource):
     if obj == 'no_spec':
         return get_list_search_no_spec(request, dbp, obj, resource)
+    elif obj == 'by_filter':
+        return get_list_search_by_filter(request, dbp, obj, resource)
 
 def post_list_search(request, dbp, obj, resource):
     if obj == 'artifact':

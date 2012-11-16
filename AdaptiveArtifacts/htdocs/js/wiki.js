@@ -220,7 +220,7 @@ var setupTokenizer = function(editor){
 
     var queryServer = function() {
         queryTimeout = null;
-        Requests.searchArtifacts(null, {'__any': pending}, function(serverWords){
+        Requests.searchArtifacts(undefined, {'': pending}, function(serverWords){
             // update goodWords and words based on serverWords
             goodWords = Object.create(null);
             for(var i=0;i<serverWords.length; i++){
@@ -329,26 +329,70 @@ function view_artifact_ajax_call(asa_token_content){
 }
 
 function link_to_existing_artifact_ajax_call(){
-    //This is not the right window to call in this context... waiting for link artifact window to be ready!!!!
-    createASAFormDialogFromUrl('Select Adaptive Artifact',  baseurl+"/artifact?action=new",
-        { "Create": function() {
-            submitASAFormDialog(
-                $(this),
-                {
-                    success: function(data){
-                        console.log("Success!");
-                    },
-                    error: function(data){
-                        console.log("Failure!!");
-                    }
-                }
-            )}
-        }/*,
+    createASAFormDialogFromUrl('Select Adaptive Artifact',  baseurl+"/search/by_filter?",
+        [
+            {
+                id:'button-choose',
+                text:'Choose',
+                click: function() {
+                            submitASAFormDialog(
+                                $(this),
+                                {
+                                    success: function(data){
+                                        console.log("Success!");
+                                    },
+                                    error: function(data){
+                                        console.log("Failure!!");
+                                    }
+                                }
+                            )}
+            },
+            {
+                id:'button-cancel',
+                text:'Cancel',
+                click: function() { $(this).dialog("close"); }
+            }
+        ],
         {
             open: function(){
-                addValue(this, "Name", editor.getCopyText());
+                $("#button-choose").button("disable");
+                $('table.listing tbody tr').click(function() {
+                    $(this).find('td input[type=radio]').prop('checked', true);
+                    $("#button-choose").button("enable");
+                });
+                var clearRows = function(){
+                    $(".artifacts table.listing tbody tr:not(.prototype)").remove();
+                }
+                var addResultRow = function(id, spec_name, title){
+                    var copy = $(".artifacts table.listing tr.prototype").clone(true);
+                    copy.removeClass('prototype');
+                    copy.find("input[type^='radio']").attr("value", id);
+                    copy.find("td")[1].innerText = spec_name;
+                    copy.find("td")[2].innerText = title;
+                    $(".artifacts table.listing tbody").append(copy);
+                };
+                var timer;
+                var delayedUpdateResults = function(){
+                    clearTimeout(timer);
+                    timer = setTimeout(function(){
+                        var spec = $('.filter #spec').val();
+                        var attr_name = $('.filter #attribute').val();
+                        var attr_value = $('.filter #value').val();
+                        var attribute = {};
+                        attribute[attr_name] = [attr_value];
+                        Requests.searchArtifacts(spec, attribute, function(data){
+                            clearRows();
+                            for(var i=0;i<data.length;i++)
+                                addResultRow(data[i].id, data[i].spec, data[i].title);
+                        })
+                    }, 1000)
+                };
+                $(".filter #spec").on('input',function(){delayedUpdateResults();});
+                $(".filter #attribute").on('input',function(){delayedUpdateResults();});
+                $(".filter #value").on('input',function(){delayedUpdateResults();});
+                /*addValue(this, "Name", editor.getCopyText());*/
             }
-        }*/
+        }
     ).dialog('open');
 }
 

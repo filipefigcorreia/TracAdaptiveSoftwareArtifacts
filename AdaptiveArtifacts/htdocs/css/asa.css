@@ -98,3 +98,24 @@ fieldset#properties table.attributes{
     width: 100%;
     border-top: 0;
 }
+
+/**** Index Dialog ****/
+
+div.filter {
+    width: 482px;
+}
+
+div.filter label,
+div.filter input {
+    width: 135px;
+    display:inline-block;
+    padding: 3px 6px 3px 6px;
+}
+
+div.filter label {
+    border: 1px solid transparent;
+}
+
+div.filter input {
+    font-size: 90%;
+}
