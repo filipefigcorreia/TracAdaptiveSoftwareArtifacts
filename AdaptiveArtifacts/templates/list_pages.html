@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include href="layout.html" />
+
+  <head><title></title></head>
+  <body>
+     <div id="content" class="search">
+        <h1>Wiki Pages referring Adaptive Artifact #${artifact.get_id()}</h1>
+         <dl id="results">
+           <py:for each="result in results">
+             <dt><a href="${result.href}" class="searchable">${result.title}</a></dt>
+             <dd class="searchable">${result.excerpt}</dd>
+             <dd>
+               <py:if test="result.author"><span class="author">By ${format_author(result.author)}</span> &mdash;</py:if>
+               <span class="date">${result.date}</span>
+             </dd>
+           </py:for>
+         </dl>
+        <br/><br/>
+      </div>
+   </body>
+ </html>
