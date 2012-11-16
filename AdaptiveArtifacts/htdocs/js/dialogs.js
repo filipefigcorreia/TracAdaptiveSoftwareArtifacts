@@ -81,7 +81,7 @@ function createDialogFromUrl(url, options, dialogdivclass){
     error: options.error,
     complete: options.complete,
     success: function(data, textStatus, jqXHR) {
-      var opts = {modal: options.modal, width: 500, buttons: options.buttons};
+      var opts = {modal: options.modal, width: 'auto', buttons: options.buttons};
       if(typeof data == "object" && data.html) { //response is assumed to be JSON
         dialogdiv.html(data.html).dialog($.extend(opts, {title: data.title}));
       } else { //response is assumed to be HTML
