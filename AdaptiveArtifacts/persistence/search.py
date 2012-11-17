@@ -94,7 +94,7 @@ class Searcher(object):
                     FROM asa_artifact_value val
                         INNER JOIN asa_version v ON v.id=val.version_id
                         INNER JOIN asa_artifact a ON a.id=val.artifact_id
-                    WHERE """ + sql_names +
+                    WHERE """ + (sql_names if sql_names else "1==2") +
                     """ GROUP BY a.id""", sql_values):
                 if dbp.pool.get_item(id) is None:
                     dbp.load_artifact(id, db)
