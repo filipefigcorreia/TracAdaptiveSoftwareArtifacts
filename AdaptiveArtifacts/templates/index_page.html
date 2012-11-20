@@ -21,7 +21,7 @@
   </py:def>
 
   <py:def function="spec_anchor_content_markup(spec, arts_count, subspecs_count)">
-      ${spec.get_name()} <py:if test="arts_count>0 or subspecs_count>0"><small>(<py:if test="arts_count>0">${arts_count}</py:if>)</small></py:if>
+      ${spec.get_name()} <py:if test="arts_count>0"><small>(${arts_count})</small></py:if>
   </py:def>
 
   <head><title></title></head>
@@ -52,7 +52,7 @@
                     <li>
                         <py:choose test="">
                         <a py:when="selected_search == 'no_spec'" class="selected" href="${req.href.adaptiveartifacts(search='no_spec')}">Artifacts with no Spec <small>(${len(artifacts_values)})</small></a>
-                        <a py:otherwise="" href="${req.href.adaptiveartifacts(search='no_spec')}">Artifacts with no Spec <small>(${len(artifacts_values)})</small></a>
+                        <a py:otherwise="" href="${req.href.adaptiveartifacts(search='no_spec')}">Artifacts with no Spec</a>
                         </py:choose>
                     </li>
                 </ul>
