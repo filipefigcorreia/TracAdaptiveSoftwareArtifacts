@@ -53,14 +53,14 @@ class DBPool(object):
         values={}
         cursor = db.cursor()
         rows = cursor.execute("""
-                SELECT attr_name, attr_value
+                SELECT attr_name, attr_value, uiorder
                 FROM asa_artifact_value
                 WHERE artifact_id='%s' AND version_id='%d'""" % (id, version))
         values = rows.fetchall()
 
         # create the artifact
         artifact = spec(id=id, version=version, str_attr=title_expr, persisted=True)
-        artifact.add_values(values)
+        artifact.add_values([(name, value) for name, value, order in sorted(values, key=lambda valtpl: valtpl[2])])
 
         self.pool.add(artifact)
 
@@ -100,11 +100,11 @@ class DBPool(object):
         attributes = []
         cursor = db.cursor()
         rows = cursor.execute("""
-                SELECT name, multplicity_low, multplicity_high, type
+                SELECT name, multplicity_low, multplicity_high, type, uiorder
                 FROM asa_spec_attribute
                 WHERE spec_name='%s' AND version_id='%d'""" % (spec_name, version))
         for row in rows.fetchall():
-            attributes.append(Attribute(name=row[0], multiplicity=(row[1], row[2]), atype=row[3]))
+            attributes.append(Attribute(name=row[0], multiplicity=(row[1], row[2]), atype=row[3], order=row[4]))
 
         # create the entity
         spec = Entity(name=spec_name, bases=bases, version=version, persisted=True, attributes=attributes)
@@ -252,9 +252,9 @@ class DBPool(object):
 
                         for attribute in item.attributes:
                             cursor.execute("""
-                                INSERT INTO asa_spec_attribute (spec_name, version_id, name, multplicity_low, multplicity_high, type)
-                                VALUES (%s,%s,%s,%s,%s,%s)
-                                """, (item.get_name(), version_id, attribute.name, attribute.multiplicity[0], attribute.multiplicity[1], attribute.get_type_readable()))
+                                INSERT INTO asa_spec_attribute (spec_name, version_id, name, multplicity_low, multplicity_high, type, uiorder)
+                                VALUES (%s,%s,%s,%s,%s,%s,%s)
+                                """, (item.get_name(), version_id, attribute.name, attribute.multiplicity[0], attribute.multiplicity[1], attribute.get_type_readable(), attribute.order))
                     else: # it's an artifact
                         if item.is_new():
                             cursor.execute("""
@@ -273,10 +273,11 @@ class DBPool(object):
                             if not isinstance(values, list):
                                 values = [values]
                             for value in values:
+                                # TODO: get the "order" from somewhere
                                 cursor.execute("""
-                                    INSERT INTO asa_artifact_value (artifact_id, version_id, attr_name, attr_value)
-                                    VALUES (%s,%s,%s,%s)
-                                    """, (art_id, version_id, attr_name, value))
+                                    INSERT INTO asa_artifact_value (artifact_id, version_id, attr_name, attr_value, uiorder)
+                                    VALUES (%s,%s,%s,%s,%s)
+                                    """, (art_id, version_id, attr_name, value, 42))
                         item.id=art_id
 
     def delete(self, item, author, comment, remote_addr, t=None):
@@ -319,10 +320,10 @@ class DBPool(object):
 
                 # change attributes that had the deleted spec as type
                 cursor.execute("""
-                    INSERT INTO asa_spec_attribute (spec_name, version_id, name, multplicity_low, multplicity_high, type)
-                    SELECT spec_name, %s, name, multplicity_low, multplicity_high, %s
+                    INSERT INTO asa_spec_attribute (spec_name, version_id, name, multplicity_low, multplicity_high, type, uiorder)
+                    SELECT spec_name, %s, name, multplicity_low, multplicity_high, '%s', uiorder
                     FROM asa_spec_attribute
-                    WHERE type=%s
+                    WHERE type='%s'
                     """, (version_id, Instance.get_name(), item.get_name()))
 
                 # finally, delete the spec

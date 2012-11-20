@@ -36,6 +36,7 @@ schema = [
         Column('version_id', type='int64'),
         Column('attr_name'),
         Column('attr_value'),
+        Column('uiorder', type='int'),
         Index(['artifact_id', 'version_id']),
     ],
     # Keeps references of which artifacts are referenced by which pages
@@ -60,6 +61,7 @@ schema = [
         Column('multplicity_low'),
         Column('multplicity_high'),
         Column('type'),
+        Column('uiorder', type='int'),
         Index(['spec_name', 'version_id']),
     ],
 ]

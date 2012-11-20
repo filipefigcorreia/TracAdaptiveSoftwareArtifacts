@@ -122,6 +122,7 @@ class Instance(object):
         values_list: A list of tuples (attr_name, attr_value)
         """
         for name, value in values_list:
+            #TODO: store the "order" somewhere
             py_identifier = util.to_valid_identifier_name(name)
             self.attr_identifiers[name] = py_identifier
             if not hasattr(self, py_identifier):
@@ -199,11 +200,12 @@ class Instance(object):
 
 
 class Attribute(object):
-    def __init__(self, name, multiplicity=None, atype=None):
+    def __init__(self, name, multiplicity=None, atype=None, order=None):
         self.py_id = util.to_valid_identifier_name(name)
         self.owner_spec = None # filled in when the attr is added to a spec
         self.name = name
         self.type = self._get_valid_type(atype)
+        self.order = order
         self.multiplicity = self._get_valid_multiplicity(multiplicity)
 
     def _get_valid_multiplicity(self, multiplicity):
