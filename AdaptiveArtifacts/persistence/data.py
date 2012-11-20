@@ -37,7 +37,7 @@ class DBPool(object):
         # get the spec (metaclass) and title
         cursor = db.cursor()
         rows = cursor.execute("""
-                SELECT meta_class, title_expr
+                SELECT spec, title_expr
                 FROM asa_artifact
                 WHERE id='%s' AND version_id='%d'
                 GROUP BY id""" % (id, version))
@@ -217,7 +217,7 @@ class DBPool(object):
         query = """
                 SELECT id, max(version_id) version
                 FROM asa_artifact
-                WHERE meta_class in %s
+                WHERE spec in %s
                 """ % (filter,)
         if not self.version is None:
             query += 'AND version_id <= %s '  % (self.version,)
@@ -264,7 +264,7 @@ class DBPool(object):
                         else:
                             art_id = item.get_id()
                         cursor.execute("""
-                            INSERT INTO asa_artifact (id, version_id, meta_class, title_expr)
+                            INSERT INTO asa_artifact (id, version_id, spec, title_expr)
                             VALUES (%s,%s,%s,%s)
                             """, (art_id, version_id, item.__class__.name, item.str_attr))
 
@@ -304,10 +304,10 @@ class DBPool(object):
 
                 # change artifacts of the deleted spec to point to the "Instance" spec
                 cursor.execute("""
-                    INSERT INTO asa_artifact (id, version_id, meta_class, title_expr)
+                    INSERT INTO asa_artifact (id, version_id, spec, title_expr)
                     SELECT id, %s, %s, title_expr
                     FROM asa_artifact
-                    WHERE meta_class=%s
+                    WHERE spec=%s
                     """, (version_id, Instance.get_name(), item.get_name()))
 
                 # change specs inheriting from the deleted spec to inherit from "Instance" instead

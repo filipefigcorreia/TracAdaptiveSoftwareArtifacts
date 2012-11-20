@@ -27,7 +27,7 @@ schema = [
     Table('asa_artifact', key=['id', 'version_id'])[
         Column('id', type='int64'),
         Column('version_id', type='int64'),
-        Column('meta_class'),
+        Column('spec'),
         Column('title_expr'), # the "toString()" of artifacts
         Index(['id', 'version_id'], unique=True),
     ],

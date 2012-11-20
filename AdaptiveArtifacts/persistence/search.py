@@ -62,7 +62,7 @@ class Searcher(object):
             sql_values = []
 
             if spec:
-                sql_names += "(LOWER(a.meta_class) %s)" % (db.like() % ("'%" + spec + "%'",),)
+                sql_names += "(LOWER(a.spec) %s)" % (db.like() % ("'%" + spec + "%'",),)
 
             for attr_name, attr_values in attributes.iteritems():
                 if not attr_name and (not attr_values or not attr_values[0]):
