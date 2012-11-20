@@ -362,6 +362,19 @@ def get_edit_artifact(request, dbp, obj, resource):
 def post_edit_artifact(request, dbp, obj, resource):
     assert(isinstance(obj, Instance)) # otherwise, we're trying to edit something that is not an artifact
 
+    spec_name = request.req.args['spec']
+    if spec_name:
+        try:
+            dbp.load_spec(spec_name)
+            spec = dbp.pool.get_item(spec_name)
+        except ValueError:
+            add_warning(request.req, "Spec '%s' not found, assumed an empty spec instead." % spec_name)
+            spec = Instance
+    else:
+        spec = Instance
+
+    obj.__class__ = spec
+
     values, str_attr = _group_artifact_values(request.req)
     obj.replace_values(values.items())
     obj.str_attr = str_attr if not str_attr is None else 'id'
