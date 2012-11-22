@@ -356,33 +356,30 @@ def get_edit_artifact(request, dbp, obj, resource):
         'values': [(attr,val) for attr,val in obj.get_values()],
         'default': obj.str_attr,
         'url_path': request.req.href.adaptiveartifacts('artifact', obj.get_id()),
-    }
-    return 'edit_artifact_page.html', data, None
+        }
+    return 'edit_artifact_%s.html' % (request.get_format(),), data, None
 
 def post_edit_artifact(request, dbp, obj, resource):
     assert(isinstance(obj, Instance)) # otherwise, we're trying to edit something that is not an artifact
-
-    spec_name = request.req.args['spec']
-    if spec_name:
-        try:
-            dbp.load_spec(spec_name)
-            spec = dbp.pool.get_item(spec_name)
-        except ValueError:
-            add_warning(request.req, "Spec '%s' not found, assumed an empty spec instead." % spec_name)
-            spec = Instance
-    else:
-        spec = Instance
-
-    obj.__class__ = spec
 
     values, str_attr = _group_artifact_values(request.req)
     obj.replace_values(values.items())
     obj.str_attr = str_attr if not str_attr is None else 'id'
 
     dbp.save('author', 'comment', 'address')
-    add_notice(request.req, 'Your changes have been saved.')
     url = request.req.href.adaptiveartifacts('artifact/%s' % (obj.get_id(),), action='view')
-    request.req.redirect(url)
+    if request.get_format() == 'page':
+        add_notice(request.req, 'Your changes have been saved.')
+
+        request.req.redirect(url)
+    else:
+        import json
+        msg = json.dumps([{'result': 'success', 'resource_id': obj.get_id(), 'resource_url': url}])
+        request.req.send_response(200)
+        request.req.send_header('Content-Type', 'application/json')
+        request.req.send_header('Content-Length', len(msg))
+        request.req.end_headers()
+        request.req.write(msg)
 
 def get_delete_spec(request, dbp, obj, resource):
     assert(isinstance(obj, Entity)) # otherwise, we're trying to delete something that is not a spec

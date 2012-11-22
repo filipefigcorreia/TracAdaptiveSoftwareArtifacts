@@ -10,7 +10,7 @@ var setupEditor = function() {
         for(var prop in khandler.commmandKeyBinding[key]) {
             if(khandler.commmandKeyBinding[key].hasOwnProperty(prop))
                 var control = khandler.commmandKeyBinding[key][prop].bindKey.win;
-                var SupressingList = ["Ctrl-Shift-R", "Ctrl-R","Ctrl-F", "Command-F", "Command-Option-F","Command-Shift-Option-F"];
+                var SupressingList = ["Ctrl-Shift-R", "Ctrl-R","Ctrl-F"];
                 if(SupressingList.indexOf(control) != -1 )
                     khandler.commmandKeyBinding[key][prop] = null;
         }
@@ -252,7 +252,30 @@ var setupBalloons = function(editor){
         var id = sub.substr(0, ind_end);
 
         createASAFormDialogFromUrl('View Adaptive Artifact', baseurl+"/artifact/"+id+"?action=view",
-            { "Close": function() { $(this).dialog("close"); } }
+            {
+                 "Edit": function() {
+                    $(this).dialog("close");
+                    createASAFormDialogFromUrl('Artifact', baseurl+"/artifact/"+id+"?action=edit",
+                        {
+                            "Save   ": function() {
+                                submitASAFormDialog(
+                                    $(this),
+                                    {
+                                        success: function(data){
+                                            var statesLength = editor.session.bgTokenizer.states.length;
+                                            editor.session.bgTokenizer.fireUpdateEvent(0,statesLength);
+                                            editor.session.bgTokenizer.start(0);
+                                        },
+                                        error: function(data){
+                                            console.log("Ajax call failed!");
+                                        }
+                                    }
+                                )},
+                            "Close": function() { $(this).dialog("close"); }
+                        }
+                    ).dialog('open');
+                },
+                "Close": function() { $(this).dialog("close"); } }
         ).dialog('open');
     }
 
