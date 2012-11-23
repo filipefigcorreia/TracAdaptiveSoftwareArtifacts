@@ -35,3 +35,15 @@ Requests.searchArtifacts = function(spec, attributes, callback) {
     });
 };
 
+Requests.getArtifactHtml = function(artifact_id, callback){
+    $.ajax({
+      url: baseurl+"/artifact/"+artifact_id+"?action=view&format=dialog",
+      type: 'GET',
+      dataType: 'html',
+      traditional: true,
+      success: function(data, textStatus, jqXHR) {
+          callback(data);
+      },
+      error: undefined
+    });
+};

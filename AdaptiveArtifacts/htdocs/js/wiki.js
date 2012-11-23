@@ -33,7 +33,6 @@ function view_artifact_ajax_call(asa_token_content, editor){
 }
 
 function link_to_existing_artifact_ajax_call(click_callback, value){
-
     var dlg = createASAFormDialogFromUrl('Select Adaptive Artifact',  baseurl+"/search/by_filter?",
         [
             {
@@ -56,22 +55,16 @@ function link_to_existing_artifact_ajax_call(click_callback, value){
 
                 var selectionUpdated = function(selected){
                     var target_div = $(".artifacts #asa #dialog-content");
+                    var close_button = $("#button-choose");
                     if (selected.length==0){
-                        target_div.html("");
-                        $("#button-choose").button("disabled");
+                        close_button.button("disabled");
+                        target_div.html("").hide();
                         return;
                     }
                     selected.prop('checked', true);
-                    $("#button-choose").button("enable");
-                    $.ajax({
-                      url: baseurl+"/artifact/"+selected.val()+"?action=view&format=dialog",
-                      type: 'GET',
-                      dataType: 'html',
-                      traditional: true,
-                      success: function(data, textStatus, jqXHR) {
-                          target_div.html(data);
-                      },
-                      error: undefined
+                    close_button.button("enable");
+                    Requests.getArtifactHtml(selected.val(), function(data){
+                        target_div.html(data).show();
                     });
                 };
                 $('table.listing tbody tr').click(function() {
@@ -80,7 +73,7 @@ function link_to_existing_artifact_ajax_call(click_callback, value){
 
                 var clearRows = function(){
                     $(".artifacts table.listing tbody tr:not(.prototype)").remove();
-                }
+                };
                 var addResultRow = function(id, spec_name, title){
                     var copy = $(".artifacts table.listing tr.prototype").clone(true);
                     copy.removeClass('prototype');
@@ -103,7 +96,7 @@ function link_to_existing_artifact_ajax_call(click_callback, value){
                         Requests.searchArtifacts(spec, attribute, function(data){
                             clearRows();
                             if(data.length==0){
-                                $(".artifacts").append('<div id = "no_results">No results founded</div>');
+                                $(".artifacts").append('<div id = "no_results">No results found</div>');
                             }
                             for(var i=0;i<data.length;i++)
                                 addResultRow(data[i].id, data[i].spec, data[i].title);
@@ -113,8 +106,9 @@ function link_to_existing_artifact_ajax_call(click_callback, value){
                 };
                 $(".filter #spec").on('input',function(){delayedUpdateResults();});
                 $(".filter #attribute").on('input',function(){delayedUpdateResults();});
-                $(".filter #value").on('input',function(){delayedUpdateResults();});
-                $(".filter #value").val(value);
+                $(".filter #value")
+                    .on('input',function(){delayedUpdateResults();})
+                    .val(value);
                 delayedUpdateResults();
             }
         }
