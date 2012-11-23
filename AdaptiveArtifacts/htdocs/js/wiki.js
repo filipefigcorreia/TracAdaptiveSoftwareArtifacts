@@ -148,12 +148,21 @@ var setupEditor = function() {
         }
 
         var grip = $('.trac-grip').mousedown(beginDrag)[0];
-        editordiv.wrap('<div class="trac-resizable"><div></div></div>')
+        if (grip != undefined){
+            editordiv.wrap('<div class="trac-resizable"><div></div></div>')
                 .parent().append(grip);
-        grip.style.marginLeft = (this.offsetLeft - grip.offsetLeft) + 'px';
-        grip.style.marginRight = (grip.offsetWidth - this.offsetWidth) +'px';
+            grip.style.marginLeft = (this.offsetLeft - grip.offsetLeft) + 'px';
+            grip.style.marginRight = (grip.offsetWidth - this.offsetWidth) +'px';
+        }
     };
     setupEditorResizing(editor, $('#editor'));
+
+    // Originally copied from trac/wiki/templates/wiki_edit.html
+    // Rewires the event of checking the "Adjust edit area height" box
+    $("#editrows").change(function() {
+        $('#editor').height(this.options[this.selectedIndex].value * $("div.ace_gutter-layer").find(".ace_gutter-cell:first").height())
+        editor.renderer.onResize(true);
+    });
 
     return editor;
 };
