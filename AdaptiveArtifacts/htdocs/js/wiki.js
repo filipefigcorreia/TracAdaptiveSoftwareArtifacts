@@ -53,10 +53,31 @@ function link_to_existing_artifact_ajax_call(click_callback, value){
         {
             open: function(){
                 $("#button-choose").button("disable");
-                $('table.listing tbody tr').click(function() {
-                    $(this).find('td input[type=radio]').prop('checked', true);
+
+                var selectionUpdated = function(selected){
+                    var target_div = $(".artifacts #asa #dialog-content");
+                    if (selected.length==0){
+                        target_div.html("");
+                        $("#button-choose").button("disabled");
+                        return;
+                    }
+                    selected.prop('checked', true);
                     $("#button-choose").button("enable");
+                    $.ajax({
+                      url: baseurl+"/artifact/"+selected.val()+"?action=view&format=dialog",
+                      type: 'GET',
+                      dataType: 'html',
+                      traditional: true,
+                      success: function(data, textStatus, jqXHR) {
+                          target_div.html(data);
+                      },
+                      error: undefined
+                    });
+                };
+                $('table.listing tbody tr').click(function() {
+                    selectionUpdated($(this).find('td input[type=radio]'));
                 });
+
                 var clearRows = function(){
                     $(".artifacts table.listing tbody tr:not(.prototype)").remove();
                 }
@@ -86,6 +107,7 @@ function link_to_existing_artifact_ajax_call(click_callback, value){
                             }
                             for(var i=0;i<data.length;i++)
                                 addResultRow(data[i].id, data[i].spec, data[i].title);
+                            selectionUpdated($('form#artifact-select input[name=selected]:checked'));
                         })
                     }, 1000)
                 };
