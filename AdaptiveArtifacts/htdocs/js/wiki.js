@@ -33,7 +33,8 @@ function view_artifact_ajax_call(asa_token_content, editor){
 }
 
 function link_to_existing_artifact_ajax_call(click_callback, value){
-    createASAFormDialogFromUrl('Select Adaptive Artifact',  baseurl+"/search/by_filter?",
+
+    var dlg = createASAFormDialogFromUrl('Select Adaptive Artifact',  baseurl+"/search/by_filter?",
         [
             {
                 id:'button-choose',
@@ -66,6 +67,7 @@ function link_to_existing_artifact_ajax_call(click_callback, value){
                     copy.find("td")[1].innerText = spec_name;
                     copy.find("td")[2].innerText = title;
                     $(".artifacts table.listing tbody").append(copy);
+
                 };
                 var timer;
                 var delayedUpdateResults = function(){
@@ -90,7 +92,12 @@ function link_to_existing_artifact_ajax_call(click_callback, value){
                 delayedUpdateResults();
             }
         }
-    ).dialog('open');
+    );
+    dlg.bind('dialogclose', function(event) {
+        $(this).dialog("destroy");
+        $(this).remove();
+    });
+    dlg.dialog('open');
 }
 
 var setupEditor = function() {
