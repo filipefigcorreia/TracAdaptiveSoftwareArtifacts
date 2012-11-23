@@ -68,7 +68,7 @@
               <py:otherwise>
 
                 <py:if test="selected_spec and not selected_search">
-                    <h2>${selected_spec.get_name()}</h2> <span class="spec-options"><a href="${req.href.adaptiveartifacts('spec', selected_spec.get_id(), action='view')}">[details]</a><a href="${req.href.adaptiveartifacts('spec', selected_spec.get_id(), action='edit')}">[edit]</a></span>
+                    <h2>${selected_spec.get_name()}</h2> <span class="spec-options"><a href="${req.href.adaptiveartifacts('spec', selected_spec.get_id(), action='view')}">[view]</a><a href="${req.href.adaptiveartifacts('spec', selected_spec.get_id(), action='edit')}">[edit]</a></span>
                     <div class="spec-details">
                     ${len(spec_columns)} Attributes;
                     <!-- X Subspecs; -->
