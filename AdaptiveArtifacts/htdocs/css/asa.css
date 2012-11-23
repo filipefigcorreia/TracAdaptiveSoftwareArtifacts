@@ -124,11 +124,23 @@ div.filter input {
     font-size: 90%;
 }
 
-.artifacts #no_results {
+#artifact-select .artifacts #no_results {
     text-align: center;
     padding-top: 0.5em;
 }
 
 #artifact-select hr {
     margin: 1em 0;
+}
+
+#artifact-select #asa {
+    float: right;
+    width: 392px;
+    margin-top:0;
+    margin-left:16px;
+}
+
+#artifact-select table.listing {
+    width: 392px;
+    clear: none;
 }
