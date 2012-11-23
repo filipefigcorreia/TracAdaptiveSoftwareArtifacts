@@ -45,12 +45,13 @@ def get_index(request, dbp, obj, resource):
             artifacts = dbp.pool.get_instances_of(selected_spec.get_name())
 
         # Get attributes defined at the spec level ...
-        spec_attrs = [attribute.name for attribute in selected_spec.get_attributes()]
+        spec_attrs = [(attribute.name, attribute.owner_spec.get_name()) for attribute in selected_spec.get_attributes()]
         # ... and those that only exist at the level of the artifacts themselves
-        artifacts_attrs = sorted(set([k for a in artifacts for k,v in a.get_values()]), key=unicode.lower)
-        for a in spec_attrs:
-            if a in artifacts_attrs:
-                artifacts_attrs.remove(a)
+        artifacts_attrs_names = sorted(set([k for a in artifacts for k,v in a.get_values()]), key=unicode.lower)
+        for a_name, a_owner in spec_attrs:
+            if a_name in artifacts_attrs_names:
+                artifacts_attrs_names.remove(a_name)
+        artifacts_attrs = [(a_name, None) for a_name in artifacts_attrs_names]
 
         # Build a matrix of the attribute values to be shown in the index page
         artifacts_values = []
@@ -59,8 +60,8 @@ def get_index(request, dbp, obj, resource):
             ordered_values_lst = []
             for attributes in [spec_attrs, artifacts_attrs]:
                 for attribute in attributes:
-                    if attribute in values:
-                        ordered_values_lst.append(values[attribute])
+                    if attribute[0] in values:
+                        ordered_values_lst.append(values[attribute[0]])
                     else:
                         ordered_values_lst.append("")
             artifacts_values.append((artifact, ordered_values_lst))

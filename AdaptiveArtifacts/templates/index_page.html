@@ -94,8 +94,8 @@
                 <table class="listing">
                     <thead>
                         <tr>
-                            <py:for each="column in spec_columns"><th title="'${column}' attribute, defined by the '${selected_spec.get_name()}' Spec.">${column}</th></py:for>
-                            <py:for each="column in arti_columns"><th style="font-style:italic;">${column}</th></py:for>
+                            <py:for each="column in spec_columns"><th title="'${column[0]}' attribute, defined by the '${column[1]}' Spec.">${column[0]}</th></py:for>
+                            <py:for each="column in arti_columns"><th style="font-style:italic;">${column[0]}</th></py:for>
                             <th class="artifact-pages">Pages</th>
                             <th class="artifact-options">Options</th>
                         </tr>
