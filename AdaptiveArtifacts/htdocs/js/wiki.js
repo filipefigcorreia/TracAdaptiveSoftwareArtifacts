@@ -72,6 +72,7 @@ function link_to_existing_artifact_ajax_call(click_callback, value){
                 var timer;
                 var delayedUpdateResults = function(){
                     clearTimeout(timer);
+                    $('#no_results').remove();
                     timer = setTimeout(function(){
                         var spec = $('.filter #spec').val();
                         var attr_name = $('.filter #attribute').val();
@@ -80,6 +81,9 @@ function link_to_existing_artifact_ajax_call(click_callback, value){
                         attribute[attr_name] = [attr_value];
                         Requests.searchArtifacts(spec, attribute, function(data){
                             clearRows();
+                            if(data.length==0){
+                                $(".artifacts").append('<div id = "no_results">No results founded</div>');
+                            }
                             for(var i=0;i<data.length;i++)
                                 addResultRow(data[i].id, data[i].spec, data[i].title);
                         })

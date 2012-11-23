@@ -119,3 +119,8 @@ div.filter label {
 div.filter input {
     font-size: 90%;
 }
+
+.artifacts #no_results {
+    text-align: center;
+    padding-top: 0.5em;
+}
