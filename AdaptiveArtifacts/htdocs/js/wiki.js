@@ -1,3 +1,98 @@
+function view_artifact_ajax_call(asa_token_content, editor){
+    var ind_init = asa_token_content.indexOf(":");
+    var sub = asa_token_content.substr(ind_init+1, asa_token_content.length);
+    var ind_end = sub.indexOf(" ");
+    var id = sub.substr(0, ind_end);
+
+    createASAFormDialogFromUrl('View Adaptive Artifact', baseurl+"/artifact/"+id+"?action=view",
+        {
+            "Edit": function() {
+                $(this).dialog("close");
+                createASAFormDialogFromUrl('Artifact', baseurl+"/artifact/"+id+"?action=edit",
+                    {
+                        "Save   ": function() {
+                            submitASAFormDialog(
+                                $(this),
+                                {
+                                    success: function(data){
+                                        var statesLength = editor.session.bgTokenizer.states.length;
+                                        editor.session.bgTokenizer.fireUpdateEvent(0,statesLength);
+                                        editor.session.bgTokenizer.start(0);
+                                    },
+                                    error: function(data){
+                                        console.log("Ajax call failed!");
+                                    }
+                                }
+                            )},
+                        "Close": function() { $(this).dialog("close"); }
+                    }
+                ).dialog('open');
+            },
+            "Close": function() { $(this).dialog("close"); } }
+    ).dialog('open');
+}
+
+function link_to_existing_artifact_ajax_call(click_callback, value){
+    createASAFormDialogFromUrl('Select Adaptive Artifact',  baseurl+"/search/by_filter?",
+        [
+            {
+                id:'button-choose',
+                text:'Choose',
+                click: function(){
+                    click_callback();
+                    $(this).dialog("close");
+                }
+            },
+            {
+                id:'button-cancel',
+                text:'Cancel',
+                click: function() { $(this).dialog("close"); }
+            }
+        ],
+        {
+            open: function(){
+                $("#button-choose").button("disable");
+                $('table.listing tbody tr').click(function() {
+                    $(this).find('td input[type=radio]').prop('checked', true);
+                    $("#button-choose").button("enable");
+                });
+                var clearRows = function(){
+                    $(".artifacts table.listing tbody tr:not(.prototype)").remove();
+                }
+                var addResultRow = function(id, spec_name, title){
+                    var copy = $(".artifacts table.listing tr.prototype").clone(true);
+                    copy.removeClass('prototype');
+                    copy.find("input[type^='radio']").attr("value", id);
+                    copy.find("td")[1].innerText = spec_name;
+                    copy.find("td")[2].innerText = title;
+                    $(".artifacts table.listing tbody").append(copy);
+                };
+                var timer;
+                var delayedUpdateResults = function(){
+                    clearTimeout(timer);
+                    timer = setTimeout(function(){
+                        var spec = $('.filter #spec').val();
+                        var attr_name = $('.filter #attribute').val();
+                        var attr_value = $('.filter #value').val();
+                        var attribute = {};
+                        attribute[attr_name] = [attr_value];
+                        Requests.searchArtifacts(spec, attribute, function(data){
+                            clearRows();
+                            for(var i=0;i<data.length;i++)
+                                addResultRow(data[i].id, data[i].spec, data[i].title);
+                        })
+                    }, 1000)
+                };
+                $(".filter #spec").on('input',function(){delayedUpdateResults();});
+                $(".filter #attribute").on('input',function(){delayedUpdateResults();});
+                $(".filter #value").on('input',function(){delayedUpdateResults();});
+                $(".filter #value").val(value);
+                delayedUpdateResults();
+            }
+        }
+    ).dialog('open');
+}
+
 var setupEditor = function() {
     // Hide trac's textarea and show a contenteditable div in its place
     var textarea = $('#text');
@@ -128,15 +223,15 @@ var setupToolbar = function(editor){
                                 wrapSelection("[asa:"+data[0].resource_id+" ", "]");
                                 var statesLength = editor.session.bgTokenizer.states.length;
                                 /*var i=0;
-                                while ( i  < statesLength){
-                                    editor.session.bgTokenizer.states[i] = null;
-                                    i++;
-                                }*/
+                                 while ( i  < statesLength){
+                                 editor.session.bgTokenizer.states[i] = null;
+                                 i++;
+                                 }*/
                                 editor.session.bgTokenizer.fireUpdateEvent(0,statesLength);
                                 editor.session.bgTokenizer.start(0);
                             },
                             error: function(data){
-                                    console.log("Ajax call failed!");
+                                console.log("Ajax call failed!");
                             }
                         }
                     )}
@@ -149,6 +244,16 @@ var setupToolbar = function(editor){
             ).dialog('open');
         }
     });
+
+    $("#asa_link_button").click(function() {
+        if(!editor.getSelection().isEmpty()){
+            link_to_existing_artifact_ajax_call(function() {
+                var artifact_id = $('form#artifact-select input[name=selected]:checked').val();
+                wrapSelection("[asa:"+artifact_id+" ", "]");
+            }, "")
+        }
+    });
+
 };
 
 var setupTokenizer = function(editor){
@@ -245,100 +350,6 @@ var setupTokenizer = function(editor){
 };
 
 var setupBalloons = function(editor){
-    function view_artifact_ajax_call(asa_token_content){
-        var ind_init = asa_token_content.indexOf(":");
-        var sub = asa_token_content.substr(ind_init+1, asa_token_content.length);
-        var ind_end = sub.indexOf(" ");
-        var id = sub.substr(0, ind_end);
-
-        createASAFormDialogFromUrl('View Adaptive Artifact', baseurl+"/artifact/"+id+"?action=view",
-            {
-                 "Edit": function() {
-                    $(this).dialog("close");
-                    createASAFormDialogFromUrl('Artifact', baseurl+"/artifact/"+id+"?action=edit",
-                        {
-                            "Save   ": function() {
-                                submitASAFormDialog(
-                                    $(this),
-                                    {
-                                        success: function(data){
-                                            var statesLength = editor.session.bgTokenizer.states.length;
-                                            editor.session.bgTokenizer.fireUpdateEvent(0,statesLength);
-                                            editor.session.bgTokenizer.start(0);
-                                        },
-                                        error: function(data){
-                                            console.log("Ajax call failed!");
-                                        }
-                                    }
-                                )},
-                            "Close": function() { $(this).dialog("close"); }
-                        }
-                    ).dialog('open');
-                },
-                "Close": function() { $(this).dialog("close"); } }
-        ).dialog('open');
-    }
-
-    function link_to_existing_artifact_ajax_call(click_callback){
-        createASAFormDialogFromUrl('Select Adaptive Artifact',  baseurl+"/search/by_filter?",
-            [
-                {
-                    id:'button-choose',
-                    text:'Choose',
-                    click: function(){
-                        click_callback();
-                        $(this).dialog("close");
-                    }
-                },
-                {
-                    id:'button-cancel',
-                    text:'Cancel',
-                    click: function() { $(this).dialog("close"); }
-                }
-            ],
-            {
-                open: function(){
-                    $("#button-choose").button("disable");
-                    $('table.listing tbody tr').click(function() {
-                        $(this).find('td input[type=radio]').prop('checked', true);
-                        $("#button-choose").button("enable");
-                    });
-                    var clearRows = function(){
-                        $(".artifacts table.listing tbody tr:not(.prototype)").remove();
-                    }
-                    var addResultRow = function(id, spec_name, title){
-                        var copy = $(".artifacts table.listing tr.prototype").clone(true);
-                        copy.removeClass('prototype');
-                        copy.find("input[type^='radio']").attr("value", id);
-                        copy.find("td")[1].innerText = spec_name;
-                        copy.find("td")[2].innerText = title;
-                        $(".artifacts table.listing tbody").append(copy);
-                    };
-                    var timer;
-                    var delayedUpdateResults = function(){
-                        clearTimeout(timer);
-                        timer = setTimeout(function(){
-                            var spec = $('.filter #spec').val();
-                            var attr_name = $('.filter #attribute').val();
-                            var attr_value = $('.filter #value').val();
-                            var attribute = {};
-                            attribute[attr_name] = [attr_value];
-                            Requests.searchArtifacts(spec, attribute, function(data){
-                                clearRows();
-                                for(var i=0;i<data.length;i++)
-                                    addResultRow(data[i].id, data[i].spec, data[i].title);
-                            })
-                        }, 1000)
-                    };
-                    $(".filter #spec").on('input',function(){delayedUpdateResults();});
-                    $(".filter #attribute").on('input',function(){delayedUpdateResults();});
-                    $(".filter #value").on('input',function(){delayedUpdateResults();});
-                    /*addValue(this, "Name", editor.getCopyText());*/
-                }
-            }
-        ).dialog('open');
-    }
-
     var balloon;
     editor.on('mousemove', function(e) {
         var canvasPos = editor.renderer.scroller.getBoundingClientRect();
@@ -387,7 +398,7 @@ var setupBalloons = function(editor){
                             if (token.type == 'asa_artifact'){
                                 content.attr("id", "asa_view_button_tooltip");
                                 content.attr("title", "View Adaptive Artifact");
-                                content.click(function(){ view_artifact_ajax_call(token.value)});
+                                content.click(function(){ view_artifact_ajax_call(token.value, editor)});
                             }else if (token.type == 'keyword'){
                                 content.attr("id", "asa_link_button_tooltip");
                                 content.attr("title", "Link to existing Adaptive Artifact");
@@ -397,7 +408,7 @@ var setupBalloons = function(editor){
                                         editor.session.insert({row: position.row, column: token.start + token.value.length}, "]");
                                         editor.session.insert({row: position.row, column: token.start}, "[asa:"+artifact_id+" ");
                                         editor.focus();
-                                    })
+                                    }, token.value)
                                 });
                             }
                             return content;
@@ -419,7 +430,6 @@ var setupBalloons = function(editor){
             e.stop();
         }
     });
-
 };
 
 $(document).ready(function(){
