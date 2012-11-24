@@ -140,7 +140,20 @@ div.filter input {
     margin-left:16px;
 }
 
+#artifact-select #asa.invisible {
+    background-color: transparent;
+    border: none;
+}
+
 #artifact-select table.listing {
     width: 392px;
     clear: none;
 }
+
+#artifact-select table.listing td.message {
+    text-align: center;
+    font-style: italic;
+    height: 50px;
+    vertical-align: middle;
+}
+
