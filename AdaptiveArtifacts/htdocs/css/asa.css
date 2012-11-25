@@ -102,7 +102,11 @@ fieldset#properties table.attributes{
 /**** Index Dialog ****/
 
 div.filter {
-    width: 482px;
+    width: 472px;
+    padding-left: 4em;
+    padding-right: 4em;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 div.filter label,
@@ -120,7 +124,36 @@ div.filter input {
     font-size: 90%;
 }
 
-.artifacts #no_results {
+#artifact-select .artifacts #no_results {
     text-align: center;
     padding-top: 0.5em;
 }
+
+#artifact-select hr {
+    margin: 1em 0;
+}
+
+#artifact-select #asa {
+    float: right;
+    width: 392px;
+    margin-top:0;
+    margin-left:16px;
+}
+
+#artifact-select #asa.invisible {
+    background-color: transparent;
+    border: none;
+}
+
+#artifact-select table.listing {
+    width: 392px;
+    clear: none;
+}
+
+#artifact-select table.listing td.message {
+    text-align: center;
+    font-style: italic;
+    height: 50px;
+    vertical-align: middle;
+}
+

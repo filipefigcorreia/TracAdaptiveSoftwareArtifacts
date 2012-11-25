@@ -31,7 +31,6 @@ function view_artifact_ajax_call(asa_token_content, editor){
 }
 
 function link_to_existing_artifact_ajax_call(click_callback, value){
-
     var dlg = createASAFormDialogFromUrl('Select Adaptive Artifact',  baseurl+"/search/by_filter?",
         [
             {
@@ -51,13 +50,31 @@ function link_to_existing_artifact_ajax_call(click_callback, value){
         {
             open: function(){
                 $("#button-choose").button("disable");
+
+                var selectionUpdated = function(selected){
+                    var content_div = $(".artifacts #asa #dialog-content");
+                    var asa_div = $(".artifacts #asa");
+                    var close_button = $("#button-choose");
+                    if (selected.length==0){
+                        close_button.button("disabled");
+                        content_div.html("").hide();
+                        asa_div.addClass('invisible');
+                        return;
+                    }
+                    selected.prop('checked', true);
+                    close_button.button("enable");
+                    Requests.getArtifactHtml(selected.val(), function(data){
+                        content_div.html(data).show();
+                        asa_div.removeClass('invisible');
+                    });
+                };
                 $('table.listing tbody tr').click(function() {
-                    $(this).find('td input[type=radio]').prop('checked', true);
-                    $("#button-choose").button("enable");
+                    selectionUpdated($(this).find('td input[type=radio]'));
                 });
+
                 var clearRows = function(){
                     $(".artifacts table.listing tbody tr:not(.prototype)").remove();
-                }
+                };
                 var addResultRow = function(id, spec_name, title){
                     var copy = $(".artifacts table.listing tr.prototype").clone(true);
                     copy.removeClass('prototype');
@@ -65,12 +82,14 @@ function link_to_existing_artifact_ajax_call(click_callback, value){
                     copy.find("td")[1].innerText = spec_name;
                     copy.find("td")[2].innerText = title;
                     $(".artifacts table.listing tbody").append(copy);
-
+                };
+                var addMessageRow = function(text){
+                    var messageRow = $('<tr><td colspan="3" class="message">' + text + '</td></tr>');
+                    $(".artifacts table.listing tbody").append(messageRow);
                 };
                 var timer;
                 var delayedUpdateResults = function(){
                     clearTimeout(timer);
-                    $('#no_results').remove();
                     timer = setTimeout(function(){
                         var spec = $('.filter #spec').val();
                         var attr_name = $('.filter #attribute').val();
@@ -80,18 +99,21 @@ function link_to_existing_artifact_ajax_call(click_callback, value){
                         Requests.searchArtifacts(spec, attribute, function(data){
                             clearRows();
                             if(data.length==0){
-                                $(".artifacts").append('<div id = "no_results">No results founded</div>');
+                                addMessageRow('No results found');
                             }
                             for(var i=0;i<data.length;i++)
                                 addResultRow(data[i].id, data[i].spec, data[i].title);
+                            selectionUpdated($('form#artifact-select input[name=selected]:checked'));
                         })
                     }, 1000)
                 };
                 $(".filter #spec").on('input',function(){delayedUpdateResults();});
                 $(".filter #attribute").on('input',function(){delayedUpdateResults();});
-                $(".filter #value").on('input',function(){delayedUpdateResults();});
-                $(".filter #value").val(value);
+                $(".filter #value")
+                    .on('input',function(){delayedUpdateResults();})
+                    .val(value);
                 delayedUpdateResults();
+                $('.asa-dialog').parent().css('top', Math.max($('.asa-dialog').parent().position().top-100, 0) + 'px');
             }
         }
     );
