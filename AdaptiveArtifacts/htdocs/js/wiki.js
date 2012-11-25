@@ -18,9 +18,6 @@ function view_artifact_ajax_call(asa_token_content, editor){
                                         var statesLength = editor.session.bgTokenizer.states.length;
                                         editor.session.bgTokenizer.fireUpdateEvent(0,statesLength);
                                         editor.session.bgTokenizer.start(0);
-                                    },
-                                    error: function(data){
-                                        console.log("Ajax call failed!");
                                     }
                                 }
                             )},
@@ -30,6 +27,7 @@ function view_artifact_ajax_call(asa_token_content, editor){
             },
             "Close": function() { $(this).dialog("close"); } }
     ).dialog('open');
+
 }
 
 function link_to_existing_artifact_ajax_call(click_callback, value){
@@ -288,7 +286,9 @@ var setupTokenizer = function(editor){
 
     var tokenizer = new Tokenizer({
         "start": [
-            {token : "asa_artifact", regex : ".\[asa:[0-9]+\\s+[\\s\\w]+\]"},
+            {token : function(val){
+               return "asa_artifact";
+            }, regex : ".\[asa:[0-9]+\\s+[\\s\\w]+\]"},
             {token : function(val){
                 val = val.toLowerCase();
                 if (goodWords[val])
@@ -342,6 +342,9 @@ var setupTokenizer = function(editor){
         };
         self.setTokenizer(tokenizer);
     };
+
+
+
 
     var queryServer = function() {
         queryTimeout = null;
