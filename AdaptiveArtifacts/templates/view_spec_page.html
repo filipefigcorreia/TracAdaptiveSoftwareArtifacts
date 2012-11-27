@@ -8,17 +8,33 @@
     <div id="content" class="asa">
         <div id="asa">
             <h1>${spec.get_name()}</h1>
-            <strong>Inherits:</strong><py:if test="not spec.get_parent() is None">${spec.get_parent().get_name()}</py:if>
-            <table border="1">
-            <tr><th>Attribute</th><th>Type</th><th>Multiplicity</th></tr>
-            <tr py:for="attribute in spec.get_attributes()">
-                <td>${attribute.name}</td><td>${attribute.type.__name__ if attribute.type else ''}</td><td>${attribute.multiplicity[0]},${attribute.multiplicity[1]}</td>
-            </tr>
+            <span class="label">Inherits:</span> <py:if test="not spec.get_parent() is None"><a href="${href.adaptiveartifacts('spec/' + spec.get_parent().get_id(), action='view')}">${spec.get_parent().get_name()}</a></py:if>
+            <div class="label">Attributes</div>
+            <table class="attributes">
+                <thead>
+                    <tr><th>Name</th><th>Type</th><th>Multiplicity</th></tr>
+                </thead>
+                <tbody>
+                    <tr py:for="attribute in spec.get_attributes()">
+                        <td>${attribute.name}</td><td>${attribute.type.__name__ if attribute.type else ''}</td><td>${attribute.multiplicity[0]},${attribute.multiplicity[1]}</td>
+                    </tr>
+                </tbody>
             </table>
             <br/>
-            <a href="${req.href.adaptiveartifacts('spec/' + spec.get_id(), action='edit')}">Edit</a> |
-            <a href="${req.href.adaptiveartifacts('spec/' + spec.get_id(), action='list')}">See Artifacts</a> |
-            <a href="${req.href.adaptiveartifacts('spec/' + spec.get_id(), action='delete')}">Delete</a>
+        </div>
+        <div class="buttons">
+            <form method="get" action="${href.adaptiveartifacts('spec/' + spec.get_id())}">
+                <input type="hidden" name="action" value="list" />
+                <input type="submit" value="List Adaptive Artifacts" />
+            </form>
+            <form method="get" action="${href.adaptiveartifacts('spec/' + spec.get_id())}">
+                <input type="hidden" name="action" value="edit" />
+                <input type="submit" value="Edit" />
+            </form>
+            <form method="get" action="${href.adaptiveartifacts('spec/' + spec.get_id())}">
+                <input type="hidden" name="action" value="delete" />
+                <input type="submit" value="Delete" />
+            </form>
         </div>
     </div>
   </body>
