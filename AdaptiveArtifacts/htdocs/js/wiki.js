@@ -113,7 +113,8 @@ function link_to_existing_artifact_ajax_call(click_callback, value){
                 $(".filter #attribute").on('input',function(){delayedUpdateResults();});
                 $(".filter #value")
                     .on('input',function(){delayedUpdateResults();})
-                    .val(value);
+                    .val(value)
+                    .focus();
                 delayedUpdateResults();
                 $('.asa-dialog').parent().css('top', Math.max($('.asa-dialog').parent().position().top-100, 0) + 'px');
             }
