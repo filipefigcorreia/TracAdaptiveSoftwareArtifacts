@@ -10,22 +10,26 @@ $(document).ready(function(){
     );
 });
 
+// Adds hidden input fields indicating the attributes' order
+function addAttributeOrderFields(form){
+    var name_fields = form.find("input[name^='attr-name-']:not([name='attr-name-X'])");
+    for (var i=0; i<name_fields.length; i++){
+        var field_id = name_fields.get(i).name.substring(10);
+        var order_field = $('<input />');
+        order_field.attr('type', 'hidden');
+        order_field.attr('name', 'attr-order-' + field_id);
+        order_field.attr('value', i+1);
+        form.append(order_field);
+    }
+}
+
 function attachFormEventHandlers(context){
     context.find("a.addattr").click(addAttribute);
     context.find("a.delattr").click(delAttribute);
     context.find("a.addvalue").click(function() { addValue(context, "", "") });
     context.find("a.delvalue").click(delValue);
-    context.find("input[type=submit]").click(function() {
-        // Adds hidden input fields indicating the attributes' order
-        var name_fields = $("#artifact-form input[name^='attr-name-']:not([name='attr-name-X'])");
-        for (var i=0; i<name_fields.length; i++){
-            var field_id = name_fields.get(i).name.substring(10);
-            var order_field = $('<input />');
-            order_field.attr('type', 'hidden');
-            order_field.attr('name', 'attr-order-' + field_id);
-            order_field.attr('value', i+1);
-            $("#artifact-form").append(order_field);
-        }
+    context.find("#artifact-form").submit(function(e){
+        addAttributeOrderFields($("#artifact-form"));
     });
 }
 

@@ -11,6 +11,7 @@ function view_artifact_ajax_call(asa_token_content, editor){
                 createASAFormDialogFromUrl('Artifact', baseurl+"/artifact/"+id+"?action=edit",
                     {
                         "Save   ": function() {
+                            addAttributeOrderFields($("#artifact-form"));
                             submitASAFormDialog(
                                 $(this),
                                 {
@@ -254,6 +255,7 @@ var setupToolbar = function(editor){
         if(!editor.getSelection().isEmpty()){
             createASAFormDialogFromUrl('Create Adaptive Artifact',  baseurl+"/artifact?action=new",
                 { "Create": function() {
+                    addAttributeOrderFields($("#artifact-form"));
                     submitASAFormDialog(
                         $(this),
                         {
