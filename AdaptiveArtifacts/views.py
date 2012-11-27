@@ -369,7 +369,7 @@ def post_edit_artifact(request, dbp, obj, resource):
             dbp.load_spec(spec_name)
             spec = dbp.pool.get_item(spec_name)
         except ValueError:
-            add_warning(request.req, "Spec '%s' not found, assumed an empty spec instead." % spec_name)
+            add_warning(request.req, "Type '%s' not found, assumed an empty type instead." % spec_name)
             spec = Instance
     else:
         spec = Instance

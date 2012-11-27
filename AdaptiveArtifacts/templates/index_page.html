@@ -35,13 +35,13 @@
              </form>
              <form method="get" action="${href.adaptiveartifacts('spec')}">
                  <input type="hidden" name="action" value="new" />
-                 <input type="submit" value="New Spec" />
+                 <input type="submit" value="New Type" />
              </form>
          </div>
         <h1>Adaptive Artifacts</h1>
 
         <div id="entry-points" class="tree">
-            <h2>By Spec</h2>
+            <h2>By Type</h2>
             <div id="specs">
             ${spec_markup(specs)}
             </div>
@@ -51,8 +51,8 @@
                 <ul>
                     <li>
                         <py:choose test="">
-                        <a py:when="selected_search == 'no_spec'" class="selected" href="${req.href.adaptiveartifacts(search='no_spec')}">Artifacts with no Spec <small>(${len(artifacts_values)})</small></a>
-                        <a py:otherwise="" href="${req.href.adaptiveartifacts(search='no_spec')}">Artifacts with no Spec</a>
+                        <a py:when="selected_search == 'no_spec'" class="selected" href="${req.href.adaptiveartifacts(search='no_spec')}">Artifacts with no Type<small> (${len(artifacts_values)})</small></a>
+                        <a py:otherwise="" href="${req.href.adaptiveartifacts(search='no_spec')}">Artifacts with no Type</a>
                         </py:choose>
                     </li>
                 </ul>
@@ -76,7 +76,7 @@
                     </div>
                 </py:if>
                 <py:if test="selected_search and selected_search=='no_spec'">
-                    <h2>Artifacts with no Spec</h2>
+                    <h2>All without Type</h2>
                     <div class="spec-details">
                     ${len(artifacts_values)} Adaptive Artifacts.
                     </div>

@@ -149,7 +149,7 @@ class Core(Component):
             if spec_name is None:
                 title = "Adaptive Software Artifact '%s'" % (label,)
             else:
-                title = "Adaptive Software Artifact '%s' of spec '%s'" % (label,spec_name)
+                title = "Adaptive Software Artifact '%s' of type '%s'" % (label,spec_name)
         except ValueError:
             title = "Adaptive Software Artifact with ID '%s' does not exist" % (target,)
         return tag.a(label, href=formatter.href.adaptiveartifacts('artifact', target), title=title)
