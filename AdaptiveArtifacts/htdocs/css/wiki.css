@@ -1,10 +1,22 @@
 .wikitoolbar#asa_toolbar{
-    width:52px;
-    margin-left:50px;
+    width: 52px;
+    margin-left: 1em;
 }
 
 #asa_toolbar a#asa_create_button { background: transparent url(../media/buttons/asa_add_16x24.png) no-repeat }
 #asa_toolbar a#asa_link_button { background: transparent url(../media/buttons/asa_link_16x24.png) no-repeat }
+
+#asa_toolbar a.disabled{
+    pointer-events: none;
+    filter: grayscale(100%);
+    -webkit-filter: grayscale(100%);
+    -moz-filter: grayscale(100%);
+    -ms-filter: grayscale(100%);
+    -o-filter: grayscale(100%);
+    filter: url(../media/desaturate.svg#greyscale);
+    filter: gray; /* IE */
+    -webkit-filter: grayscale(1); /* Old WebKit */
+}
 
 a#asa_link_button_tooltip {
     background: transparent url(../media/buttons/asa_link_16x24.png) no-repeat;

@@ -249,6 +249,20 @@ var setupToolbar = function(editor){
     asa_toolbar.append('<a href="#" id="asa_create_button" title="Create artifact through selection" tabindex="400"></a>');
     asa_toolbar.append('<a href="#" id="asa_link_button" title="Link to existing artifact" tabindex="400"></a>');
 
+    var updateToolbarButtonState = function(){
+        if(!editor.getSelection().isEmpty()){
+            $("#asa_create_button").removeClass('disabled');
+            $("#asa_link_button").removeClass('disabled');
+        }else{
+            $("#asa_create_button").addClass('disabled');
+            $("#asa_link_button").addClass('disabled');
+        }
+    };
+    editor.getSession().selection.on('changeSelection', function(){
+        updateToolbarButtonState();
+    });
+    updateToolbarButtonState();
+
     // Events for the custom toolbar buttons
     $("#asa_create_button").click(function() {
         editor.focus();
