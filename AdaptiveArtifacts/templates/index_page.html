@@ -60,12 +60,15 @@
             <br/><br/>
         </div>
 
-        <div id="artifacts">
-            <py:choose test="">
-              <py:when test="not selected_spec and not selected_search">
-                  Please select one of the options on the left or use create new Adaptive Artifacts or Specifications using the buttons on the right.
-              </py:when>
-              <py:otherwise>
+        <py:choose test="">
+          <py:when test="not selected_spec and not selected_search">
+              <div id="artifacts" class="message">
+              Please select one of the options on the left, or use the buttons on the right<br/>
+                  to create a new Adaptive Artifacts or a new Type of Adaptive Artifacts.
+              </div>
+          </py:when>
+          <py:otherwise>
+              <div id="artifacts">
 
                 <py:if test="selected_spec and not selected_search">
                     <h2>${selected_spec.get_name()}</h2> <span class="spec-options"><a href="${req.href.adaptiveartifacts('spec', selected_spec.get_id(), action='view')}">[view]</a><a href="${req.href.adaptiveartifacts('spec', selected_spec.get_id(), action='edit')}">[edit]</a></span>
@@ -128,9 +131,9 @@
                 </div>
                 -->
                 <br/>
-              </py:otherwise>
-            </py:choose>
-        </div>
+              </div>
+          </py:otherwise>
+        </py:choose>
 
         <br/><br/>
 
