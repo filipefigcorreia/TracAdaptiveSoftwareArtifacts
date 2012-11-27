@@ -269,15 +269,15 @@ class DBPool(object):
                             """, (art_id, version_id, item.__class__.name, item.str_attr))
 
                         for attr_name in item.attr_identifiers.keys():
+                            order = item.get_order(attr_name)
                             values = item.get_value(attr_name)
                             if not isinstance(values, list):
                                 values = [values]
                             for value in values:
-                                # TODO: get the "order" from somewhere
                                 cursor.execute("""
                                     INSERT INTO asa_artifact_value (artifact_id, version_id, attr_name, attr_value, uiorder)
                                     VALUES (%s,%s,%s,%s,%s)
-                                    """, (art_id, version_id, attr_name, value, 42))
+                                    """, (art_id, version_id, attr_name, value, order))
                         item.id=art_id
 
     def delete(self, item, author, comment, remote_addr, t=None):

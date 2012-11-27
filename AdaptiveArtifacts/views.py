@@ -377,7 +377,7 @@ def post_edit_artifact(request, dbp, obj, resource):
     obj.__class__ = spec
 
     values, str_attr = _group_artifact_values(request.req)
-    obj.replace_values(values.items())
+    obj.replace_values(values)
     obj.str_attr = str_attr if not str_attr is None else 'id'
 
     dbp.save('author', 'comment', 'address')
@@ -413,18 +413,27 @@ def get_delete_artifact(request, dbp, obj, resource):
     request.req.redirect(url)
 
 def _group_artifact_values(req):
-    # group posted values into a dict of attr_name:attr_value
-    # {'attr_name_1':'Age', 'attr_value_1':'42'} -> {'Age':'42'}
+    # group posted values into a list of ordered (attr_name, attr_value) tuples
+    # {'attr_name_1':'Age', 'attr_value_1':'42'} -> [('Age':'42')]
     values = {}
+    ordered_names = {}
     default = None
     for key in req.args.keys():
-        if key[0:9] == 'attr-name' and len(req.args[key]) > 0 and key[10:] != 'X':
-            idx = key[10:]
-            attr_name = req.args[key]
-            values[attr_name] = req.args['attr-value-' + idx]
+        if len(req.args[key]) > 0 and key[10:] != 'X':
+            if key[0:9] == 'attr-name':
+                idx = key[10:]
+                attr_name = req.args[key]
+                values[attr_name] = req.args['attr-value-' + idx]
+            if key[0:10] == 'attr-order':
+                idx = key[11:]
+                attr_name = req.args['attr-name-' + idx]
+                attr_order = req.args[key]
+                ordered_names[attr_name] = attr_order
+    ordered_values = sorted(values.items(), key=lambda x: ordered_names[x[0]])
+
     if 'default' in req.args:
         default = req.args['attr-name-' + req.args['default']]
-    return values, default
+    return ordered_values, default
 
 def _group_spec_attributes(req):
     # group posted attributes into a list of tuples (attr_name,attr_type,attr_multiplicity)

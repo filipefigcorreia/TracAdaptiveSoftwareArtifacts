@@ -45,9 +45,12 @@ class Instance(object):
         self.str_attr = kwargs.pop('str_attr', "id")
         self._is_new = not kwargs.pop('persisted', False)
         self._is_modified = False
-        values = kwargs.pop('values', {})
+        values = kwargs.pop('values', [])
+        if type(values) == dict:
+            values = values.items()
         self.attr_identifiers = {}
-        for name, value in values.iteritems():
+        self.attr_orders = {}
+        for name, value in values:
             self.set_value(name, value)
 
     def __str__(self):
@@ -108,12 +111,16 @@ class Instance(object):
                 merged_lst += getattr(base, 'attributes')
         return merged_lst
 
-    def set_value(self, name, value):
+    def set_value(self, name, value, order=None):
         """
         Sets the value for the attribute with the specified name.
         """
         py_identifier = util.to_valid_identifier_name(name)
         self.attr_identifiers[name] = py_identifier
+        if order:
+            self.attr_orders[name] = order
+        else:
+            self.attr_orders[name] = max(self.attr_orders.values())+1 if len(self.attr_orders.values())>0 else 1
         setattr(self, py_identifier, value)
         self._is_modified = True
 
@@ -122,9 +129,10 @@ class Instance(object):
         values_list: A list of tuples (attr_name, attr_value)
         """
         for name, value in values_list:
-            #TODO: store the "order" somewhere
             py_identifier = util.to_valid_identifier_name(name)
             self.attr_identifiers[name] = py_identifier
+            self.attr_orders[name] = max(self.attr_orders.values())+1 if len(self.attr_orders.values())>0 else 1
+
             if not hasattr(self, py_identifier):
                 setattr(self, py_identifier, value)
             else:
@@ -151,7 +159,7 @@ class Instance(object):
             """
             Returns a list of (attribute_name,value) pairs of all the values of the instance, independently in they are defined by any spec.
             """
-            return [(name, getattr(self, py_id, None)) for name, py_id in self.attr_identifiers.iteritems()]
+            return [(name, getattr(self, py_id, None)) for name, py_id in sorted(self.attr_identifiers.iteritems(), key=lambda x: self.attr_orders[x[0]] )]
 
     def get_value(self, name):
             """
@@ -160,6 +168,14 @@ class Instance(object):
             if not self.attr_identifiers.has_key(name):
                 return None
             return getattr(self, self.attr_identifiers[name], None)
+
+    def get_order(self, name):
+            """
+            Returns the order for the attribute with the specified name.
+            """
+            if not self.attr_orders.has_key(name):
+                return 0
+            return self.attr_orders[name]
 
     def get_meta_violations(self):
         """
