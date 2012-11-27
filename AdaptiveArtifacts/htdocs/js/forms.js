@@ -51,7 +51,7 @@ function delAttribute(){
 
 function addValue(context, name, val){
     var newid = uuid.v4()
-    var copy = context.find("tr.attribute:last").clone(true)
+    var copy = context.find("tr.attribute.prototype").clone(true)
     copy.removeClass('prototype')
     var name_input = copy.find("input[name^='attr-name-']")
     name_input.attr("name", "attr-name-" + newid)
@@ -61,6 +61,8 @@ function addValue(context, name, val){
     value_input.attr("value", val)
     var default_input = copy.find("input[name^='default']")
     default_input.attr("value", newid)
+    if ($('form#artifact-form input[name=default]:checked').length==0)
+        default_input.attr('checked', true)
     context.find("table.attributes").append(copy)
 }
 
