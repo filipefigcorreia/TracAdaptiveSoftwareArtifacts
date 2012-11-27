@@ -101,7 +101,7 @@ function link_to_existing_artifact_ajax_call(click_callback, value){
                         Requests.searchArtifacts(spec, attribute, function(data){
                             clearRows();
                             if(data.length==0){
-                                addMessageRow('No results found');
+                                addMessageRow('No Adaptive Artifacts found');
                             }
                             for(var i=0;i<data.length;i++)
                                 addResultRow(data[i].id, data[i].spec, data[i].title);
