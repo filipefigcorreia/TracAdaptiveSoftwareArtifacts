@@ -145,7 +145,7 @@ class Core(Component):
             dbp = DBPool(self.env, pool)
             dbp.load_artifact(id=target)
             artifact = pool.get_item(id=target)
-            spec_name = artifact.__class__.__name__ if not artifact.__class__ is Instance else None
+            spec_name = artifact.__class__.get_name() if not artifact.__class__ is Instance else None
             if spec_name is None:
                 title = "Adaptive Software Artifact '%s'" % (label,)
             else:
