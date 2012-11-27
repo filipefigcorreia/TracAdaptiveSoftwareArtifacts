@@ -429,7 +429,7 @@ def _group_artifact_values(req):
                 attr_name = req.args['attr-name-' + idx]
                 attr_order = req.args[key]
                 ordered_names[attr_name] = attr_order
-    ordered_values = sorted(values.items(), key=lambda x: ordered_names[x[0]])
+    ordered_values = sorted(values.items(), key=lambda x: ordered_names[x[0]] if ordered_names.has_key(x[0]) else 0)
 
     if 'default' in req.args:
         default = req.args['attr-name-' + req.args['default']]
