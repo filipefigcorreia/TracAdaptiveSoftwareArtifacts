@@ -150,9 +150,8 @@ var setupEditor = function() {
 
     editor.getSession().setValue(textarea.val());
     editor.getSession().on('change', function(){
-      textarea.val(editor.getSession().getValue());
+        textarea.val(editor.getSession().getValue());
     });
-
 
     // Initially a copy of trac/htdocs/js/resizer.js
     // Allow resizing <textarea> elements through a drag bar
@@ -414,27 +413,10 @@ var setupBalloons = function(editor){
             column: Math.round((e.clientX + editor.renderer.scrollLeft - canvasPos.left - editor.renderer.$padding) / editor.renderer.characterWidth)};
         var session = editor.session;
 
-        //Testes para ajustar posicionamento do balao
-        //console.log("Janela: "+ editor.offsetLeft+ "   "+editor.offsetTop);
-        //console.log(position.row+"      " +position.column ) ;
-        //var range = editor.session.getAWordRange(position.row, position.column);
-        //console.log(range.start);
-        //console.log(range.toScreenRange(editor.session).start);
-        //range.end.column-position.column
-
-
-        // If the user clicked on a fold, then expand it.
-        var token = session.getTokenAt(position.row, position.column, 1);
+        var token = session.getTokenAt(position.row, position.column);
         if (token){
-
             var editordiv = $('#editor');
-            var tooltip_content;
             if (token.type == 'keyword' || token.type == 'asa_artifact') {
-               /* console.log("Aqui: ");
-                console.log(session.getTabSize());
-
-                console.log("Old");
-                console.log(e.clientX);*/
 
                 balloon = editordiv.showBalloon(
                     {
@@ -477,7 +459,6 @@ var setupBalloons = function(editor){
                         editordiv.showBalloon();
                     });
                 }
-
             }else{
                 balloon && editordiv.hideBalloon();
             }
