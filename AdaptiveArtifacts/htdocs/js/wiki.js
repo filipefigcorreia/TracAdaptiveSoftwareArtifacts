@@ -408,21 +408,24 @@ var setupBalloons = function(editor){
         var canvasPos = editor.renderer.scroller.getBoundingClientRect();
         // Originally adapted from the code of screenToTextCoordinates()
         // Accounts for whitespace columns on the end of lines.
-        var position = {
-            row:e.getDocumentPosition().row ,
-            column: Math.round((e.clientX + editor.renderer.scrollLeft - canvasPos.left - editor.renderer.$padding) / editor.renderer.characterWidth)};
+        var position = e.getDocumentPosition();
+        if (position.column == editor.session.getLine(position.row).length){
+            // Likely hovering on the whitespace to the right of the end of the line
+            // To be absolutely sure we'd need a textCoordinatesToScreen()
+            return;
+        }
         var session = editor.session;
 
         var token = session.getTokenAt(position.row, position.column);
         if (token){
             var editordiv = $('#editor');
             if (token.type == 'keyword' || token.type == 'asa_artifact') {
-
+                var screenPosition = editor.renderer.textToScreenCoordinates(position.row, token.start + token.value.length + 2);
                 balloon = editordiv.showBalloon(
                     {
                         position: "top left",
-                        offsetX: e.clientX - canvasPos.left ,
-                        offsetY: canvasPos.top - e.clientY + 10,
+                        offsetX: screenPosition.pageX + editor.renderer.characterWidth/2,
+                        offsetY: canvasPos.top - screenPosition.pageY - editor.renderer.lineHeight*1.5,
                         tipSize: 10,
                         delay: 500,
                         minLifetime: 500,
