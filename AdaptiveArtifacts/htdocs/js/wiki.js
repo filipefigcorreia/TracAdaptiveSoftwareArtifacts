@@ -406,8 +406,6 @@ var setupBalloons = function(editor){
     var balloon;
     editor.on('mousemove', function(e) {
         var canvasPos = editor.renderer.scroller.getBoundingClientRect();
-        // Originally adapted from the code of screenToTextCoordinates()
-        // Accounts for whitespace columns on the end of lines.
         var position = e.getDocumentPosition();
         if (position.column == editor.session.getLine(position.row).length){
             // Likely hovering on the whitespace to the right of the end of the line
