@@ -18,7 +18,6 @@ from AdaptiveArtifacts.model.pool import InstancePool
 from AdaptiveArtifacts.model.pool import Entity, Instance
 from AdaptiveArtifacts.requests.request import Request
 
-
 class Core(Component):
     """Core module of the plugin. Provides the Adaptive-Artifacts themselves."""
     implements(INavigationContributor, IRequestHandler, ITemplateProvider, IResourceManager, IRequestFilter, IWikiSyntaxProvider, IWikiChangeListener)
@@ -95,17 +94,6 @@ class Core(Component):
         item = dbp.load_item(resource.id)
         return href.adaptiveartifacts('artifact/%d' % (resource.id,), action='view')
 
-    """
-    def get_resource_description(self, resource, format='default', context=None, **kwargs):
-        pi = AdaptiveArtifact.load(self.env, identifier=resource.id, version=resource.version)
-        #TODO: instead of using the identifier, use the text_repr_expr property value, if it exists
-        return "ASA: '" + pi.instance.get_identifier() + "'"
-
-    def resource_exists(self, resource):
-        pi = AdaptiveArtifact.load(self.env, identifier=resource.id, version=resource.version)
-        return not pi.instance is None
-    """
-
     # IRequestFilter methods
     def pre_process_request(self, req, handler):
         return handler
@@ -181,8 +169,7 @@ class Core(Component):
         dbp.update_wiki_page_references(page, artifacts_ids)
 
 
-
-from trac.search import ISearchSource, search_to_sql
+from trac.search import ISearchSource
 from trac.resource import get_resource_url
 class Search(Component):
     """Allows to search Adaptive-Artifacts resources."""
