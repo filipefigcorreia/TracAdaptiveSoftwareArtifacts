@@ -3,7 +3,7 @@ $(document).ready(function(){
 });
 
 // Adds hidden input fields indicating the attributes' order
-function addAttributeOrderFields(form){
+function addValueOrderFields(form){
     var name_fields = form.find("input[name^='attr-name-']:not([name='attr-name-X'])");
     for (var i=0; i<name_fields.length; i++){
         var field_id = name_fields.get(i).name.substring(10);
@@ -21,7 +21,7 @@ function attachFormEventHandlers(context){
     context.find("a.addvalue").click(function() { addValue(context, "", "") });
     context.find("a.delvalue").click(delValue);
     context.find("#artifact-form").submit(function(e){
-        addAttributeOrderFields($("#artifact-form"));
+        addValueOrderFields($("#artifact-form"));
     });
     $("input#spec").autocomplete(
         {source: function(request, callback){
