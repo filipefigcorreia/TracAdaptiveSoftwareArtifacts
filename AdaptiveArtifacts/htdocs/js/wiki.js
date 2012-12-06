@@ -431,7 +431,7 @@ var setupBalloons = function(editor){
                 balloon = editordiv.showBalloon(
                     {
                         position: "top left",
-                        offsetX: screenPosition.pageX + editor.renderer.characterWidth/2,
+                        offsetX: screenPosition.pageX + editor.renderer.characterWidth*2/3,
                         offsetY: canvasPos.top - screenPosition.pageY - editor.renderer.lineHeight*1.5,
                         tipSize: 10,
                         delay: 500,
