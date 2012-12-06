@@ -1,13 +1,7 @@
 $(document).ready(function(){
     attachFormEventHandlers($("body"));
 
-    $("input#spec").autocomplete(
-        {source: function(request, callback){
-            Requests.searchSpecNames([request.term], function(data){
-                callback(data);
-            });
-        }}
-    );
+
 });
 
 // Adds hidden input fields indicating the attributes' order
@@ -31,6 +25,13 @@ function attachFormEventHandlers(context){
     context.find("#artifact-form").submit(function(e){
         addAttributeOrderFields($("#artifact-form"));
     });
+    $("input#spec").autocomplete(
+        {source: function(request, callback){
+            Requests.searchSpecNames([request.term], function(data){
+                callback(data);
+            });
+        }}
+    );
 }
 
 function addAttribute(){

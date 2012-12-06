@@ -26,7 +26,12 @@ function view_artifact_ajax_call(asa_token_content, editor){
                     }
                 ).dialog('open');
             },
-            "Close": function() { $(this).dialog("close"); } }
+            "Close": function() { $(this).dialog("close"); } },
+        {
+            error: function(){
+                alert("The artifact with id '"+id+"' was not found!");
+            }
+        }
     ).dialog('open');
 
 }
@@ -281,8 +286,8 @@ var setupToolbar = function(editor){
                                 editor.session.bgTokenizer.fireUpdateEvent(0,statesLength);
                                 editor.session.bgTokenizer.start(0);
                             },
-                            error: function(data){
-                                console.log("Ajax call failed!");
+                            error: function(){
+                                alert("Invalid Artifact");
                             }
                         }
                     )}
@@ -294,6 +299,7 @@ var setupToolbar = function(editor){
                 }
             ).dialog('open');
         }
+
     });
 
     $("#asa_link_button").click(function() {

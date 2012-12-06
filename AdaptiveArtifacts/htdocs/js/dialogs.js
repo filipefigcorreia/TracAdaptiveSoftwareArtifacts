@@ -62,7 +62,7 @@ function createASAFormDialogFromUrl(title, url, buttons, functions){
                                 functions && $.isFunction(functions.open) && (functions.open).call(this);
                             },
                             error: function (data, textStatus, jqXHR){
-                                alert("Invalid Artifact");
+                                functions && $.isFunction(functions.error) && (functions.error).call(this);
                             },
                             buttons: buttons
                         },
@@ -87,10 +87,7 @@ function createDialogFromUrl(url, options, dialogdivclass){
         dialogdiv.html(data).dialog($.extend(opts, {title: options.title}));
       }
       $.isFunction(options.success) && (options.success).call(dialogdiv, data, textStatus, jqXHR);
-    },
-     error: function(data, textStatus, jqXHR){
-      $.isFunction(options.error) && (options.error).call(dialogdiv, data, textStatus, jqXHR);
-     }
+    }
   });
   dialogdiv.bind('dialogclose', function(event) {
           $(this).dialog("destroy");
