@@ -52,7 +52,10 @@ class Core(Component):
             req.redirect(req.href.adaptiveartifacts(asa_resource_id.strip('/')))
 
         dbp = DBPool(self.env, InstancePool())
-        request = Request(dbp, req)
+        try:
+            request = Request(dbp, req)
+        except ValueError:
+            return 'unable_to_retrieve_resource.html', {}, None
 
         add_javascript(req, 'adaptiveartifacts/js/lib/jstree/jquery.jstree.js')
         add_javascript(req, 'adaptiveartifacts/js/indextree.js')
