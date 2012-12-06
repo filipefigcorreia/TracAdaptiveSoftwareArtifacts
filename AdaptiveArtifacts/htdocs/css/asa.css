@@ -150,10 +150,11 @@ div.filter input {
     clear: none;
 }
 
-#artifact-select table.listing td.message {
+#artifact-select table.listing td.message,
+#artifacts.message {
     text-align: center;
     font-style: italic;
-    height: 50px;
     vertical-align: middle;
+    padding: 2em 4em 2em 4em;
 }
 

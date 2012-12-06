@@ -11,6 +11,7 @@ function view_artifact_ajax_call(asa_token_content, editor){
                 createASAFormDialogFromUrl('Artifact', baseurl+"/artifact/"+id+"?action=edit",
                     {
                         "Save   ": function() {
+                            addAttributeOrderFields($("#artifact-form"));
                             submitASAFormDialog(
                                 $(this),
                                 {
@@ -31,7 +32,7 @@ function view_artifact_ajax_call(asa_token_content, editor){
 }
 
 function link_to_existing_artifact_ajax_call(click_callback, value){
-    var dlg = createASAFormDialogFromUrl('Select Adaptive Artifact',  baseurl+"/search/by_filter?",
+    createASAFormDialogFromUrl('Select Adaptive Artifact',  baseurl+"/search/by_filter?",
         [
             {
                 id:'button-choose',
@@ -99,7 +100,7 @@ function link_to_existing_artifact_ajax_call(click_callback, value){
                         Requests.searchArtifacts(spec, attribute, function(data){
                             clearRows();
                             if(data.length==0){
-                                addMessageRow('No results found');
+                                addMessageRow('No Adaptive Artifacts found');
                             }
                             for(var i=0;i<data.length;i++)
                                 addResultRow(data[i].id, data[i].spec, data[i].title);
@@ -111,17 +112,13 @@ function link_to_existing_artifact_ajax_call(click_callback, value){
                 $(".filter #attribute").on('input',function(){delayedUpdateResults();});
                 $(".filter #value")
                     .on('input',function(){delayedUpdateResults();})
-                    .val(value);
+                    .val(value)
+                    .focus();
                 delayedUpdateResults();
                 $('.asa-dialog').parent().css('top', Math.max($('.asa-dialog').parent().position().top-100, 0) + 'px');
             }
         }
-    );
-    dlg.bind('dialogclose', function(event) {
-        $(this).dialog("destroy");
-        $(this).remove();
-    });
-    dlg.dialog('open');
+    ).dialog('open');
 }
 
 var setupEditor = function() {
@@ -151,9 +148,8 @@ var setupEditor = function() {
 
     editor.getSession().setValue(textarea.val());
     editor.getSession().on('change', function(){
-      textarea.val(editor.getSession().getValue());
+        textarea.val(editor.getSession().getValue());
     });
-
 
     // Initially a copy of trac/htdocs/js/resizer.js
     // Allow resizing <textarea> elements through a drag bar
@@ -247,8 +243,22 @@ var setupToolbar = function(editor){
 
     toolbar.after('<div class="wikitoolbar" id="asa_toolbar"></div>');
     var asa_toolbar = $('#asa_toolbar');
-    asa_toolbar.append('<a href="#" id="asa_create_button" title="Create artifact through selection" tabindex="400"></a>');
+    asa_toolbar.append('<a href="#" id="asa_create_button" title="Create and link to artifact" tabindex="400"></a>');
     asa_toolbar.append('<a href="#" id="asa_link_button" title="Link to existing artifact" tabindex="400"></a>');
+
+    var updateToolbarButtonState = function(){
+        if(!editor.getSelection().isEmpty()){
+            $("#asa_create_button").removeClass('disabled');
+            $("#asa_link_button").removeClass('disabled');
+        }else{
+            $("#asa_create_button").addClass('disabled');
+            $("#asa_link_button").addClass('disabled');
+        }
+    };
+    editor.getSession().selection.on('changeSelection', function(){
+        updateToolbarButtonState();
+    });
+    updateToolbarButtonState();
 
     // Events for the custom toolbar buttons
     $("#asa_create_button").click(function() {
@@ -256,6 +266,7 @@ var setupToolbar = function(editor){
         if(!editor.getSelection().isEmpty()){
             createASAFormDialogFromUrl('Create Adaptive Artifact',  baseurl+"/artifact?action=new",
                 { "Create": function() {
+                    addAttributeOrderFields($("#artifact-form"));
                     submitASAFormDialog(
                         $(this),
                         {
@@ -398,40 +409,24 @@ var setupBalloons = function(editor){
     var balloon;
     editor.on('mousemove', function(e) {
         var canvasPos = editor.renderer.scroller.getBoundingClientRect();
-        // Originally adapted from the code of screenToTextCoordinates()
-        // Accounts for whitespace columns on the end of lines.
-        var position = {
-            row:e.getDocumentPosition().row ,
-            column: Math.round((e.clientX + editor.renderer.scrollLeft - canvasPos.left - editor.renderer.$padding) / editor.renderer.characterWidth)};
+        var position = e.getDocumentPosition();
+        if (position.column == editor.session.getLine(position.row).length){
+            // Likely hovering on the whitespace to the right of the end of the line
+            // To be absolutely sure we'd need a textCoordinatesToScreen()
+            return;
+        }
         var session = editor.session;
 
-        //Testes para ajustar posicionamento do balao
-        //console.log("Janela: "+ editor.offsetLeft+ "   "+editor.offsetTop);
-        //console.log(position.row+"      " +position.column ) ;
-        //var range = editor.session.getAWordRange(position.row, position.column);
-        //console.log(range.start);
-        //console.log(range.toScreenRange(editor.session).start);
-        //range.end.column-position.column
-
-
-        // If the user clicked on a fold, then expand it.
-        var token = session.getTokenAt(position.row, position.column, 1);
+        var token = session.getTokenAt(position.row, position.column);
         if (token){
-
             var editordiv = $('#editor');
-            var tooltip_content;
             if (token.type == 'keyword' || token.type == 'asa_artifact') {
-               /* console.log("Aqui: ");
-                console.log(session.getTabSize());
-
-                console.log("Old");
-                console.log(e.clientX);*/
-
+                var screenPosition = editor.renderer.textToScreenCoordinates(position.row, token.start + token.value.length + 2);
                 balloon = editordiv.showBalloon(
                     {
                         position: "top left",
-                        offsetX: e.clientX - canvasPos.left ,
-                        offsetY: canvasPos.top - e.clientY + 10,
+                        offsetX: screenPosition.pageX + editor.renderer.characterWidth/2,
+                        offsetY: canvasPos.top - screenPosition.pageY - editor.renderer.lineHeight*1.5,
                         tipSize: 10,
                         delay: 500,
                         minLifetime: 500,
@@ -468,7 +463,6 @@ var setupBalloons = function(editor){
                         editordiv.showBalloon();
                     });
                 }
-
             }else{
                 balloon && editordiv.hideBalloon();
             }

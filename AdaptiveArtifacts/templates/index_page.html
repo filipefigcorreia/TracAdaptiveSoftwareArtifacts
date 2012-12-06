@@ -35,13 +35,13 @@
              </form>
              <form method="get" action="${href.adaptiveartifacts('spec')}">
                  <input type="hidden" name="action" value="new" />
-                 <input type="submit" value="New Spec" />
+                 <input type="submit" value="New Type" />
              </form>
          </div>
         <h1>Adaptive Artifacts</h1>
 
         <div id="entry-points" class="tree">
-            <h2>By Spec</h2>
+            <h2>By Type</h2>
             <div id="specs">
             ${spec_markup(specs)}
             </div>
@@ -51,8 +51,8 @@
                 <ul>
                     <li>
                         <py:choose test="">
-                        <a py:when="selected_search == 'no_spec'" class="selected" href="${req.href.adaptiveartifacts(search='no_spec')}">Artifacts with no Spec <small>(${len(artifacts_values)})</small></a>
-                        <a py:otherwise="" href="${req.href.adaptiveartifacts(search='no_spec')}">Artifacts with no Spec</a>
+                        <a py:when="selected_search == 'no_spec'" class="selected" href="${req.href.adaptiveartifacts(search='no_spec')}">Artifacts with no Type<small> (${len(artifacts_values)})</small></a>
+                        <a py:otherwise="" href="${req.href.adaptiveartifacts(search='no_spec')}">Artifacts with no Type</a>
                         </py:choose>
                     </li>
                 </ul>
@@ -60,12 +60,15 @@
             <br/><br/>
         </div>
 
-        <div id="artifacts">
-            <py:choose test="">
-              <py:when test="not selected_spec and not selected_search">
-                  Please select one of the options on the left or use create new Adaptive Artifacts or Specifications using the buttons on the right.
-              </py:when>
-              <py:otherwise>
+        <py:choose test="">
+          <py:when test="not selected_spec and not selected_search">
+              <div id="artifacts" class="message">
+              Please select one of the options on the left, or use the buttons on the right<br/>
+                  to create a new Adaptive Artifacts or a new Type of Adaptive Artifacts.
+              </div>
+          </py:when>
+          <py:otherwise>
+              <div id="artifacts">
 
                 <py:if test="selected_spec and not selected_search">
                     <h2>${selected_spec.get_name()}</h2> <span class="spec-options"><a href="${req.href.adaptiveartifacts('spec', selected_spec.get_id(), action='view')}">[view]</a><a href="${req.href.adaptiveartifacts('spec', selected_spec.get_id(), action='edit')}">[edit]</a></span>
@@ -76,7 +79,7 @@
                     </div>
                 </py:if>
                 <py:if test="selected_search and selected_search=='no_spec'">
-                    <h2>Artifacts with no Spec</h2>
+                    <h2>All without Type</h2>
                     <div class="spec-details">
                     ${len(artifacts_values)} Adaptive Artifacts.
                     </div>
@@ -128,9 +131,9 @@
                 </div>
                 -->
                 <br/>
-              </py:otherwise>
-            </py:choose>
-        </div>
+              </div>
+          </py:otherwise>
+        </py:choose>
 
         <br/><br/>
 

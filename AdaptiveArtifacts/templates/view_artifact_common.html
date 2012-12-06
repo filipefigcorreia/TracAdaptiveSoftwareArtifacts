@@ -7,8 +7,8 @@
         <h1>
             <py:if test="spec_name"><a href="${spec_url}">${spec_name}</a></py:if>
             <py:if test="not spec_name">Adaptive Artifact</py:if>
-            <py:if test="artifact.str_attr"> <em>${str(artifact)}</em> <small>(#${artifact.get_id()}<py:if test="not spec_name">, no Spec specified</py:if>)</small></py:if>
-            <py:if test="not artifact.str_attr">#${artifact.get_id()} <py:if test="not spec_name"><small>(no Spec specified)</small></py:if></py:if>
+            <py:if test="artifact.str_attr"> <em>${str(artifact)}</em> <small>(#${artifact.get_id()}<py:if test="not spec_name">, no Type specified</py:if>)</small></py:if>
+            <py:if test="not artifact.str_attr">#${artifact.get_id()} <py:if test="not spec_name"><small>(no Type specified)</small></py:if></py:if>
         </h1>
         <span class="label">Attributes</span>
         <table class="attributes">

@@ -145,11 +145,11 @@ class Core(Component):
             dbp = DBPool(self.env, pool)
             dbp.load_artifact(id=target)
             artifact = pool.get_item(id=target)
-            spec_name = artifact.__class__.__name__ if not artifact.__class__ is Instance else None
+            spec_name = artifact.__class__.get_name() if not artifact.__class__ is Instance else None
             if spec_name is None:
                 title = "Adaptive Software Artifact '%s'" % (label,)
             else:
-                title = "Adaptive Software Artifact '%s' of spec '%s'" % (label,spec_name)
+                title = "Adaptive Software Artifact '%s' of type '%s'" % (label,spec_name)
         except ValueError:
             title = "Adaptive Software Artifact with ID '%s' does not exist" % (target,)
         return tag.a(label, href=formatter.href.adaptiveartifacts('artifact', target), title=title)

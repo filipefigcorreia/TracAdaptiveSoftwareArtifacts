@@ -28,8 +28,6 @@ function submitASAFormDialog(dialogdiv, options) {
         context: dialogdiv, //so that we can call $(this) on the success and error callbacks
         success: function(data){
             $(this).dialog("close");
-            $(this).dialog("destroy");
-            $(this).remove();
             options['success'](data);
         },
         error: function(data){
@@ -39,8 +37,6 @@ function submitASAFormDialog(dialogdiv, options) {
                     text: "Close",
                     click: function() {
                         $(this).dialog("close");
-                        $(this).dialog("destroy");
-                        $(this).remove();
                         options['error'](data);
                     }
                 }
@@ -96,5 +92,9 @@ function createDialogFromUrl(url, options, dialogdivclass){
       $.isFunction(options.error) && (options.error).call(dialogdiv, data, textStatus, jqXHR);
      }
   });
+  dialogdiv.bind('dialogclose', function(event) {
+          $(this).dialog("destroy");
+          $(this).remove();
+      });
   return dialogdiv;
 }
