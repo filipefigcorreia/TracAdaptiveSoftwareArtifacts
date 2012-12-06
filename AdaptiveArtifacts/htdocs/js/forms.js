@@ -2,8 +2,10 @@ $(document).ready(function(){
     attachFormEventHandlers($("body"));
 });
 
-// Adds hidden input fields indicating the attributes' order
-function addValueOrderFields(form){
+// Adds hidden input fields indicating the attributes' order.
+// This method works both for a Type's attributes and for
+// an AA's values, as both rely on an input named attr-name-*
+function addAttributeOrderFields(form){
     var name_fields = form.find("input[name^='attr-name-']:not([name='attr-name-X'])");
     for (var i=0; i<name_fields.length; i++){
         var field_id = name_fields.get(i).name.substring(10);
@@ -21,7 +23,10 @@ function attachFormEventHandlers(context){
     context.find("a.addvalue").click(function() { addValue(context, "", "") });
     context.find("a.delvalue").click(delValue);
     context.find("#artifact-form").submit(function(e){
-        addValueOrderFields($("#artifact-form"));
+        addAttributeOrderFields($("#artifact-form"));
+    });
+    context.find("#type-form").submit(function(e){
+        addAttributeOrderFields($("#type-form"));
     });
     $("input#spec").autocomplete(
         {source: function(request, callback){

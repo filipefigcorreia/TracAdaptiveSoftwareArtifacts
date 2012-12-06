@@ -367,8 +367,11 @@ class Entity(type):
 
     def _replace_attributes(cls, attributes):
         cls.attributes = attributes
+        order = 1
         for attribute in cls.attributes:
             attribute.owner_spec = cls
+            attribute.order = order
+            order += 1
         cls._is_modified = True
 
     @classmethod

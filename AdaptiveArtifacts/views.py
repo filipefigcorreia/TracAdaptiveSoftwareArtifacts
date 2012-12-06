@@ -450,11 +450,31 @@ def _group_spec_attributes(req):
     # group posted attributes into a list of tuples (attr_name,attr_type,attr_multiplicity)
     # {'attr_name_1':'Age', 'attr_type_1':'str', 'attr_multiplicity_1':None} -> [('Age','str',None)]
     attrs = []
+    ordered_names = {}
     for key in req.args.keys():
-        if key[0:9] == 'attr-name' and len(req.args[key]) > 0 and key[10:] != 'X':
-            idx = key[10:]
-            attr_name = req.args[key]
-            attr_type = req.args['attr-type-' + idx]
-            attr_multiplicity = req.args['attr-multiplicity-' + idx]
-            attrs.append((attr_name, attr_type, attr_multiplicity))
-    return attrs
+        if len(req.args[key]) > 0 and key[10:] != 'X':
+            if key[0:9] == 'attr-name':
+                idx = key[10:]
+                attr_name = req.args[key]
+                attr_type = req.args['attr-type-' + idx]
+                attr_multiplicity = req.args['attr-multiplicity-' + idx]
+                attrs.append((attr_name, attr_type, attr_multiplicity))
+            if key[0:10] == 'attr-order':
+                idx = key[11:]
+                attr_name = req.args['attr-name-' + idx]
+                attr_order = req.args[key]
+                ordered_names[attr_name] = attr_order
+
+    def get_order(key_val):
+        if ordered_names.has_key(key_val[0]):
+            val = ordered_names[key_val[0]]
+            if val.isdigit():
+                return int(val)
+            else:
+                return val
+        else:
+            return 0
+
+    ordered_attrs = sorted(attrs, key=lambda x: get_order(x))
+
+    return ordered_attrs
