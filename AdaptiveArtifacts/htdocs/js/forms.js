@@ -1,7 +1,5 @@
 $(document).ready(function(){
     attachFormEventHandlers($("body"));
-
-
 });
 
 // Adds hidden input fields indicating the attributes' order

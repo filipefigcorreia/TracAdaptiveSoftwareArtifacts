@@ -278,11 +278,6 @@ var setupToolbar = function(editor){
                             success: function(data){
                                 wrapSelection("[asa:"+data[0].resource_id+" ", "]");
                                 var statesLength = editor.session.bgTokenizer.states.length;
-                                /*var i=0;
-                                 while ( i  < statesLength){
-                                 editor.session.bgTokenizer.states[i] = null;
-                                 i++;
-                                 }*/
                                 editor.session.bgTokenizer.fireUpdateEvent(0,statesLength);
                                 editor.session.bgTokenizer.start(0);
                             },
