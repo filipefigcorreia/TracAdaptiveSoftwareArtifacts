@@ -126,6 +126,6 @@ class Searcher(object):
                   FROM asa_spec s
                       INNER JOIN asa_version v ON v.id=s.version_id
                   WHERE s.name """ + db.like() +
-                  """ GROUP BY v.id""", ("%" + db.like_escape(term) + "%",)):
+                  """ GROUP BY s.name""", ("%" + db.like_escape(term) + "%",)):
               results.append(name)
         return results
