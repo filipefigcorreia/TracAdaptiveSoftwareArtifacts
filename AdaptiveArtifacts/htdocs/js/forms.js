@@ -20,8 +20,10 @@ function addAttributeOrderFields(form){
 function attachFormEventHandlers(context){
     context.find("a.addattr").click(addAttribute);
     context.find("a.delattr").click(delAttribute);
-    context.find("a.addvalue").click(function() { addValue(context, "", "") });
+    context.find("a.addvalue").click(function() { return addValue(context, "", "") });
     context.find("a.delvalue").click(delValue);
+    context.find("a.tomultiline").click(toMultiline);
+    context.find("a.touniline").click(toUniline);
     context.find("#artifact-form").submit(function(e){
         addAttributeOrderFields($("#artifact-form"));
     });
@@ -51,10 +53,12 @@ function addAttribute(){
     type_multiplicity.attr("name", "attr-multiplicity-" + newid);
     type_multiplicity.attr("value", "");
     $("table.attributes").append(copy);
+    return false;
 }
 
 function delAttribute(){
     $(this).parent().parent().remove();
+    return false;
 }
 
 function addValue(context, name, val){
@@ -72,8 +76,48 @@ function addValue(context, name, val){
     if ($('form#artifact-form input[name=default]:checked').length==0)
         default_input.attr('checked', true);
     context.find("table.attributes").append(copy);
+    name_input.focus();
+    return false;
 }
 
 function delValue(){
     $(this).parent().parent().remove();
+    return false;
+}
+
+function toMultiline(){
+    var input = $(this).parent().find("input");
+    var textarea = $("<textarea/>")
+        .attr("name", input.attr("name"))
+        .text(input.val());
+    input.after(textarea).remove();
+    var link = $(this).parent().find("a")
+        .clone()
+        .attr("title", "Collapse to single-line field")
+        .removeClass("tomultiline")
+        .addClass("touniline")
+        .click(toUniline);
+    $(this)
+        .after(link)
+        .remove();
+    return false;
+}
+
+function toUniline(){
+    var textarea = $(this).parent().find("textarea");
+    var input = $("<input/>")
+        .attr("type", "text")
+        .attr("name", textarea.attr("name"))
+        .val(textarea.text());
+    textarea.after(input).remove();
+    var link = $(this).parent().find("a")
+        .clone()
+        .attr("title", "Expand to multi-line field")
+        .removeClass("touniline")
+        .addClass("tomultiline")
+        .click(toMultiline);
+    $(this)
+        .after(link)
+        .remove();
+    return false;
 }

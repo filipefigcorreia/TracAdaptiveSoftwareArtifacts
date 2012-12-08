@@ -4,10 +4,20 @@
     xmlns:xi="http://www.w3.org/2001/XInclude">
 
     <py:def function="attr_value_markup(value_idx=None, attr_name=None, attr_value=None)">
-        <td><a class="delvalue" href="#">[-]</a></td>
-        <td><input type="text" name="attr-name-${value_idx}" value="${attr_name}" /></td>
-        <td><input type="text" name="attr-value-${value_idx}" value="${attr_value}" /></td>
-        <td>
+        <td class="attrname">
+            <input type="text" name="attr-name-${value_idx}" value="${attr_name}"/><span>:</span>
+        </td>
+        <td class="attrvalue">
+            <py:if test="not '\n' in attr_value">
+                <input type="text" name="attr-value-${value_idx}" value="${attr_value}"/>
+                <a class="tomultiline" href="#" title="Expand to multi-line field"></a>
+            </py:if>
+            <py:if test="'\n' in attr_value">
+                <textarea name="attr-value-${value_idx}">${attr_value}</textarea>
+                <a class="touniline" href="#" title="Collapse to single-line field"></a>
+            </py:if>
+        </td>
+        <td class="attristitle">
             <py:if test="value_idx == default">
                 <input type="radio" name="default" value="${value_idx}" checked="checked" />
             </py:if>
@@ -15,13 +25,15 @@
                 <input type="radio" name="default" value="${value_idx}" />
             </py:if>
         </td>
+        <td class="attrreorder"><a class="reorder-down" href="#" title="Move below"></a><a class="reorder-up" href="#" title="Move up"></a></td>
+        <td class="attrdelete"><a class="delvalue" href="#" title="Expand to multiline wikified field"></a></td>
     </py:def>
 
     <py:match path="div[@id='dialog-content']" once="true">
         <label>Type:</label> <input type="text" id="spec" name="spec" value="${spec_name}" autocomplete="off"/> <br/>
         <label>Attributes:</label>
-        <table class="attributes">
-            <tr><th></th><th>Name</th><th>Value</th><th>Default</th></tr>
+        <table class="attributes" style="width: 55em; position: relative; top:-10px;">
+            <tr><th style="width: 13em; text-align: center;"></th><th></th><th style="width: 1em; text-align: center;">Title</th><th style="text-align: center;">Order</th><th></th></tr>
             <tr class="attribute prototype">
                 ${attr_value_markup(value_idx="X", attr_name="", attr_value="")}
             </tr>
