@@ -62,7 +62,7 @@
                     <br/>
                     <label>Inherits:</label>
                     <py:if test="not spec or spec.get_parent() is None">
-                        <input type="text" name="parent" value="" />
+                        <input id="spec" type="text" name="parent" value="" />
                     </py:if>
                     <py:if test="spec and not spec.get_parent() is None">
                         <input type="text" name="parent" value="${spec.get_parent().get_name()}" />
