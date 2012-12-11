@@ -19,7 +19,14 @@
                         <py:otherwise>${name}:</py:otherwise>
                     </py:choose>
                 </th>
-                <td>${value}</td>
+                <td>
+                    <py:if test="not '\n' in value">
+                        ${value}
+                    </py:if>
+                    <py:if test="'\n' in value">
+                        ${wiki_to_html(context, value)}
+                    </py:if>
+                </td>
             </tr>
           </table>
     </py:match>
