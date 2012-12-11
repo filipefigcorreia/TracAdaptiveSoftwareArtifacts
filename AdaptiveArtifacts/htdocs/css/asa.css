@@ -74,7 +74,8 @@ TODO: needs refactoring. "fieldset#properties" is currently used
 to match the "create" but not the "view" page/dialog
 */
 
-#artifact-form table.attributes tr.phantom td input {
+#artifact-form table.attributes tr.phantom td input,
+#type-form table.attributes tr.phantom td input {
     padding: 0.25em 0.5em;
     border: 1px dashed #D7D7D7;
     background-color: #FCFCF7;
@@ -82,29 +83,43 @@ to match the "create" but not the "view" page/dialog
     color: #AAA;
 }
 
-#artifact-form table.attributes tr.phantom td.attrname span {
+#artifact-form table.attributes tr.phantom td.attrname span,
+#type-form table.attributes tr.phantom td.attrname span {
     color: #CCC;
 }
 
-#artifact-form table.attributes {
+#artifact-form table.attributes{
     width: 100%;
+}
+
+#type-form table.attributes{
+    width: auto;
+}
+
+#artifact-form table.attributes,
+#type-form table.attributes{
     border-top: 0;
 }
-#artifact-form table.attributes tr {
+#artifact-form table.attributes tr,
+#type-form table.attributes tr {
     border-bottom: none;
 }
 
 #artifact-form table.attributes th,
-#artifact-form table.attributes td {
+#artifact-form table.attributes td,
+#type-form table.attributes th,
+#type-form table.attributes td {
     padding: 0.2em 0.4em;
     white-space: nowrap;
 }
 
-#artifact-form table.attributes td.attrname {
+#artifact-form table.attributes td.attrname,
+#type-form table.attributes td.attrname {
     text-align: right;
 }
 
-#artifact-form table.attributes td.attrname input {
+#artifact-form table.attributes td.attrname input,
+#type-form table.attributes td.attrname input {
     border: 1px solid transparent;
     background-color: transparent;
     text-align: right;
@@ -113,12 +128,15 @@ to match the "create" but not the "view" page/dialog
 }
 
 #artifact-form table.attributes td.attrname input:hover,
-#artifact-form table.attributes td.attrname input:focus {
+#artifact-form table.attributes td.attrname input:focus,
+#type-form table.attributes td.attrname input:hover,
+#type-form table.attributes td.attrname input:focus {
     border: 1px solid #D7D7D7;
     background-color: white;
 }
 
-#artifact-form table.attributes td.attrname span {
+#artifact-form table.attributes td.attrname span,
+#type-form table.attributes td.attrname span {
     display: inline-block;
     padding: .25em .1em;
     margin: 2px 0;
@@ -159,17 +177,13 @@ to match the "create" but not the "view" page/dialog
     text-align: center;
 }
 
-#artifact-form table.attributes td.attrreorder {
+#artifact-form table.attributes td.attrreorder,
+#type-form table.attributes td.attrreorder {
     text-align: center;
 }
 
-#artifact-form table.attributes td.attrreorder a {
-    display: inline-block;
-    width: 12px;
-    height: 14px;
-    vertical-align: middle;
-    border-bottom: 0;
-
+#artifact-form table.attributes td.attrreorder a,
+#type-form table.attributes td.attrreorder a {
     display: inline-block;
     width: 12px;
     height: 14px;
@@ -177,15 +191,18 @@ to match the "create" but not the "view" page/dialog
     border-bottom: 0;
 }
 
-#artifact-form table.attributes td.attrreorder a.reorder-up {
+#artifact-form table.attributes td.attrreorder a.reorder-up,
+#type-form table.attributes td.attrreorder a.reorder-up {
     background: transparent url(../media/buttons/reorder_up_12x14.png) no-repeat;
 }
 
-#artifact-form table.attributes td.attrreorder a.reorder-down {
+#artifact-form table.attributes td.attrreorder a.reorder-down,
+#type-form table.attributes td.attrreorder a.reorder-down {
     background: transparent url(../media/buttons/reorder_down_12x14.png) no-repeat;
 }
 
-#artifact-form table.attributes td.attrdelete a {
+#artifact-form table.attributes td.attrdelete a,
+#type-form table.attributes td.attrdelete a {
     display: inline-block;
     background: transparent url(../media/buttons/delete_12x14.png) no-repeat;
     width: 12px;

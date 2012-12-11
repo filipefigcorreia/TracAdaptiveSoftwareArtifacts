@@ -19,7 +19,8 @@ function addAttributeOrderFields(form){
 
 function attachFormEventHandlers(context){
     // Attributes
-    context.find("a.addattr").click(addAttribute);
+    context.find("tr.addattr").click(function() { return addAttribute(context, "New Attribute"); });
+    context.find("tr.addattr input").focus(function() { return addAttribute(context, "New Attribute"); });
     context.find("a.delattr").click(delAttribute);
     // Values
     context.find("tr.addvalue").click(function() { return addValue(context, "New Attribute", "") });
@@ -44,20 +45,25 @@ function attachFormEventHandlers(context){
     );
 }
 
-function addAttribute(){
+function addAttribute(context, name){
     var newid = uuid.v4();
-    var copy = $("tr.attribute:last").clone(true);
+    var copy = context.find("tr.attribute.prototype").clone(true);
     copy.removeClass('prototype');
     var name_input = copy.find("input[name^='attr-name-']");
     name_input.attr("name", "attr-name-" + newid);
-    name_input.attr("value", "");
+    name_input.attr("value", name);
     var type_input = copy.find("select[name^='attr-type-']");
     type_input.attr("name", "attr-type-" + newid);
     type_input.attr("value", "");
     var type_multiplicity = copy.find("select[name^='attr-multiplicity-']");
     type_multiplicity.attr("name", "attr-multiplicity-" + newid);
     type_multiplicity.attr("value", "");
-    $("table.attributes").append(copy);
+    var phantom = context.find("table.attributes tr.phantom");
+    phantom.hide();
+    context.find("table.attributes tr:not(.phantom):last").after(copy);
+    phantom.show(2000);
+    name_input.focus();
+    name_input.select();
     return false;
 }
 
@@ -135,13 +141,13 @@ function reorder(){
     var table = $(this).parents("table");
     var moving_row = $(this).parents("tr:first");
     if ($(this).is(".reorder-up")) {
-        if (!moving_row.is(table.find("tr.attribute:not(.prototype):not(.addvalue):first"))){
+        if (!moving_row.is(table.find("tr.attribute:not(.prototype):not(.addvalue,.addattr):first"))){
             moving_row.hide();
             moving_row.insertBefore(moving_row.prev());
             moving_row.show(2000);
         }
     } else {
-        if (!moving_row.is(table.find("tr.attribute:not(.prototype):not(.addvalue):last"))){
+        if (!moving_row.is(table.find("tr.attribute:not(.prototype):not(.addvalue,.addattr):last"))){
             moving_row.hide();
             moving_row.insertAfter(moving_row.next());
             moving_row.show(2000);

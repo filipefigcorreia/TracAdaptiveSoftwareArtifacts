@@ -4,42 +4,53 @@
       xmlns:xi="http://www.w3.org/2001/XInclude">
     <xi:include href="layout.html" />
 
-    <py:def function="attr_markup(idx=None, attr_name=None, attr_type=None, attr_multiplicity=None)">
-        <td><a class="delattr" href="#">[-]</a></td>
-        <td><input type="text" name="attr-name-${idx}" value="${attr_name}" /></td>
-        <td>
-            <select name="attr-type-${idx}">
-                <option value=""></option>
-                <py:for each="t in types">
-                    <py:if test="t==attr_type">
-                        <option value="${t}" selected="selected">${t}</option>
-                    </py:if>
-                    <py:if test="t!=attr_type">
-                        <option value="${t}">${t}</option>
-                    </py:if>
-                </py:for>
-            </select>
+    <py:def function="attr_markup(idx=None, attr_name=None, attr_type=None, attr_multiplicity=None, is_add_attribute=False)">
+        <td class="attrname">
+            <input type="text" name="attr-name-${idx}" value="${attr_name}" /><span>:</span>
         </td>
-        <td>
-            <select name="attr-multiplicity-${idx}">
-                <option value=""></option>
-                <py:for each="m in multiplicities">
-                    <py:if test="m==attr_multiplicity">
-                        <option value="${m}" selected="selected">${m}</option>
-                    </py:if>
-                    <py:if test="m!=attr_multiplicity">
-                        <option value="${m}">${m}</option>
-                    </py:if>
-                </py:for>
-            </select>
-        </td>
+        <py:if test="is_add_attribute">
+            <td class="attrtype"><input/></td>
+            <td class="attrmultiplicity"><input/></td>
+            <td></td><td></td>
+        </py:if>
+        <py:if test="not is_add_attribute">
+            <td class="attrtype">
+                <select name="attr-type-${idx}">
+                    <option value=""></option>
+                    <py:for each="t in types">
+                        <py:if test="t==attr_type">
+                            <option value="${t}" selected="selected">${t}</option>
+                        </py:if>
+                        <py:if test="t!=attr_type">
+                            <option value="${t}">${t}</option>
+                        </py:if>
+                    </py:for>
+                </select>
+            </td>
+            <td class="attrmultiplicity">
+                <select name="attr-multiplicity-${idx}">
+                    <option value=""></option>
+                    <py:for each="m in multiplicities">
+                        <py:if test="m==attr_multiplicity">
+                            <option value="${m}" selected="selected">${m}</option>
+                        </py:if>
+                        <py:if test="m!=attr_multiplicity">
+                            <option value="${m}">${m}</option>
+                        </py:if>
+                    </py:for>
+                </select>
+            </td>
+            <td class="attrreorder"><a class="reorder-down" href="#" title="Move below"></a><a class="reorder-up" href="#" title="Move up"></a></td>
+            <td class="attrdelete"><a class="delattr" href="#" title="Delete attribute"></a></td>
+        </py:if>
     </py:def>
 
     <py:def function="attr_markup_readonly(idx=None, attr_name=None, attr_type=None, attr_multiplicity=None)">
-        <td></td>
         <td>${attr_name}</td>
         <td>${attr_type}</td>
         <td>${attr_multiplicity}</td>
+        <td></td>
+        <td></td>
     </py:def>
 
     <head><title></title></head>
@@ -69,7 +80,7 @@
                     </py:if><br/>
                     <label>Attributes:</label>
                     <table class="attributes">
-                        <tr><th></th><th>Name</th><th>Type</th><th>Multiplicity</th></tr>
+                        <tr><th>Name</th><th>Type</th><th>Multiplicity</th><th>Order</th><th></th></tr>
                         <tr class="attribute prototype">
                             ${attr_markup(idx="X")}
                         </tr>
@@ -83,9 +94,10 @@
                                 </py:if>
                             </tr>
                         </py:if>
+                        <tr class="attribute phantom addattr">
+                            ${attr_markup(idx='X', attr_name='New Attribute', is_add_attribute=True)}
+                        </tr>
                     </table>
-                    <a href="#" class="addattr" title="Add one more attribute" style="margin-left: 12.5em;">[+]</a>
-
                     <br/>
                 </fieldset>
 
