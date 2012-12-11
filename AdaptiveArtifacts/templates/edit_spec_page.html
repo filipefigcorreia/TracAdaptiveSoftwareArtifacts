@@ -46,9 +46,9 @@
     </py:def>
 
     <py:def function="attr_markup_readonly(idx=None, attr_name=None, attr_type=None, attr_multiplicity=None)">
-        <td>${attr_name}</td>
-        <td>${attr_type}</td>
-        <td>${attr_multiplicity}</td>
+        <td class="readonly"><input name="attr-name-X" type="text" value="${attr_name}" readonly="readonly" /></td>
+        <td class="readonly"><input name="attr-type-X" type="text" value="${attr_type}" readonly="readonly" /></td>
+        <td class="readonly"><input name="attr-multiplicity-X" type="text" value="${attr_multiplicity}" readonly="readonly" /></td>
         <td></td>
         <td></td>
     </py:def>

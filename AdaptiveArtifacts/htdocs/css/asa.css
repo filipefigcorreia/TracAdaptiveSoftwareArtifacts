@@ -37,6 +37,7 @@ ul.artifact-details li {
     font-size: 100%;
     font-weight: normal;
     margin-bottom: 0;
+    margin-top: 0.4em;
 }
 
 table.attributes {
@@ -101,6 +102,7 @@ to match the "create" but not the "view" page/dialog
 #type-form table.attributes{
     border-top: 0;
 }
+
 #artifact-form table.attributes tr,
 #type-form table.attributes tr {
     border-bottom: none;
@@ -120,6 +122,10 @@ to match the "create" but not the "view" page/dialog
 
 #artifact-form table.attributes td.attrname {
     text-align: right;
+}
+
+#type-form table.attributes td.readonly input {
+    background-color: transparent;
 }
 
 #artifact-form table.attributes td.attrname input {
