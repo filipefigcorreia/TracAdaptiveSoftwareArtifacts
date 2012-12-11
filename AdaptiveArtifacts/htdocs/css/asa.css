@@ -74,7 +74,7 @@ TODO: needs refactoring. "fieldset#properties" is currently used
 to match the "create" but not the "view" page/dialog
 */
 
-fieldset#properties table.attributes tr.phantom td input {
+#artifact-form table.attributes tr.phantom td input {
     padding: 0.25em 0.5em;
     border: 1px dashed #D7D7D7;
     background-color: #FCFCF7;
@@ -82,29 +82,29 @@ fieldset#properties table.attributes tr.phantom td input {
     color: #AAA;
 }
 
-fieldset#properties table.attributes tr.phantom td.attrname span {
+#artifact-form table.attributes tr.phantom td.attrname span {
     color: #CCC;
 }
 
-fieldset#properties table.attributes {
+#artifact-form table.attributes {
     width: 100%;
     border-top: 0;
 }
-fieldset#properties table.attributes tr {
+#artifact-form table.attributes tr {
     border-bottom: none;
 }
 
-fieldset#properties table.attributes th,
-fieldset#properties table.attributes td {
+#artifact-form table.attributes th,
+#artifact-form table.attributes td {
     padding: 0.2em 0.4em;
     white-space: nowrap;
 }
 
-fieldset#properties table.attributes td.attrname {
+#artifact-form table.attributes td.attrname {
     text-align: right;
 }
 
-fieldset#properties table.attributes td.attrname input {
+#artifact-form table.attributes td.attrname input {
     border: 1px solid transparent;
     background-color: transparent;
     text-align: right;
@@ -112,13 +112,13 @@ fieldset#properties table.attributes td.attrname input {
     padding-right: 0.1em;
 }
 
-fieldset#properties table.attributes td.attrname input:hover,
-fieldset#properties table.attributes td.attrname input:focus {
+#artifact-form table.attributes td.attrname input:hover,
+#artifact-form table.attributes td.attrname input:focus {
     border: 1px solid #D7D7D7;
     background-color: white;
 }
 
-fieldset#properties table.attributes td.attrname span {
+#artifact-form table.attributes td.attrname span {
     display: inline-block;
     padding: .25em .1em;
     margin: 2px 0;
@@ -127,18 +127,18 @@ fieldset#properties table.attributes td.attrname span {
     width: 0.5em;
 }
 
-fieldset#properties table.attributes td.attrvalue input {
+#artifact-form table.attributes td.attrvalue input {
     width: 390px;
 }
 
-fieldset#properties table.attributes td.attrvalue textarea {
+#artifact-form table.attributes td.attrvalue textarea {
     margin: 2px;
     height: 150px;
     width: 397px;
     max-width: 397px;
 }
 
-fieldset#properties table.attributes td.attrvalue a {
+#artifact-form table.attributes td.attrvalue a {
     display: inline-block;
     width: 12px;
     height: 14px;
@@ -146,24 +146,24 @@ fieldset#properties table.attributes td.attrvalue a {
     border-bottom: 0;
     margin-top: 0.4em;
 }
-fieldset#properties table.attributes td.attrvalue a.tomultiline {
+#artifact-form table.attributes td.attrvalue a.tomultiline {
     background: transparent url(../media/buttons/multiline_expand_12x14.png) no-repeat;
 }
 
-fieldset#properties table.attributes td.attrvalue a.touniline {
+#artifact-form table.attributes td.attrvalue a.touniline {
     background: transparent url(../media/buttons/multiline_shrink_12x14.png) no-repeat;
 }
 
-fieldset#properties table.attributes td.attristitle {
+#artifact-form table.attributes td.attristitle {
     width: 1em;
     text-align: center;
 }
 
-fieldset#properties table.attributes td.attrreorder {
+#artifact-form table.attributes td.attrreorder {
     text-align: center;
 }
 
-fieldset#properties table.attributes td.attrreorder a {
+#artifact-form table.attributes td.attrreorder a {
     display: inline-block;
     width: 12px;
     height: 14px;
@@ -177,15 +177,15 @@ fieldset#properties table.attributes td.attrreorder a {
     border-bottom: 0;
 }
 
-fieldset#properties table.attributes td.attrreorder a.reorder-up {
+#artifact-form table.attributes td.attrreorder a.reorder-up {
     background: transparent url(../media/buttons/reorder_up_12x14.png) no-repeat;
 }
 
-fieldset#properties table.attributes td.attrreorder a.reorder-down {
+#artifact-form table.attributes td.attrreorder a.reorder-down {
     background: transparent url(../media/buttons/reorder_down_12x14.png) no-repeat;
 }
 
-fieldset#properties table.attributes td.attrdelete a {
+#artifact-form table.attributes td.attrdelete a {
     display: inline-block;
     background: transparent url(../media/buttons/delete_12x14.png) no-repeat;
     width: 12px;
