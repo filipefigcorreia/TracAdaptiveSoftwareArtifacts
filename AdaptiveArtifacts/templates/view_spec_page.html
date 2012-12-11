@@ -16,7 +16,7 @@
                 </thead>
                 <tbody>
                     <tr py:for="attribute in spec.get_attributes()">
-                        <td>${attribute.name}</td><td>${attribute.type.__name__ if attribute.type else ''}</td><td>${attribute.multiplicity[0]},${attribute.multiplicity[1]}</td>
+                        <td>${attribute.name}</td><td>${attribute.get_type_readable() if attribute.type else ''}</td><td>${attribute.get_multiplicity_readable()}</td>
                     </tr>
                 </tbody>
             </table>
