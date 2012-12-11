@@ -18,17 +18,17 @@ function addAttributeOrderFields(form){
 }
 
 function attachFormEventHandlers(context){
+    // Attributes
     context.find("a.addattr").click(addAttribute);
     context.find("a.delattr").click(delAttribute);
+    // Values
     context.find("tr.addvalue").click(function() { return addValue(context, "New Attribute", "") });
-    context.find("tr.addvalue input").focus(function() {
-        if ($(this).parent().parent().hasClass("phantom"))
-            return addValue(context, "New Attribute", "");
-        return true;
-    });
+    context.find("tr.addvalue input").focus(function() { return addValue(context, "New Attribute", ""); });
     context.find("a.delvalue").click(delValue);
     context.find("a.tomultiline").click(toMultiline);
     context.find("a.touniline").click(toUniline);
+    context.find("a.reorder-down,a.reorder-up").click(reorder);
+
     context.find("#artifact-form").submit(function(e){
         addAttributeOrderFields($("#artifact-form"));
     });
@@ -130,3 +130,23 @@ function toUniline(){
         .remove();
     return false;
 }
+
+function reorder(){
+    var table = $(this).parents("table");
+    var moving_row = $(this).parents("tr:first");
+    if ($(this).is(".reorder-up")) {
+        if (!moving_row.is(table.find("tr.attribute:not(.prototype):not(.addvalue):first"))){
+            moving_row.hide();
+            moving_row.insertBefore(moving_row.prev());
+            moving_row.show(2000);
+        }
+    } else {
+        if (!moving_row.is(table.find("tr.attribute:not(.prototype):not(.addvalue):last"))){
+            moving_row.hide();
+            moving_row.insertAfter(moving_row.next());
+            moving_row.show(2000);
+        }
+    }
+    return false;
+}
+
