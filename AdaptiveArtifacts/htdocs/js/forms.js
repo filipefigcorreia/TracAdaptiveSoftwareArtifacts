@@ -25,7 +25,7 @@ function attachFormEventHandlers(context){
     // Values
     context.find("tr.addvalue").click(function() { return addValue(context, "New Attribute", "") });
     context.find("tr.addvalue input").focus(function() { return addValue(context, "New Attribute", ""); });
-    context.find("a.delvalue").click(delValue);
+    context.find("a.delvalue").click(delAttribute);
     context.find("a.tomultiline").click(toMultiline);
     context.find("a.touniline").click(toUniline);
     context.find("a.reorder-down,a.reorder-up").click(reorder);
@@ -61,14 +61,14 @@ function addAttribute(context, name){
     var phantom = context.find("table.attributes tr.phantom");
     phantom.hide();
     context.find("table.attributes tr:not(.phantom):last").after(copy);
-    phantom.show(2000);
+    phantom.show(1500);
     name_input.focus();
     name_input.select();
     return false;
 }
 
 function delAttribute(){
-    $(this).parent().parent().remove();
+    $(this).parents("tr.attribute").remove();
     return false;
 }
 
@@ -89,14 +89,9 @@ function addValue(context, name, val){
     var phantom = context.find("table.attributes tr.phantom");
     phantom.hide();
     context.find("table.attributes tr:not(.phantom):last").after(copy);
-    phantom.show(2000);
+    phantom.show(1500);
     name_input.focus();
     name_input.select();
-    return false;
-}
-
-function delValue(){
-    $(this).parent().parent().remove();
     return false;
 }
 
@@ -144,15 +139,14 @@ function reorder(){
         if (!moving_row.is(table.find("tr.attribute:not(.prototype):not(.addvalue,.addattr):first"))){
             moving_row.hide();
             moving_row.insertBefore(moving_row.prev());
-            moving_row.show(2000);
+            moving_row.show(1500);
         }
     } else {
         if (!moving_row.is(table.find("tr.attribute:not(.prototype):not(.addvalue,.addattr):last"))){
             moving_row.hide();
             moving_row.insertAfter(moving_row.next());
-            moving_row.show(2000);
+            moving_row.show(1500);
         }
     }
     return false;
 }
-

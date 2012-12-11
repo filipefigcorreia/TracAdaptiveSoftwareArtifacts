@@ -94,6 +94,7 @@ to match the "create" but not the "view" page/dialog
 
 #type-form table.attributes{
     width: auto;
+    margin-top: 1em;
 }
 
 #artifact-form table.attributes,
@@ -113,13 +114,15 @@ to match the "create" but not the "view" page/dialog
     white-space: nowrap;
 }
 
-#artifact-form table.attributes td.attrname,
-#type-form table.attributes td.attrname {
+#type-form table.attributes th {
+    padding-left: 1em;
+}
+
+#artifact-form table.attributes td.attrname {
     text-align: right;
 }
 
-#artifact-form table.attributes td.attrname input,
-#type-form table.attributes td.attrname input {
+#artifact-form table.attributes td.attrname input {
     border: 1px solid transparent;
     background-color: transparent;
     text-align: right;
@@ -128,9 +131,7 @@ to match the "create" but not the "view" page/dialog
 }
 
 #artifact-form table.attributes td.attrname input:hover,
-#artifact-form table.attributes td.attrname input:focus,
-#type-form table.attributes td.attrname input:hover,
-#type-form table.attributes td.attrname input:focus {
+#artifact-form table.attributes td.attrname input:focus {
     border: 1px solid #D7D7D7;
     background-color: white;
 }

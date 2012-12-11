@@ -6,7 +6,7 @@
 
     <py:def function="attr_markup(idx=None, attr_name=None, attr_type=None, attr_multiplicity=None, is_add_attribute=False)">
         <td class="attrname">
-            <input type="text" name="attr-name-${idx}" value="${attr_name}" /><span>:</span>
+            <input type="text" name="attr-name-${idx}" value="${attr_name}" />
         </td>
         <py:if test="is_add_attribute">
             <td class="attrtype"><input/></td>
@@ -80,23 +80,27 @@
                     </py:if><br/>
                     <label>Attributes:</label>
                     <table class="attributes">
-                        <tr><th>Name</th><th>Type</th><th>Multiplicity</th><th>Order</th><th></th></tr>
-                        <tr class="attribute prototype">
-                            ${attr_markup(idx="X")}
-                        </tr>
-                        <py:if test="spec">
-                            <tr py:for="uuid, name, owner, type, multiplicity, in attributes" class="attribute">
-                                <py:if test="owner == spec">
-                                    ${attr_markup(idx=uuid, attr_name=name, attr_type=type, attr_multiplicity=multiplicity)}
-                                </py:if>
-                                <py:if test="owner != spec">
-                                    ${attr_markup_readonly(idx=uuid, attr_name=name, attr_type=type, attr_multiplicity=multiplicity)}
-                                </py:if>
+                        <thead>
+                            <tr><th>Name</th><th>Type</th><th>Multiplicity</th><th>Order</th><th></th></tr>
+                        </thead>
+                        <tbody>
+                            <tr class="attribute prototype">
+                                ${attr_markup(idx="X")}
                             </tr>
-                        </py:if>
-                        <tr class="attribute phantom addattr">
-                            ${attr_markup(idx='X', attr_name='New Attribute', is_add_attribute=True)}
-                        </tr>
+                            <py:if test="spec">
+                                <tr py:for="uuid, name, owner, type, multiplicity, in attributes" class="attribute">
+                                    <py:if test="owner == spec">
+                                        ${attr_markup(idx=uuid, attr_name=name, attr_type=type, attr_multiplicity=multiplicity)}
+                                    </py:if>
+                                    <py:if test="owner != spec">
+                                        ${attr_markup_readonly(idx=uuid, attr_name=name, attr_type=type, attr_multiplicity=multiplicity)}
+                                    </py:if>
+                                </tr>
+                            </py:if>
+                            <tr class="attribute phantom addattr">
+                                ${attr_markup(idx='X', attr_name='New Attribute', is_add_attribute=True)}
+                            </tr>
+                        </tbody>
                     </table>
                     <br/>
                 </fieldset>
