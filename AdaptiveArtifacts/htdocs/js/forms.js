@@ -20,7 +20,12 @@ function addAttributeOrderFields(form){
 function attachFormEventHandlers(context){
     context.find("a.addattr").click(addAttribute);
     context.find("a.delattr").click(delAttribute);
-    context.find("a.addvalue").click(function() { return addValue(context, "", "") });
+    context.find("tr.addvalue").click(function() { return addValue(context, "New Attribute", "") });
+    context.find("tr.addvalue input").focus(function() {
+        if ($(this).parent().parent().hasClass("phantom"))
+            return addValue(context, "New Attribute", "");
+        return true;
+    });
     context.find("a.delvalue").click(delValue);
     context.find("a.tomultiline").click(toMultiline);
     context.find("a.touniline").click(toUniline);
@@ -75,8 +80,12 @@ function addValue(context, name, val){
     default_input.attr("value", newid);
     if ($('form#artifact-form input[name=default]:checked').length==0)
         default_input.attr('checked', true);
-    context.find("table.attributes").append(copy);
+    var phantom = context.find("table.attributes tr.phantom");
+    phantom.hide();
+    context.find("table.attributes tr:not(.phantom):last").after(copy);
+    phantom.show(2000);
     name_input.focus();
+    name_input.select();
     return false;
 }
 

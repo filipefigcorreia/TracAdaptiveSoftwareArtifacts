@@ -3,30 +3,39 @@
     xmlns:py="http://genshi.edgewall.org/"
     xmlns:xi="http://www.w3.org/2001/XInclude">
 
-    <py:def function="attr_value_markup(value_idx=None, attr_name=None, attr_value=None)">
+    <py:def function="attr_value_markup(value_idx=None, attr_name=None, attr_value=None, is_add_value=False)">
         <td class="attrname">
             <input type="text" name="attr-name-${value_idx}" value="${attr_name}"/><span>:</span>
         </td>
         <td class="attrvalue">
             <py:if test="not '\n' in attr_value">
                 <input type="text" name="attr-value-${value_idx}" value="${attr_value}"/>
-                <a class="tomultiline" href="#" title="Expand to multi-line field"></a>
+                <py:if test="not is_add_value">
+                    <a class="tomultiline" href="#" title="Expand to multi-line field"></a>
+                </py:if>
             </py:if>
             <py:if test="'\n' in attr_value">
                 <textarea name="attr-value-${value_idx}">${attr_value}</textarea>
-                <a class="touniline" href="#" title="Collapse to single-line field"></a>
+                <py:if test="not is_add_value">
+                    <a class="touniline" href="#" title="Collapse to single-line field"></a>
+                </py:if>
             </py:if>
         </td>
-        <td class="attristitle">
-            <py:if test="value_idx == default">
-                <input type="radio" name="default" value="${value_idx}" checked="checked" />
-            </py:if>
-            <py:if test="not value_idx == default">
-                <input type="radio" name="default" value="${value_idx}" />
-            </py:if>
-        </td>
-        <td class="attrreorder"><a class="reorder-down" href="#" title="Move below"></a><a class="reorder-up" href="#" title="Move up"></a></td>
-        <td class="attrdelete"><a class="delvalue" href="#" title="Expand to multiline wikified field"></a></td>
+        <py:if test="is_add_value">
+            <td></td><td></td><td></td>
+        </py:if>
+        <py:if test="not is_add_value">
+            <td class="attristitle">
+                <py:if test="value_idx == default">
+                    <input type="radio" name="default" value="${value_idx}" checked="checked" />
+                </py:if>
+                <py:if test="not value_idx == default">
+                    <input type="radio" name="default" value="${value_idx}" />
+                </py:if>
+            </td>
+            <td class="attrreorder"><a class="reorder-down" href="#" title="Move below"></a><a class="reorder-up" href="#" title="Move up"></a></td>
+            <td class="attrdelete"><a class="delvalue" href="#" title="Delete value"></a></td>
+        </py:if>
     </py:def>
 
     <py:match path="div[@id='dialog-content']" once="true">
@@ -42,8 +51,10 @@
                     ${attr_value_markup(value_idx=name, attr_name=name, attr_value=value)}
                 </tr>
             </py:if>
+            <tr class="attribute phantom addvalue">
+                ${attr_value_markup(value_idx='X', attr_name='New Attribute', attr_value='', is_add_value=True)}
+            </tr>
         </table>
-        <a href="#" class="addvalue" title="Add one more value" style="margin-left: 12.5em;">[+]</a>
         <br/>
         <py:if test="not artifact">
             <input type="hidden" name="action" value="new" />

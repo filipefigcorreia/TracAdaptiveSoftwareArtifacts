@@ -73,7 +73,20 @@ table.attributes td {
 TODO: needs refactoring. "fieldset#properties" is currently used
 to match the "create" but not the "view" page/dialog
 */
-fieldset#properties table.attributes{
+
+fieldset#properties table.attributes tr.phantom td input {
+    padding: 0.25em 0.5em;
+    border: 1px dashed #D7D7D7;
+    background-color: #FCFCF7;
+    font-style: italic;
+    color: #AAA;
+}
+
+fieldset#properties table.attributes tr.phantom td.attrname span {
+    color: #CCC;
+}
+
+fieldset#properties table.attributes {
     width: 100%;
     border-top: 0;
 }
@@ -85,6 +98,10 @@ fieldset#properties table.attributes th,
 fieldset#properties table.attributes td {
     padding: 0.2em 0.4em;
     white-space: nowrap;
+}
+
+fieldset#properties table.attributes td.attrname {
+    text-align: right;
 }
 
 fieldset#properties table.attributes td.attrname input {
