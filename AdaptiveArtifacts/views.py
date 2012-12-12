@@ -47,7 +47,17 @@ def get_index(request, dbp, obj, resource):
         # Get attributes defined at the spec level ...
         spec_attrs = [(attribute.name, attribute.owner_spec.get_name()) for attribute in selected_spec.get_attributes()]
         # ... and those that only exist at the level of the artifacts themselves
-        artifacts_attrs_names = sorted(set([k for a in artifacts for k,v in a.get_values()]), key=unicode.lower)
+        keys_count = {}
+        for a in artifacts:
+            for k,v in a.get_values():
+                if v:
+                    if k in keys_count:
+                        keys_count[k] += 1
+                    else:
+                        keys_count[k] = 1
+        # first, order attributes by how many values there are for them. that being equal order by attribute name
+        all_values = sorted(keys_count.items(), key=lambda x: (x[1]*-1, unicode.lower(x[0])))
+        artifacts_attrs_names = [k for k,v in all_values]
         for a_name, a_owner in spec_attrs:
             if a_name in artifacts_attrs_names:
                 artifacts_attrs_names.remove(a_name)
