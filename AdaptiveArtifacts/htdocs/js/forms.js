@@ -148,6 +148,9 @@ function toMultiline(){
 }
 
 function toUniline(){
+    if (!confirm("You may loose wiki markup and line breaks, are you sure?"))
+        return false;
+
     var textarea = $(this).parent().find("textarea");
     var input = $("<input/>")
         .attr("type", "text")
