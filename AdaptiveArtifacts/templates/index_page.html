@@ -106,7 +106,9 @@
                     <py:for each="artifact,values in artifacts_values">
                         <tr>
                             <py:for each="value in values">
-                                <td>${value}</td>
+                                <td>
+                                    <py:for each="value_line in value.split('\n')">${value_line}<br /></py:for>
+                                </td>
                             </py:for>
                             <td class="artifact-pages">
                                 <py:choose test="">
