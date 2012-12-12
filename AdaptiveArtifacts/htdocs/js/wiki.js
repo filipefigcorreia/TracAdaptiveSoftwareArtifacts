@@ -85,8 +85,8 @@ function link_to_existing_artifact_ajax_call(click_callback, value){
                     var copy = $(".artifacts table.listing tr.prototype").clone(true);
                     copy.removeClass('prototype');
                     copy.find("input[type^='radio']").attr("value", id);
-                    copy.find("td")[1].innerText = spec_name;
-                    copy.find("td")[2].innerText = title;
+                    copy.find("td")[1].innerText = title;
+                    copy.find("td")[2].innerText = spec_name;
                     $(".artifacts table.listing tbody").append(copy);
                 };
                 var addMessageRow = function(text){
