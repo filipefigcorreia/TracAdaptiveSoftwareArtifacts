@@ -47,6 +47,15 @@ ul#tabs {
     clear: none;
 }
 
+#artifacts table.listing tr {
+    /* Overrides trac's style as we're interested in styling ths instead */
+    background: none;
+}
+
+#artifacts table.listing th {
+    background: #F7F7F0;
+}
+
 #artifacts table.listing th.artifact-options,
 #artifacts table.listing td.artifact-options,
 #artifacts table.listing th.artifact-pages,
@@ -67,6 +76,24 @@ ul#tabs {
 
 #artifacts table.listing td.artifact-options {
     font-size: 70%;
+}
+
+#artifacts table.listing .overflowed {
+    display: none;
+}
+
+#artifacts table.listing th.bellows,
+#artifacts table.listing td.bellows {
+    width: 21px;
+    border: 0;
+}
+
+#artifacts table.listing th.bellows {
+    background: transparent url(../media/bellows-top.png) repeat;
+}
+
+#artifacts table.listing td.bellows {
+    background: transparent url(../media/bellows-middle.png) repeat;
 }
 
 .jstree :link, .jstree :visited {

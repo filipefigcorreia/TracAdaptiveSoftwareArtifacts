@@ -58,6 +58,7 @@ class Core(Component):
 
         add_javascript(req, 'adaptiveartifacts/js/lib/jstree/jquery.jstree.js')
         add_javascript(req, 'adaptiveartifacts/js/indextree.js')
+        add_javascript(req, 'adaptiveartifacts/js/index.js')
 
         if req.environ.get('PATH_INFO', '')[-5:] == 'pages':
             add_stylesheet(req, 'common/css/search.css')
