@@ -51,8 +51,11 @@
                     ${attr_value_markup(value_idx=name, attr_name=name, attr_value=value)}
                 </tr>
             </py:if>
+            <tr py:for="attr_name in attr_suggestions" class="attribute phantom addvalue suggestion">
+                ${attr_value_markup(value_idx='X', attr_name=attr_name, attr_value='', is_add_value=True)}
+            </tr>
             <tr class="attribute phantom addvalue">
-                ${attr_value_markup(value_idx='X', attr_name='New Attribute', attr_value='', is_add_value=True)}
+                ${attr_value_markup(value_idx='X', attr_name='', attr_value='', is_add_value=True)}
             </tr>
         </table>
         <br/>

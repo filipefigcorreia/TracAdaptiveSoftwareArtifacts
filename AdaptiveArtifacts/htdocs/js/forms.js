@@ -19,12 +19,21 @@ function addAttributeOrderFields(form){
 
 function attachFormEventHandlers(context){
     // Attributes
-    context.find("tr.addattr").click(function() { return addAttribute(context, "New Attribute"); });
-    context.find("tr.addattr input").focus(function() { return addAttribute(context, "New Attribute"); });
+    context.find("tr.addattr").click(function() {
+        return addAttributeFromPhantom(context, $(this).parents("tr.phantom"));
+    });
+    context.find("tr.addattr input").focus(function() {
+        return addAttributeFromPhantom(context, $(this).parents("tr.phantom"));
+    });
     context.find("a.delattr").click(delAttribute);
+
     // Values
-    context.find("tr.addvalue").click(function() { return addValue(context, "New Attribute", "") });
-    context.find("tr.addvalue input").focus(function() { return addValue(context, "New Attribute", ""); });
+    context.find("tr.addvalue").click(function() {
+        return addValueFromPhantom(context, $(this).parents("tr.phantom"))
+    });
+    context.find("tr.addvalue input").focus(function() {
+        return addValueFromPhantom(context, $(this).parents("tr.phantom"));
+    });
     context.find("a.delvalue").click(delAttribute);
     context.find("a.tomultiline").click(toMultiline);
     context.find("a.touniline").click(toUniline);
@@ -45,6 +54,23 @@ function attachFormEventHandlers(context){
     );
 }
 
+function addAttributeFromPhantom(context, phantom){
+    var name = phantom.find("input[name^='attr-name-']").attr("value");
+    phantom.hide();
+    var inputs = addAttribute(context, name);
+    var name_input = inputs[0];
+    var type_input = inputs[1];
+    if (phantom.hasClass("suggestion")){
+         phantom.remove();
+        type_input.focus();
+    } else {
+        phantom.show(1000);
+        name_input.focus();
+        name_input.select();
+    }
+    return false;
+}
+
 function addAttribute(context, name){
     var newid = uuid.v4();
     var copy = context.find("tr.attribute.prototype").clone(true);
@@ -55,20 +81,33 @@ function addAttribute(context, name){
     var type_input = copy.find("select[name^='attr-type-']");
     type_input.attr("name", "attr-type-" + newid);
     type_input.attr("value", "");
-    var type_multiplicity = copy.find("select[name^='attr-multiplicity-']");
-    type_multiplicity.attr("name", "attr-multiplicity-" + newid);
-    type_multiplicity.attr("value", "");
-    var phantom = context.find("table.attributes tr.phantom");
-    phantom.hide();
+    var multiplicity_input = copy.find("select[name^='attr-multiplicity-']");
+    multiplicity_input.attr("name", "attr-multiplicity-" + newid);
+    multiplicity_input.attr("value", "");
     context.find("table.attributes tr:not(.phantom):last").after(copy);
-    phantom.show(1500);
-    name_input.focus();
-    name_input.select();
-    return false;
+    return [name_input, type_input, multiplicity_input];
 }
 
 function delAttribute(){
     $(this).parents("tr.attribute").remove();
+    return false;
+}
+
+function addValueFromPhantom(context, phantom){
+    var name = phantom.find("input[name^='attr-name-']").attr("value");
+    var value = phantom.find("input[name^='attr-value-']").attr("value");
+    phantom.hide();
+    var inputs = addValue(context, name, value);
+    var name_input = inputs[0];
+    var value_input = inputs[1];
+    if (phantom.hasClass("suggestion")){
+         phantom.remove();
+         value_input.focus();
+    } else {
+        phantom.show(1000);
+        name_input.focus();
+        name_input.select();
+    }
     return false;
 }
 
@@ -86,13 +125,8 @@ function addValue(context, name, val){
     default_input.attr("value", newid);
     if ($('form#artifact-form input[name=default]:checked').length==0)
         default_input.attr('checked', true);
-    var phantom = context.find("table.attributes tr.phantom");
-    phantom.hide();
     context.find("table.attributes tr:not(.phantom):last").after(copy);
-    phantom.show(1500);
-    name_input.focus();
-    name_input.select();
-    return false;
+    return [name_input, value_input];
 }
 
 function toMultiline(){

@@ -270,22 +270,26 @@ class Attribute(object):
     def _get_valid_type(cls, user_type):
         if user_type in types.__dict__.values():
             return user_type # it's already a python type after all
-        if user_type == 'text':
+        if user_type == 'Text':
             python_type = str
-        elif user_type == 'number':
+        elif user_type == 'Number':
             python_type = int
+        elif user_type == 'Adaptive Artifact':
+            python_type = Instance
         else:
-            python_type = None #TODO: fix. must account for user_type='artifact'
+            python_type = None
         return python_type
 
     def get_type_readable(self):
         python_type = self.type
         if python_type is str:
-            user_type = 'text'
+            user_type = 'Text'
         elif python_type is int:
-            user_type = 'number'
+            user_type = 'Number'
+        elif python_type is Instance:
+            user_type = 'Adaptive Artifact'
         else:
-            user_type = '' #TODO: fix. must account for python_type=<artifact>
+            user_type = ''
         return user_type
 
 
