@@ -19,18 +19,12 @@ function addAttributeOrderFields(form){
 
 function attachFormEventHandlers(context){
     // Attributes
-    context.find("tr.addattr").click(function() {
-        return addAttributeFromPhantom(context, $(this).parents("tr.phantom"));
-    });
     context.find("tr.addattr input").focus(function() {
         return addAttributeFromPhantom(context, $(this).parents("tr.phantom"));
     });
     context.find("a.delattr").click(delAttribute);
 
     // Values
-    context.find("tr.addvalue").click(function() {
-        return addValueFromPhantom(context, $(this).parents("tr.phantom"))
-    });
     context.find("tr.addvalue input").focus(function() {
         return addValueFromPhantom(context, $(this).parents("tr.phantom"));
     });
