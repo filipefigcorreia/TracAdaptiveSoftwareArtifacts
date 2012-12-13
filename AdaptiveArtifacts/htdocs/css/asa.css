@@ -14,6 +14,7 @@
     margin-top: 1em;
     padding: 0.5em 1em;
     position: relative;
+    min-width: 26em;
 }
 
 #asa h1 {
