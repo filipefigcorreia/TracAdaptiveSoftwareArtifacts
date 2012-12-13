@@ -59,7 +59,11 @@ class Instance(object):
 
         str_value = self.get_value(self.str_attr)
         if not str_value is None:
-            return str_value
+            if type(str_value) is list:
+                data = ", ".join(str_value)
+                return data[:30] + ' [...]' if len(data) > 30 else data
+            else:
+                return str_value
         else:
             return str(self.id)
 
