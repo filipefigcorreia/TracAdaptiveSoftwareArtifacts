@@ -145,11 +145,20 @@ def get_view_artifact(request, dbp, obj, resource):
     else:
         spec_name = spec_url = ""
 
+    values = []
+    for name,val in obj.get_values():
+        if type(val) is list:
+            n_values = len(val)
+        else:
+            n_values = 1
+        values.append((name, n_values, val))
+
     data = {
         'context': Context.from_request(request.req, resource),
         'spec_name': spec_name,
         'spec_url': spec_url,
         'artifact': obj,
+        'artifacts_values': values,
     }
     return 'view_artifact_%s.html' % (request.get_format(),), data, None
 

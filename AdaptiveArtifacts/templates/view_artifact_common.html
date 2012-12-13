@@ -12,22 +12,50 @@
         </h1>
         <span class="label">Attributes</span>
         <table class="attributes">
-            <tr py:for="name, value in artifact.get_values()">
-                <th>
-                    <py:choose test="">
-                        <py:when test="name in [attribute.name for attribute in artifact.__class__.get_attributes()]"><strong>${name}</strong>:</py:when>
-                        <py:otherwise>${name}:</py:otherwise>
-                    </py:choose>
-                </th>
-                <td>
-                    <py:if test="not '\n' in value">
-                        ${value}
+            <py:for each="name, n_values, value in artifacts_values">
+                <tr>
+                    <th rowspan="${n_values}">
+                        <py:choose test="">
+                            <py:when test="name in [attribute.name for attribute in artifact.__class__.get_attributes()]"><strong>${name}</strong>:</py:when>
+                            <py:otherwise>${name}:</py:otherwise>
+                        </py:choose>
+                    </th>
+                    <py:if test="not type(value) is list">
+                        <td>
+                            <py:if test="not '\n' in value">
+                                ${value}
+                            </py:if>
+                            <py:if test="'\n' in value">
+                                ${wiki_to_html(context, value)}
+                            </py:if>
+                        </td>
                     </py:if>
-                    <py:if test="'\n' in value">
-                        ${wiki_to_html(context, value)}
+                    <py:if test="type(value) is list">
+                        <td>
+                            <py:if test="not '\n' in value">
+                                ${value[0]}
+                            </py:if>
+                            <py:if test="'\n' in value">
+                                ${wiki_to_html(context, value[0])}
+                            </py:if>
+                        </td>
                     </py:if>
-                </td>
-            </tr>
+                </tr>
+                <py:if test="type(value) is list and len(value[1:])>0">
+                    <tr>
+                        <py:for each="v in value[1:]">
+                            <td>
+                                <py:if test="not '\n' in value">
+                                    ${v}
+                                </py:if>
+                                <py:if test="'\n' in value">
+                                    ${wiki_to_html(context, v)}
+                                </py:if>
+                            </td>
+                        </py:for>
+                    </tr>
+                </py:if>
+            </py:for>
           </table>
     </py:match>
 
