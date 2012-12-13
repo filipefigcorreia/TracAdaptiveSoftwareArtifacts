@@ -438,16 +438,17 @@ def get_delete_spec(request, dbp, obj, resource):
 
     dbp.delete(obj, 'author', 'comment', 'address')
 
+    add_notice(request.req, 'The Type was deleted.')
     url = request.req.href.adaptiveartifacts()
     request.req.redirect(url)
 
 def get_delete_artifact(request, dbp, obj, resource):
     assert(isinstance(obj, Instance)) # otherwise, we're trying to delete something that is not an artifact
 
-    spec = obj.__class__
     dbp.delete(obj, 'author', 'comment', 'address')
 
-    url = request.req.href.adaptiveartifacts('spec/%s' % (spec.get_name(),), action='list')
+    add_notice(request.req, 'The Adaptive Artifact was deleted.')
+    url = request.req.href.adaptiveartifacts()
     request.req.redirect(url)
 
 def _group_spec_attributes(req):

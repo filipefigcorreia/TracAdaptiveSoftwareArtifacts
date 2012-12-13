@@ -306,25 +306,34 @@ class DBPool(object):
                 cursor.execute("""
                     INSERT INTO asa_artifact (id, version_id, spec, title_expr)
                     SELECT id, %s, %s, title_expr
-                    FROM asa_artifact
-                    WHERE spec=%s
-                    """, (version_id, Instance.get_name(), item.get_name()))
+                    FROM (
+                        SELECT id, max(version_id), title_expr
+                        FROM asa_artifact
+                        WHERE spec=%s
+                        GROUP BY id
+                    )""", (version_id, Instance.get_name(), item.get_name()))
 
                 # change specs inheriting from the deleted spec to inherit from "Instance" instead
                 cursor.execute("""
                     INSERT INTO asa_spec (name, version_id, base_class)
                     SELECT name, %s, %s
-                    FROM asa_spec
-                    WHERE base_class=%s
-                    """, (version_id, Instance.get_name(), item.get_name()))
+                    FROM (
+                        SELECT name, max(version_id)
+                        FROM asa_spec
+                        WHERE base_class=%s
+                        GROUP BY name
+                    )""", (version_id, Instance.get_name(), item.get_name()))
 
                 # change attributes that had the deleted spec as type
                 cursor.execute("""
                     INSERT INTO asa_spec_attribute (spec_name, version_id, name, multplicity_low, multplicity_high, type, uiorder)
-                    SELECT spec_name, %s, name, multplicity_low, multplicity_high, '%s', uiorder
-                    FROM asa_spec_attribute
-                    WHERE type='%s'
-                    """, (version_id, Instance.get_name(), item.get_name()))
+                    SELECT spec_name, %s, name, multplicity_low, multplicity_high, %s, uiorder
+                    FROM (
+                        SELECT spec_name, max(version_id), name, multplicity_low, multplicity_high, uiorder
+                        FROM asa_spec_attribute
+                        WHERE type=%s
+                        GROUP BY spec_name, name
+                    )""", (version_id, Instance.get_name(), item.get_name()))
 
                 # finally, delete the spec
                 cursor.execute("DELETE FROM asa_spec_attribute WHERE spec_name=%s", (item.get_name(),))
