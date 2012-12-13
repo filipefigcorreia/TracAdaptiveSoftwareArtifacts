@@ -26,10 +26,10 @@
         </py:if>
         <py:if test="not is_add_value">
             <td class="attristitle">
-                <py:if test="value_idx == default">
+                <py:if test="attr_name == default">
                     <input type="radio" name="default" value="${value_idx}" checked="checked" />
                 </py:if>
-                <py:if test="not value_idx == default">
+                <py:if test="not attr_name == default">
                     <input type="radio" name="default" value="${value_idx}" />
                 </py:if>
             </td>
@@ -47,8 +47,8 @@
                 ${attr_value_markup(value_idx="X", attr_name="", attr_value="")}
             </tr>
             <py:if test="artifact">
-                <tr py:for="name,value in artifact.get_values()" class="attribute">
-                    ${attr_value_markup(value_idx=name, attr_name=name, attr_value=value)}
+                <tr py:for="uuid,name,value in artifact_values" class="attribute">
+                    ${attr_value_markup(value_idx=uuid, attr_name=name, attr_value=value)}
                 </tr>
             </py:if>
             <tr py:for="attr_name in attr_suggestions" class="attribute phantom addvalue suggestion">

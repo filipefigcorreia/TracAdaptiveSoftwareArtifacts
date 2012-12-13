@@ -376,10 +376,19 @@ def get_edit_artifact(request, dbp, obj, resource):
     aa_attributes = [name for name, val in obj.get_values()]
     attr_suggestions = [attr.name for attr in obj.get_attributes() if not attr.name in aa_attributes]
 
+    values = []
+    for name,val in obj.get_values():
+        if type(val) is list:
+            for v in val:
+                values.append((str(uuid.uuid4()), name, v))
+        else:
+            values.append((str(uuid.uuid4()), name, val))
+
     data = {
         'context': Context.from_request(request.req, resource),
         'spec_name': obj.__class__.get_name() if not obj.__class__ == Instance else "",
         'artifact': obj,
+        'artifact_values': values,
         'attr_suggestions' : attr_suggestions,
         'default': obj.str_attr,
         'url_path': request.req.href.adaptiveartifacts('artifact', obj.get_id()),
