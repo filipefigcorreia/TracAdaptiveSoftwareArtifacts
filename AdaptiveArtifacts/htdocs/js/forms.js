@@ -173,13 +173,13 @@ function reorder(){
     var table = $(this).parents("table");
     var moving_row = $(this).parents("tr:first");
     if ($(this).is(".reorder-up")) {
-        if (!moving_row.is(table.find("tr.attribute:not(.prototype):not(.addvalue,.addattr):first"))){
+        if (!moving_row.is(table.find("tr.attribute:not(.prototype):not(.addvalue,.addattr):not(:has(td.readonly)):first"))){
             moving_row.hide();
             moving_row.insertBefore(moving_row.prev());
             moving_row.show(1500);
         }
     } else {
-        if (!moving_row.is(table.find("tr.attribute:not(.prototype):not(.addvalue,.addattr):last"))){
+        if (!moving_row.is(table.find("tr.attribute:not(.prototype):not(.addvalue,.addattr):not(:has(td.readonly)):last"))){
             moving_row.hide();
             moving_row.insertAfter(moving_row.next());
             moving_row.show(1500);
