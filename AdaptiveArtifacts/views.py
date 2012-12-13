@@ -52,12 +52,12 @@ def get_index(request, dbp, obj, resource):
             for k,v in a.get_values():
                 if v:
                     if k in keys_count:
-                        keys_count[k] += 1
+                        keys_count[k].append(v)
                     else:
-                        keys_count[k] = 1
+                        keys_count[k] = [v]
         # first, order attributes by how many values there are for them. that being equal order by attribute name
-        all_values = sorted(keys_count.items(), key=lambda x: (x[1]*-1, unicode.lower(x[0])))
-        artifacts_attrs_names = [k for k,v in all_values]
+        all_values = sorted(keys_count.items(), key=lambda x: (len(x[1])*-1, unicode.lower(x[0])))
+        artifacts_attrs_names = [k for k,_ in all_values]
         for a_name, a_owner in spec_attrs:
             if a_name in artifacts_attrs_names:
                 artifacts_attrs_names.remove(a_name)
@@ -73,8 +73,11 @@ def get_index(request, dbp, obj, resource):
                     if attribute[0] in values:
                         ordered_values_lst.append(values[attribute[0]])
                     else:
-                        ordered_values_lst.append("")
+                        ordered_values_lst.append(u"")
             artifacts_values.append((artifact, ordered_values_lst))
+
+        # Reorder the lines of the matrix so that artifacts with the first columns filled in appear first
+        artifacts_values = sorted(artifacts_values, key=lambda x: tuple([unicode.lower(v) if v else 'zzzzzzzzzz' for v in x[1]]))
 
         # get a count of the number of pages that are referenced by each artifact
         artifacts_pages_count = {}
