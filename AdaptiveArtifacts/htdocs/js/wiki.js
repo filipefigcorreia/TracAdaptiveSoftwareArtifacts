@@ -8,7 +8,7 @@ function view_artifact_ajax_call(asa_token_content, editor){
         {
             "Edit": function() {
                 $(this).dialog("close");
-                createASAFormDialogFromUrl('Artifact', baseurl+"/artifact/"+id+"?action=edit",
+                createASAFormDialogFromUrl('Edit Adaptive Artifact', baseurl+"/artifact/"+id+"?action=edit",
                     {
                         "Save   ": function() {
                             addAttributeOrderFields($("#artifact-form"));
@@ -248,8 +248,8 @@ var setupToolbar = function(editor){
 
     toolbar.after('<div class="wikitoolbar" id="asa_toolbar"></div>');
     var asa_toolbar = $('#asa_toolbar');
-    asa_toolbar.append('<a href="#" id="asa_create_button" title="Create and link to artifact" tabindex="400"></a>');
-    asa_toolbar.append('<a href="#" id="asa_link_button" title="Link to existing artifact" tabindex="400"></a>');
+    asa_toolbar.append('<a href="#" id="asa_create_button" title="Create and link to adaptive artifact" tabindex="400"></a>');
+    asa_toolbar.append('<a href="#" id="asa_link_button" title="Link to existing adaptive artifact" tabindex="400"></a>');
 
     var updateToolbarButtonState = function(){
         if(!editor.getSelection().isEmpty()){
