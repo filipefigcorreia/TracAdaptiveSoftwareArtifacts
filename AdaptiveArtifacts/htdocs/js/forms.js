@@ -52,6 +52,10 @@ function attachFormEventHandlers(context){
             });
         }}
     );
+
+    context.find("tr.attribute td.attrname input").blur(function() {
+            $(this).val($(this).val().trim());
+        });
 }
 
 function addAttributeFromPhantom(context, phantom){
