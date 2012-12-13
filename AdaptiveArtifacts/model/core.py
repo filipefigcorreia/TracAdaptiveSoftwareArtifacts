@@ -278,8 +278,8 @@ class Attribute(object):
             python_type = str
         elif user_type == 'Number':
             python_type = int
-        elif user_type == 'Adaptive Artifact':
-            python_type = Instance
+        #elif user_type == 'Adaptive Artifact':
+        #    python_type = Instance
         else:
             python_type = None
         return python_type
@@ -290,8 +290,8 @@ class Attribute(object):
             user_type = 'Text'
         elif python_type is int:
             user_type = 'Number'
-        elif python_type is Instance:
-            user_type = 'Adaptive Artifact'
+        #elif python_type is Instance:
+        #    user_type = 'Adaptive Artifact'
         else:
             user_type = ''
         return user_type

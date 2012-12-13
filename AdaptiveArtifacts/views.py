@@ -255,7 +255,7 @@ def get_new_spec(request, dbp, obj, resource):
 
     data = {
         'context': Context.from_request(request.req, resource),
-        'types' : ['Text', 'Number', 'Adaptive Artifact'],
+        'types' : ['Text', 'Number'], # , 'Adaptive Artifact'
         'multiplicities' : ['1', '0..*', '1..*'],
         'url_path': request.req.href.adaptiveartifacts('spec', obj.get_name()),
     }
@@ -298,7 +298,7 @@ def get_edit_spec(request, dbp, obj, resource):
                         attr.owner_spec,
                         attr.get_type_readable(),
                         attr.get_multiplicity_readable()) for attr in obj.get_attributes()],
-        'types' : ['Text', 'Number', 'Adaptive Artifact'],
+        'types' : ['Text', 'Number'], # , 'Adaptive Artifact'
         'multiplicities' : ['1', '0..*', '1..*'],
         'url_path': request.req.href.adaptiveartifacts('spec', obj.get_name()),
 
