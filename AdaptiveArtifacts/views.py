@@ -72,7 +72,10 @@ def get_index(request, dbp, obj, resource):
                 for attribute in attributes:
                     if attribute[0] in values:
                         data = values[attribute[0]]
-                        ordered_values_lst.append(data[:80] + ' [...]' if len(data) > 80 else data)
+                        if not type(data) is list:
+                            data = [data]
+                        joined = ", ".join(data)
+                        ordered_values_lst.append(joined[:40] + ' [...]' if len(joined) > 40 else joined)
                     else:
                         ordered_values_lst.append(u"")
             artifacts_values.append((artifact, ordered_values_lst))
