@@ -54,6 +54,8 @@ class Core(Component):
         try:
             request = Request(dbp, req)
         except ValueError:
+            if 'format' in req.args and req.args['format'] in ['dialog', 'json']:
+                raise
             return 'unable_to_retrieve_resource.html', {}, None
 
         add_javascript(req, 'adaptiveartifacts/js/lib/jstree/jquery.jstree.js')

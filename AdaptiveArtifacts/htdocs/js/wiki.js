@@ -27,9 +27,9 @@ function view_artifact_ajax_call(asa_token_content, editor){
                 ).dialog('open');
             },
             "Close": function() { $(this).dialog("close"); } },
-        {
-            error: function(){
-                alert("The artifact with id '"+id+"' was not found!");
+            {
+                error: function(){
+                    alert("Sorry, the adaptive artifact with id #"+id+" \ncould not be found.");
             }
         }
     ).dialog('open');
