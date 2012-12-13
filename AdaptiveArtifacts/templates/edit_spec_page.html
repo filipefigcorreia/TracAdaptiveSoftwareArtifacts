@@ -58,10 +58,10 @@
         <div id="content" class="asa">
             <h1>
                 <py:if test="not spec">
-                    Create Adaptive Artifact Type
+                    Create Type
                 </py:if>
                 <py:if test="spec">
-                    Edit Adaptive Artifact Type
+                    Edit Type
                 </py:if>
             </h1>
             <form method="post" action="${url_path}" id="type-form">
@@ -112,7 +112,7 @@
                     </py:if>
                     <py:if test="spec">
                         <input type="hidden" name="action" value="edit" />
-                        <input type="submit" value="Edit" />
+                        <input type="submit" value="Save" />
                     </py:if>
                 </div>
                 <br/><br/>
