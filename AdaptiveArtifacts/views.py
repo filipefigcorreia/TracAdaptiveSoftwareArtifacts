@@ -75,13 +75,13 @@ def get_index(request, dbp, obj, resource):
                         if not type(data) is list:
                             data = [data]
                         joined = ", ".join(data)
-                        ordered_values_lst.append(joined[:40] + ' [...]' if len(joined) > 40 else joined)
+                        ordered_values_lst.append({"full": joined, "is_long": True if len(joined) > 40 else None})
                     else:
-                        ordered_values_lst.append(u"")
+                        ordered_values_lst.append({"full": u"", "is_long": None})
             artifacts_values.append((artifact, ordered_values_lst))
 
         # Reorder the lines of the matrix so that artifacts with the first columns filled in appear first
-        artifacts_values = sorted(artifacts_values, key=lambda x: tuple([unicode.lower(v) if v else 'zzzzzzzzzz' for v in x[1]]))
+        artifacts_values = sorted(artifacts_values, key=lambda x: tuple([unicode.lower(v["full"]) if v["full"] else 'zzzzzzzzzz' for v in x[1]]))
 
         # get a count of the number of pages that are referenced by each artifact
         artifacts_pages_count = {}

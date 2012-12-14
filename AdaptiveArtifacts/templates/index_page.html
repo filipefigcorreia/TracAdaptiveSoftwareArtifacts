@@ -107,7 +107,12 @@
                         <tr>
                             <py:for each="value in values">
                                 <td>
-                                    <py:for each="value_line in value.split('\n')">${value_line}<br /></py:for>
+                                    <py:if test="value['is_long']">
+                                        <span title="${value['full']}" style="border-bottom: 1px dotted #B00; cursor:help;">[...]</span>
+                                    </py:if>
+                                    <py:if test="not value['is_long']">
+                                        <py:for each="value_line in value['full'].split('\n')">${value_line}<br /></py:for>
+                                    </py:if>
                                 </td>
                             </py:for>
                             <td class="artifact-pages">
