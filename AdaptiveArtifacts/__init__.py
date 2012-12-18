@@ -146,7 +146,7 @@ class Core(Component):
                 title = "Adaptive Software Artifact '%s' of type '%s'" % (label,spec_name)
         except ValueError:
             title = "Adaptive Software Artifact with ID '%s' does not exist" % (target,)
-        return tag.a(label, href=formatter.href.adaptiveartifacts('artifact', target), title=title)
+        return tag.a(label, href=formatter.href.adaptiveartifacts('artifact', target), class_="asa-link", title=title)
 
     # IWikiChangeListener methods
     def wiki_page_added(self, page):
