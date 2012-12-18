@@ -302,7 +302,7 @@ div.filter input {
     clear: none;
 }
 
-#artifact-select table.listing td.message,
+table.listing td.message,
 #artifacts.message,
 #message.message{
     text-align: center;
