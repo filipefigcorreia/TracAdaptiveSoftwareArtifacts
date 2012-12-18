@@ -20,5 +20,5 @@ setup(name=PACKAGE,
     package_data={'AdaptiveArtifacts': ['htdocs/css/*.css',
                                         'htdocs/js/*.js',
                                         'htdocs/images/*.jpg',
-                                        'templates/*.cs']},
+                                        'templates/*.html']},
 )
