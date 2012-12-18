@@ -62,7 +62,7 @@ class Core(Component):
         add_javascript(req, 'adaptiveartifacts/js/indextree.js')
         add_javascript(req, 'adaptiveartifacts/js/index.js')
 
-        if req.environ.get('PATH_INFO', '')[-5:] == 'pages':
+        if req.environ.get('PATH_INFO', '')[-5:] == 'pages' or req.args.get('asa_resource_type', None) == 'artifact':
             add_stylesheet(req, 'common/css/search.css')
 
         res = Core._get_resource(request.obj) if not request.obj in (Entity, Instance, None) and not type(request.obj)==unicode else None

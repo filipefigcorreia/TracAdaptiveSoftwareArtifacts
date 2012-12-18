@@ -9,7 +9,7 @@
         <title>Adaptive Artifact #${artifact.get_id()} <py:if test="spec_name">(${spec_name})</py:if></title>
     </head>
     <body>
-        <div id="content" class="asa">
+        <div id="content" class="asa search">
             <div id="dialog-content"></div>
 
             <div class="buttons" style="position: absolute; top: 0; right: 0;">
@@ -22,6 +22,20 @@
                     <input type="submit" value="Delete" />
                 </form>
             </div>
+            <br/><br/>
+
+            <a name="pages" />
+            <h2>Related Wiki Pages</h2>
+            <dl id="results">
+                <py:for each="result in results">
+                    <dt><a href="${result.href}" class="searchable">${result.title}</a></dt>
+                    <dd class="searchable">${result.excerpt}</dd>
+                    <dd>
+                        <py:if test="result.author"><span class="author">By ${format_author(result.author)}</span> &mdash;</py:if>
+                        <span class="date">${result.date}</span>
+                    </dd>
+                </py:for>
+            </dl>
             <br/><br/>
         </div>
     </body>

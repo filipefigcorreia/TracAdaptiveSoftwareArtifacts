@@ -123,7 +123,7 @@
                                 </py:for>
                                 <td class="artifact-pages">
                                     <py:if test="artifacts_pages_count[artifact]>0">
-                                          <a href="${req.href.adaptiveartifacts('pages', artifact=artifact.get_id())}">${artifacts_pages_count[artifact]}</a>
+                                          <a href="${req.href.adaptiveartifacts('artifact', artifact.get_id(), action='view')}#pages">${artifacts_pages_count[artifact]}</a>
                                     </py:if>
                                 </td>
                                 <td class="artifact-options"><a href="${req.href.adaptiveartifacts('artifact', artifact.get_id(), action='view')}">[view]</a> <a href="${req.href.adaptiveartifacts('artifact', artifact.get_id(), action='edit')}">[edit]</a></td>

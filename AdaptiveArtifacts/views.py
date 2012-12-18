@@ -148,6 +148,7 @@ def get_view_artifact(request, dbp, obj, resource):
     else:
         spec_name = spec_url = ""
 
+    # Processing artifact values
     values = []
     for name,val in obj.get_values():
         if type(val) is list:
@@ -156,12 +157,33 @@ def get_view_artifact(request, dbp, obj, resource):
             n_values = 1
         values.append((name, n_values, val))
 
+
+    # Getting wiki pages that refer the artifact
+    from trac.util.datefmt import format_datetime, user_time, utc
+    from datetime import datetime
+
+    results = []
+    from trac.wiki.model import WikiPage
+    from trac.resource import get_resource_url
+    from trac.search import shorten_result
+    for pagename, page_version_id, ref_count in dbp.get_wiki_page_ref_counts(obj):
+        page = WikiPage(dbp.env, pagename)
+
+        results.append(
+            {'href': get_resource_url(dbp.env, page.resource, request.req.href),
+             'title': pagename,
+             'date': user_time(request.req, format_datetime, datetime.now(utc)),
+             'author': page.author,
+             'excerpt': shorten_result(page.text)}
+        )
+
     data = {
         'context': Context.from_request(request.req, resource),
         'spec_name': spec_name,
         'spec_url': spec_url,
         'artifact': obj,
         'artifacts_values': values,
+        'results': results, # referred wiki pages
     }
     return 'view_artifact_%s.html' % (request.get_format(),), data, None
 
