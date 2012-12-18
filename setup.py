@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+from finddata import find_package_data
 
 PACKAGE = 'AdaptiveArtifacts'
 VERSION = '0.2'
@@ -21,4 +22,5 @@ setup(name=PACKAGE,
                                         'htdocs/js/*',
                                         'htdocs/images/*.jpg',
                                         'templates/*.html']},
+    package_data=find_package_data(),
 )
