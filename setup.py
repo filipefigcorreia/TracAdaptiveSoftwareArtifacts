@@ -18,9 +18,5 @@ setup(name=PACKAGE,
             '%s.setup = AdaptiveArtifacts.persistence.db' % PACKAGE,
         ]
     },
-    package_data={'AdaptiveArtifacts': ['htdocs/css/*.css',
-                                        'htdocs/js/*',
-                                        'htdocs/images/*.jpg',
-                                        'templates/*.html']},
     package_data=find_package_data(),
 )
