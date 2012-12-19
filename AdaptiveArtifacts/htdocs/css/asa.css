@@ -71,10 +71,6 @@ table.attributes td {
     vertical-align: top;
 }
 
-/*
-TODO: needs refactoring. "fieldset#properties" is currently used
-to match the "create" but not the "view" page/dialog
-*/
 
 #artifact-form table.attributes tr.phantom td input,
 #type-form table.attributes tr.phantom td input {
