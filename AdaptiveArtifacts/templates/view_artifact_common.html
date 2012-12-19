@@ -37,24 +37,20 @@
                             </py:choose>
                         </th>
                         <py:if test="not type(value) is list">
-                            <td>
-                                <py:if test="not '\n' in value">
-                                    ${value}
-                                </py:if>
-                                <py:if test="'\n' in value">
-                                    ${wiki_to_html(context, value)}
-                                </py:if>
-                            </td>
+                            <py:if test="not '\n' in value">
+                                <td>${wiki_to_oneliner(context, value)}</td>
+                            </py:if>
+                            <py:if test="'\n' in value">
+                                <td class="multiline">${wiki_to_html(context, value)}</td>
+                            </py:if>
                         </py:if>
                         <py:if test="type(value) is list">
-                            <td>
-                                <py:if test="not '\n' in value">
-                                    ${value[0]}
-                                </py:if>
-                                <py:if test="'\n' in value">
-                                    ${wiki_to_html(context, value[0])}
-                                </py:if>
-                            </td>
+                            <py:if test="not '\n' in value">
+                                <td>${wiki_to_oneliner(context, value[0])}</td>
+                            </py:if>
+                            <py:if test="'\n' in value">
+                                <td class="multiline">${wiki_to_html(context, value[0])}</td>
+                            </py:if>
                         </py:if>
                     </tr>
                     <py:if test="type(value) is list and len(value[1:])>0">
