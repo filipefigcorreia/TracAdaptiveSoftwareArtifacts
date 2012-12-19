@@ -71,11 +71,23 @@ table.attributes td {
     vertical-align: top;
 }
 
-table.attributes p, h1, h2, h3, h4, h5, h6 {
+table.attributes p,
+table.attributes h1,
+table.attributes h2,
+table.attributes h3,
+table.attributes h4,
+table.attributes h5,
+table.attributes h6 {
     margin: 0;
 }
 
-table.attributes td.multiline p, h1, h2, h3, h4, h5, h6 {
+table.attributes td.multiline p,
+table.attributes td.multiline h1,
+table.attributes td.multiline h2,
+table.attributes td.multiline h3,
+table.attributes td.multiline h4,
+table.attributes td.multiline h5,
+table.attributes td.multiline h6 {
     margin-bottom: 0.5em;
 }
 
