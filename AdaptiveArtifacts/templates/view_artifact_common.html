@@ -58,8 +58,8 @@
                         </py:if>
                     </tr>
                     <py:if test="type(value) is list and len(value[1:])>0">
-                        <tr>
-                            <py:for each="v in value[1:]">
+                        <py:for each="v in value[1:]">
+                            <tr>
                                 <td>
                                     <py:if test="not '\n' in value">
                                         ${v}
@@ -68,8 +68,8 @@
                                         ${wiki_to_html(context, v)}
                                     </py:if>
                                 </td>
-                            </py:for>
-                        </tr>
+                            </tr>
+                        </py:for>
                     </py:if>
                 </py:for>
               </table>
