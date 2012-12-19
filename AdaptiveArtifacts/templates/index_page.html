@@ -103,31 +103,33 @@
                             <th class="artifact-options">Options</th>
                         </tr>
                     </thead>
-                    <py:for each="artifact,values in artifacts_values">
+                    <py:if test="len(artifacts_values)==0">
                         <tr>
-                            <py:for each="value in values">
-                                <td>
-                                    <py:if test="value['is_long']">
-                                        <span title="${value['full']}" style="border-bottom: 1px dotted #B00; cursor:help;">[...]</span>
-                                    </py:if>
-                                    <py:if test="not value['is_long']">
-                                        <py:for each="value_line in value['full'].split('\n')">${value_line}<br /></py:for>
+                            <td colspan="${len(spec_columns)+len(arti_columns)+2}" class="message">No Adaptive Artifacts found</td>
+                        </tr>
+                    </py:if>
+                    <py:if test="len(artifacts_values)>0">
+                        <py:for each="artifact,values in artifacts_values">
+                            <tr>
+                                <py:for each="value in values">
+                                    <td>
+                                        <py:if test="value['is_long']">
+                                            <span title="${value['full']}" style="border-bottom: 1px dotted #B00; cursor:help;">[...]</span>
+                                        </py:if>
+                                        <py:if test="not value['is_long']">
+                                            <py:for each="value_line in value['full'].split('\n')">${value_line}<br /></py:for>
+                                        </py:if>
+                                    </td>
+                                </py:for>
+                                <td class="artifact-pages">
+                                    <py:if test="artifacts_pages_count[artifact]>0">
+                                          <a href="${req.href.adaptiveartifacts('artifact', artifact.get_id(), action='view')}#pages">${artifacts_pages_count[artifact]}</a>
                                     </py:if>
                                 </td>
-                            </py:for>
-                            <td class="artifact-pages">
-                                <py:choose test="">
-                                  <py:when test="artifacts_pages_count[artifact]>0">
-                                      <a href="${req.href.adaptiveartifacts('pages', artifact=artifact.get_id())}">${artifacts_pages_count[artifact]}</a>
-                                  </py:when>
-                                  <py:otherwise>
-                                      ${artifacts_pages_count[artifact]}
-                                  </py:otherwise>
-                                </py:choose>
-                            </td>
-                            <td class="artifact-options"><a href="${req.href.adaptiveartifacts('artifact', artifact.get_id(), action='view')}">[view]</a> <a href="${req.href.adaptiveartifacts('artifact', artifact.get_id(), action='edit')}">[edit]</a></td>
-                        </tr>
-                    </py:for>
+                                <td class="artifact-options"><a href="${req.href.adaptiveartifacts('artifact', artifact.get_id(), action='view')}">[view]</a> <a href="${req.href.adaptiveartifacts('artifact', artifact.get_id(), action='edit')}">[edit]</a></td>
+                            </tr>
+                        </py:for>
+                    </py:if>
                 </table>
 
                 <!--

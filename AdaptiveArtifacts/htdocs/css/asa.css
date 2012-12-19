@@ -302,7 +302,7 @@ div.filter input {
     clear: none;
 }
 
-#artifact-select table.listing td.message,
+table.listing td.message,
 #artifacts.message,
 #message.message{
     text-align: center;
@@ -311,3 +311,11 @@ div.filter input {
     padding: 2em 4em 2em 4em;
 }
 
+a.asa-link {
+    border-bottom: 1px dotted #99B5DD;
+    color: #216AD3;
+}
+
+a.wiki {
+    color: #B00;
+}
