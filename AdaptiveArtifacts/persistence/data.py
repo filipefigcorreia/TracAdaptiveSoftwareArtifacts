@@ -422,10 +422,15 @@ class DBPool(object):
 
         cursor = db.cursor()
         query = """
-                SELECT page_name, max(page_version_id), ref_count
+                SELECT page_name, page_version_id AS page_version, ref_count
                 FROM asa_artifact_wiki aw
-                WHERE aw.artifact_id=%d and aw.artifact_version_id=%d
-                GROUP BY page_name""" % (int(artifact.get_id()), version)
+                INNER JOIN (
+                    SELECT name, max(version) AS version
+                    FROM wiki
+                    GROUP BY name
+                ) pages ON pages.name=aw.page_name AND pages.version=aw.page_version_id
+                WHERE aw.artifact_id=%d
+                GROUP BY page_name""" % (int(artifact.get_id()))
 
         cursor.execute(query)
         for pagename, page_version_id, ref_count in cursor:
