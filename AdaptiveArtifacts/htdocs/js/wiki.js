@@ -322,7 +322,8 @@ var setupTokenizer = function(editor){
         "start": [
             {token : function(val){
                return "asa_artifact";
-            }, regex : ".\[asa:[0-9]+\\s+[\\s\\w]+\]"},
+
+            }, regex : ".{0,1}\\[asa[:][0-9]+\\s+[^\[]+\\]"},
             {token : function(val){
                 val = val.toLowerCase();
                 if (goodWords[val])
@@ -406,10 +407,14 @@ var setupTokenizer = function(editor){
     attachToSession(editor.session);
 };
 
+var timeout;
+
 var setupBalloons = function(editor){
     var balloon;
     var editordiv = $('#editor');
+
     editor.on('mousemove', function(e) {
+
         var canvasPos = editor.renderer.scroller.getBoundingClientRect();
         var position = e.getDocumentPosition();
         if (position.column == editor.session.getLine(position.row).length){
@@ -419,49 +424,54 @@ var setupBalloons = function(editor){
             return;
         }
         var session = editor.session;
-
+        var old_token;
         var token = session.getTokenAt(position.row, position.column);
         if (token){
             if (token.type == 'keyword' || token.type == 'asa_artifact') {
-                var screenPosition = editor.renderer.textToScreenCoordinates(position.row, token.start + token.value.length + 2);
-                balloon = editordiv.showBalloon(
-                    {
-                        position: "top left",
-                        offsetX: screenPosition.pageX + editor.renderer.characterWidth*2/3,
-                        offsetY: canvasPos.top - screenPosition.pageY - editor.renderer.lineHeight*1.5,
-                        tipSize: 10,
-                        delay: 0,
-                        minLifetime: 200,
-                        showDuration: 300,
-                        hideDuration: 100,
-                        showAnimation: function(d) { this.fadeIn(d); },
-                        contents: function(){
-                            var content = $('<a href="#"></a>');
-                            if (token.type == 'asa_artifact'){
-                                content.attr("id", "asa_view_button_tooltip");
-                                content.attr("title", "View Adaptive Artifact");
-                                content.click(function(){
-                                    view_artifact_ajax_call(token.value, editor);
-                                    balloon && editordiv.hideBalloon();
-                                });
-                            }else if (token.type == 'keyword'){
-                                content.attr("id", "asa_link_button_tooltip");
-                                content.attr("title", "Link to existing Adaptive Artifact");
-                                content.click(function(){
-                                    link_to_existing_artifact_ajax_call(function() {
-                                        var artifact_id = $('form#artifact-select input[name=selected]:checked').val();
-                                        editor.session.insert({row: position.row, column: token.start + token.value.length}, "]");
-                                        editor.session.insert({row: position.row, column: token.start}, "[asa:"+artifact_id+" ");
-                                        editor.focus();
-                                    }, token.value);
-                                    balloon && editordiv.hideBalloon();
-                                });
+                if(token!=null && token!=old_token && timeout){
+                    clearTimeout(timeout);
+                    old_token==token;
+                }
+                timeout = setTimeout(function(){
+                    var screenPosition = editor.renderer.textToScreenCoordinates(position.row, token.start + token.value.length + 2);
+                    balloon = editordiv.showBalloon(
+                        {
+                            position: "top left",
+                            offsetX: screenPosition.pageX + editor.renderer.characterWidth*2/3,
+                            offsetY: canvasPos.top - screenPosition.pageY - editor.renderer.lineHeight*1.5,
+                            tipSize: 10,
+                            delay: 0,
+                            minLifetime: 200,
+                            showDuration: 300,
+                            hideDuration: 100,
+                            showAnimation: function(d) { this.fadeIn(d); },
+                            contents: function(){
+                                var content = $('<a href="#"></a>');
+                                if (token.type == 'asa_artifact'){
+                                    content.attr("id", "asa_view_button_tooltip");
+                                    content.attr("title", "View Adaptive Artifact");
+                                    content.click(function(){
+                                        view_artifact_ajax_call(token.value, editor);
+                                        balloon && editordiv.hideBalloon();
+                                    });
+                                }else if (token.type == 'keyword'){
+                                    content.attr("id", "asa_link_button_tooltip");
+                                    content.attr("title", "Link to existing Adaptive Artifact");
+                                    content.click(function(){
+                                        link_to_existing_artifact_ajax_call(function() {
+                                            var artifact_id = $('form#artifact-select input[name=selected]:checked').val();
+                                            editor.session.insert({row: position.row, column: token.start + token.value.length}, "]");
+                                            editor.session.insert({row: position.row, column: token.start}, "[asa:"+artifact_id+" ");
+                                            editor.focus();
+                                        }, token.value);
+                                        balloon && editordiv.hideBalloon();
+                                    });
+                                }
+                                return content;
                             }
-                            return content;
                         }
-                    }
-                ).data("balloon");
-
+                    ).data("balloon");
+                },1000);
                 if(balloon) {
                     balloon.mouseleave(function(e) {
                         editordiv.hideBalloon();
@@ -470,9 +480,12 @@ var setupBalloons = function(editor){
                     });
                 }
             }else{
+                clearTimeout(timeout);
                 balloon && editordiv.hideBalloon();
             }
             e.stop();
+        }else{
+            clearTimeout(timeout);
         }
     });
 };
