@@ -117,7 +117,12 @@
                                             <span title="${value['full']}" style="border-bottom: 1px dotted #B00; cursor:help;">[...]</span>
                                         </py:if>
                                         <py:if test="not value['is_long']">
-                                            <py:for each="value_line in value['full'].split('\n')">${value_line}<br /></py:for>
+                                            <py:if test="not '\n' in value['full']">
+                                                ${wiki_to_oneliner(context, value['full'])}
+                                            </py:if>
+                                            <py:if test="'\n' in value['full']">
+                                                ${wiki_to_html(context, value['full'])}
+                                            </py:if>
                                         </py:if>
                                     </td>
                                 </py:for>

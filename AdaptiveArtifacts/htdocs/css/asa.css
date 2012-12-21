@@ -71,10 +71,25 @@ table.attributes td {
     vertical-align: top;
 }
 
-/*
-TODO: needs refactoring. "fieldset#properties" is currently used
-to match the "create" but not the "view" page/dialog
-*/
+table.attributes p,
+table.attributes h1,
+table.attributes h2,
+table.attributes h3,
+table.attributes h4,
+table.attributes h5,
+table.attributes h6 {
+    margin: 0;
+}
+
+table.attributes td.multiline p,
+table.attributes td.multiline h1,
+table.attributes td.multiline h2,
+table.attributes td.multiline h3,
+table.attributes td.multiline h4,
+table.attributes td.multiline h5,
+table.attributes td.multiline h6 {
+    margin-bottom: 0.5em;
+}
 
 #artifact-form table.attributes tr.phantom td input,
 #type-form table.attributes tr.phantom td input {
@@ -314,7 +329,7 @@ table.listing td.message,
 
 a.asa-link {
     border-bottom: 1px dotted #99B5DD;
-    color: #216AD3;
+    color: #1B58B1;
 }
 
 a.wiki {

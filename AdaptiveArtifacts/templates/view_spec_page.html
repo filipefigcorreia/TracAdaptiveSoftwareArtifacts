@@ -7,7 +7,12 @@
   <body>
     <div id="content" class="asa">
         <div id="asa">
-            <h1>${spec.get_name()}</h1>
+            <h1>
+                <em>${spec.get_name()}</em>
+                <div style="font-weight: normal;font-size: 60%;">
+                    Type of Adaptive Artifact.
+                </div>
+            </h1>
             <span class="label">Inherits:</span> <py:if test="not spec.get_parent() is None"><a href="${href.adaptiveartifacts('spec/' + spec.get_parent().get_id(), action='view')}">${spec.get_parent().get_name()}</a></py:if>
             <div class="label">Attributes</div>
             <table class="attributes" style="border-top: none;">
