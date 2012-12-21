@@ -322,8 +322,7 @@ var setupTokenizer = function(editor){
         "start": [
             {token : function(val){
                return "asa_artifact";
-
-            }, regex : ".{0,1}\\[asa[:][0-9]+\\s+[^\[]+\\]"},
+            }, regex : "\\[asa[:][0-9]+\\s+[^\[]+\\]"},
             {token : function(val){
                 val = val.toLowerCase();
                 if (goodWords[val])
@@ -334,7 +333,9 @@ var setupTokenizer = function(editor){
                     pending.push(val);
                 return "unknown";
             }, regex : "\\w+"},
+            {token : "special_character", regex : "."},
             {token : "text", regex : "[^\\w]+"}
+
 
         ]
     });
@@ -420,14 +421,17 @@ var setupBalloons = function(editor){
         if (position.column == editor.session.getLine(position.row).length){
             // Likely hovering on the whitespace to the right of the end of the line
             // To be absolutely sure we'd need a textCoordinatesToScreen()
+            clearTimeout(timeout);
             balloon && editordiv.hideBalloon();
             return;
         }
         var session = editor.session;
         var old_token;
         var token = session.getTokenAt(position.row, position.column);
+
         if (token){
             if (token.type == 'keyword' || token.type == 'asa_artifact') {
+
                 if(token!=null && token!=old_token && timeout){
                     clearTimeout(timeout);
                     old_token==token;
@@ -451,20 +455,20 @@ var setupBalloons = function(editor){
                                     content.attr("id", "asa_view_button_tooltip");
                                     content.attr("title", "View Adaptive Artifact");
                                     content.click(function(){
-                                        view_artifact_ajax_call(token.value, editor);
                                         balloon && editordiv.hideBalloon();
+                                        view_artifact_ajax_call(token.value, editor);
                                     });
                                 }else if (token.type == 'keyword'){
                                     content.attr("id", "asa_link_button_tooltip");
                                     content.attr("title", "Link to existing Adaptive Artifact");
                                     content.click(function(){
+                                        balloon && editordiv.hideBalloon();
                                         link_to_existing_artifact_ajax_call(function() {
                                             var artifact_id = $('form#artifact-select input[name=selected]:checked').val();
                                             editor.session.insert({row: position.row, column: token.start + token.value.length}, "]");
                                             editor.session.insert({row: position.row, column: token.start}, "[asa:"+artifact_id+" ");
                                             editor.focus();
                                         }, token.value);
-                                        balloon && editordiv.hideBalloon();
                                     });
                                 }
                                 return content;
@@ -474,8 +478,10 @@ var setupBalloons = function(editor){
                 },1000);
                 if(balloon) {
                     balloon.mouseleave(function(e) {
+                        clearTimeout(timeout);
                         editordiv.hideBalloon();
                     }).mouseenter(function(e) {
+                        clearTimeout(timeout);
                         editordiv.showBalloon();
                     });
                 }
@@ -490,9 +496,20 @@ var setupBalloons = function(editor){
     });
 };
 
+var setupListing = function(editor){
+    $('fieldset#changeinfo').css('width', '680px');
+    $('fieldset#changeinfo').css('float', 'right');
+    $('#changeinfo').after('<fieldset id="listing"/>');
+    $('fieldset#listing').css('float', 'left');
+    $('fieldset#listing').css('width', '450px');
+    $('fieldset#listing').css('height', '150px');
+    $('fieldset#listing').html("<legend>Artifacts List</legend>");
+}
+
 $(document).ready(function(){
     var editor = setupEditor();
     setupToolbar(editor);
     setupTokenizer(editor);
     setupBalloons(editor);
+    setupListing(editor);
 });
