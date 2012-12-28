@@ -315,6 +315,7 @@ div.filter input {
 #artifact-select table.listing {
     width: 392px;
     clear: none;
+    float: left;
 }
 
 table.listing td.message,
