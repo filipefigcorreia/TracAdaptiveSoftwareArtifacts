@@ -121,7 +121,7 @@ def get_list_pages(request, dbp, obj, resource):
         results.append(
             {'href': get_resource_url(dbp.env, page.resource, request.req.href),
              'title': pagename,
-             'date': user_time(request.req, format_datetime, datetime.now(utc)),
+             'date': user_time(request.req, format_datetime, page.time),
              'author': page.author,
              'excerpt': shorten_result(page.text)}
         )
@@ -171,7 +171,7 @@ def get_view_artifact(request, dbp, obj, resource):
         related_pages.append(
             {'href': get_resource_url(dbp.env, page.resource, request.req.href),
              'title': pagename,
-             'date': user_time(request.req, format_datetime, datetime.now(utc)),
+             'date': user_time(request.req, format_datetime, page.time),
              'author': page.author,
              'excerpt': shorten_result(page.text)})
 
@@ -248,6 +248,44 @@ def post_list_search_artifact_json(request, dbp, obj, resource):
     _return_as_json(request, data)
     return
 
+def post_list_search_relatedpages_json(request, dbp, obj, resource):
+    unparsed_spec = request.req.args.get('spec', '')
+    spec_name = json.loads(unparsed_spec) if unparsed_spec else ''
+    attributes = json.loads(request.req.args.get('attributes', '[]'))
+
+    if attributes is None:
+        raise Exception("No artifacts specified.")
+
+    from trac.wiki.model import WikiPage
+    from trac.resource import get_resource_url
+    from trac.search import shorten_result
+    from trac.util.datefmt import format_datetime, user_time, utc
+    from datetime import datetime
+
+    artifacts_array = []
+
+    for artifact in attributes:
+        dbp.load_artifact(artifact)
+        full_artifact = dbp.pool.get_item(artifact)
+        #artifacts_array.append(full_artifact)
+        results = []
+        for pagename, page_version_id, ref_count in dbp.get_wiki_page_ref_counts(full_artifact):
+            page = WikiPage(dbp.env, pagename)
+
+            results.append(
+                {'href': get_resource_url(dbp.env, page.resource, request.req.href),
+                 'title': pagename,
+                 'date': user_time(request.req, format_datetime, page.time),
+                 'author': page.author,
+                 'excerpt': shorten_result(page.text)}
+            )
+
+
+        artifacts_array.append(dict({'id': full_artifact.get_id(), 'title': str(full_artifact), 'spec': full_artifact.__class__.get_name(), 'results' : results}))
+
+    _return_as_json(request, artifacts_array)
+    return
+
 def post_list_search_spec_json(request, dbp, obj, resource):
     from AdaptiveArtifacts.persistence.search import Searcher
 
@@ -282,6 +320,8 @@ def post_list_search(request, dbp, obj, resource):
         return post_list_search_artifact_json(request, dbp, obj, resource)
     elif obj == 'spec':
         return post_list_search_spec_json(request, dbp, obj, resource)
+    elif obj == 'relatedpages':
+        return post_list_search_relatedpages_json(request, dbp, obj, resource)
 
 def get_new_spec(request, dbp, obj, resource):
     from model import Entity

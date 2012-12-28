@@ -85,9 +85,9 @@ function link_to_existing_artifact_ajax_call(click_callback, value){
                     var copy = $(".artifacts table.listing tr.prototype").clone(true);
                     copy.removeClass('prototype');
                     copy.find("input[type^='radio']").attr("value", id);
-                    copy.find("td")[1].innerText = title;
-                    copy.find("td")[2].innerText = spec_name;
-                    $(".artifacts table.listing tbody").append(copy);
+                    $(copy.find("td")[1]).text(title);
+                    $(copy.find("td")[2]).text(spec_name);
+                    $(".artifacts table.listing tbody").append(copy) ;
                 };
                 var addMessageRow = function(text){
                     var messageRow = $('<tr><td colspan="3" class="message">' + text + '</td></tr>');
@@ -102,6 +102,7 @@ function link_to_existing_artifact_ajax_call(click_callback, value){
                         var attr_value = $('.filter #value').val();
                         var attribute = {};
                         attribute[attr_name] = [attr_value];
+                        console.log(attribute);
                         Requests.searchArtifacts(spec, attribute, function(data){
                             clearRows();
                             if(data.length==0){
@@ -497,13 +498,57 @@ var setupBalloons = function(editor){
 };
 
 var setupListing = function(editor){
-    $('fieldset#changeinfo').css('width', '680px');
-    $('fieldset#changeinfo').css('float', 'right');
+    $('fieldset#changeinfo').css('width', '56%');
+    $('fieldset#changeinfo').css('min-width', '56%');
+    $('fieldset#changeinfo').css('float', 'left');
+    $('.buttons').css('float', 'left');
+    $('#comment').css('width', '98%');
+    var height_box = $('fieldset#changeinfo').height();
     $('#changeinfo').after('<fieldset id="listing"/>');
-    $('fieldset#listing').css('float', 'left');
-    $('fieldset#listing').css('width', '450px');
-    $('fieldset#listing').css('height', '150px');
-    $('fieldset#listing').html("<legend>Artifacts List</legend>");
+    $('fieldset#listing').css('float', 'right');
+    $('fieldset#listing').css('width', '39%');
+    $('fieldset#listing').css('min-height', height_box);
+    $('fieldset#listing').css('height', 'auto');
+    $('fieldset#listing').html('<legend>Artifacts List</legend>' +
+        '<div id="equivalent_pages_list" class="search"></div>' );
+
+    setTimeout(function(){
+    var artifacts = document.getElementsByClassName('ace_asa_artifact');
+    var artifacts_by_id = new Array();
+    var counter =0;
+    for (var i=0;i<artifacts.length; i++){
+        var asa_token_content = artifacts[i];
+        asa_token_content = $(asa_token_content).text();
+        var id = asa_token_content.match(/\d+/g);
+        if(artifacts_by_id.indexOf(id[0])==-1){
+            artifacts_by_id[counter] = id[0];
+            counter++;
+        }
+    }
+    Requests.searchRelatedPages(artifacts_by_id, function(data){
+        if(data.length==0){
+            $('#equivalent_pages_list').append('<dt>'+'No Identical Adaptive Artifacts found'+'</dt>');
+        }
+        for(var i=0;i<data.length;i++){
+            if(data[i].results.length>0){
+                var artifact_search = $('#equivalent_pages_list').append('<dt>'+data[i].title+'</dt>');
+                addResultRow(data[i].results, artifact_search);
+            }
+        }
+
+    })
+    },1000);
+}
+
+function addResultRow(results, artifact_search){
+    for(i = 0 ; i< results.length; i++){
+        var result = results[i];
+        $('#equivalent_pages_list').append('' +
+            '<dd><a href="'+result.href+'" class="searchable">'+result.title+'</a>' + ' '+
+                '<span class="author">By '+result.author+'</span> &mdash; ' +
+                '<span class="date">'+result.date+'</span>' +
+            '</dd>');
+    }
 }
 
 $(document).ready(function(){
