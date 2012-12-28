@@ -40,13 +40,22 @@ schema = [
         Index(['artifact_id', 'version_id']),
     ],
     # Keeps references of which artifacts are referenced by which pages
-    Table('asa_artifact_wiki', key=['artifact_id', 'artifact_version_id', 'page_name', 'page_version_id'])[
+    Table('asa_artifact_wiki_references', key=['artifact_id', 'artifact_version_id', 'page_name', 'page_version_id'])[
         Column('artifact_id', type='int64'),
         Column('artifact_version_id', type='int64'),
         Column('page_name'),
         Column('page_version_id', type='int'),
         Column('ref_count', type='int64'),
         Index(['artifact_id', 'artifact_version_id', 'page_name', 'page_version_id'], unique=True),
+    ],
+    # Keeps references of which artifacts are referenced by which other artifacts' values
+    Table('asa_artifact_artifact_references', key=['artifact_id', 'artifact_version_id', 'related_artifact_id', 'related_artifact_version_id'])[
+        Column('artifact_id', type='int64'),
+        Column('artifact_version_id', type='int64'),
+        Column('related_artifact_id', type='int64'),
+        Column('related_artifact_version_id', type='int64'),
+        Column('ref_count', type='int64'),
+        Index(['artifact_id', 'artifact_version_id', 'related_artifact_id', 'related_artifact_version_id'], unique=True),
     ],
     Table('asa_spec', key=['name', 'version_id'])[
         Column('name'),
@@ -76,7 +85,7 @@ class Setup(Component):
         self.db_key = 'asa_plugin_database_version'
         self.default_version = '0.0'
         self.schema_version = version.StrictVersion(self._get_system_value(self.db_key) or self.default_version)
-        self.running_version = version.StrictVersion('0.1') # TODO: get this value from setup.py
+        self.running_version = version.StrictVersion('0.3') # TODO: get this value from setup.py
 
     # start IEnvironmentSetupParticipant methods
     def environment_created(self):
@@ -94,6 +103,8 @@ class Setup(Component):
         try:
             if self.schema_version == self.default_version:
                 self._install_asa_support()
+            elif self.schema_version == '0.1':
+                self._upgrade_to_0dot3(db)
 #           elif self.schema_version == 'XXXX':
 #                cursor = db.cursor()
 #                cursor.execute("UPDATE various stuff ...")
@@ -114,13 +125,35 @@ class Setup(Component):
         cursor.execute("INSERT INTO system (name, value) VALUES ('%s', '%s')" %
                        (self.db_key, str(self.running_version)))
         for table in schema: # TODO: fix. reference to global var
-            connector, _ = DatabaseManager(self.env)._get_connector()
-            for stmt in connector.to_sql(table):
-                self.env.log.debug("Running query: \n %s" % stmt)
-                cursor.execute(stmt)
-
+            self._create_table(table, cursor)
         self.schema_version = self.running_version
 
+    # 0.1 -> 0.3
+    def _upgrade_to_0dot3(self, db):
+        cursor = db.cursor()
+        cursor.execute("ALTER TABLE asa_artifact_wiki RENAME TO asa_artifact_wiki_references;")
+        for table in schema: # TODO: fix. reference to global var
+            if table.name == "asa_artifact_artifact_references":
+                self._create_table(table, cursor)
+                break
+
+        from AdaptiveArtifacts.persistence.data import DBPool
+        from AdaptiveArtifacts.model.pool import InstancePool
+        from AdaptiveArtifacts.model.core import Instance
+        dbp = DBPool(self.env, InstancePool())
+        dbp.load_specs()
+        dbp.load_artifacts_of(Instance.get_name())
+        for artifact in dbp.pool.get_instances_of(Instance.get_name()):
+            dbp.update_artifact_ref_count(artifact, db)
+
+        cursor.execute("UPDATE system SET value='0.3' WHERE name='%s'" % (self.db_key,))
+        self.log.info('Upgraded ASA tables from versions 0.1/0.2 to 0.3')
+
+    def _create_table(self, table, cursor):
+        connector, _ = DatabaseManager(self.env)._get_connector()
+        for stmt in connector.to_sql(table):
+            self.env.log.debug("Running query: \n %s" % stmt)
+            cursor.execute(stmt)
 
     def _get_system_value(self, key):
         return self._get_scalar_value("SELECT value FROM system WHERE name=%s", 0, key)
