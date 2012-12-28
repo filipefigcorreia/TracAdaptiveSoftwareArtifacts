@@ -35,6 +35,19 @@ Requests.searchArtifacts = function(spec, attributes, callback) {
     });
 };
 
+Requests.searchRelatedPages = function(artifacts_by_id, callback) {
+    $.ajax({
+        url: baseurl+'/search/relatedpages',
+        type: 'post',
+        dataType: 'json',
+        traditional: true,
+        success: function (data) {
+            callback(data);
+        },
+        data: {'__FORM_TOKEN':form_token, 'attributes':JSON.stringify(artifacts_by_id)}
+    });
+};
+
 Requests.getArtifactHtml = function(artifact_id, callback){
     $.ajax({
       url: baseurl+"/artifact/"+artifact_id+"?action=view&format=dialog",
