@@ -183,8 +183,11 @@ def get_view_artifact(request, dbp, obj, resource):
         artifact = dbp.pool.get_item(related_artifact_id)
 
         url = request.req.href.adaptiveartifacts('artifact/%d' % (artifact.get_id(),), action='view')
+        id_version, time, author, ipnr, comment, readonly = dbp.get_latest_version_details(artifact.get_id())
         related_artifacts.append(
             {'href': url,
+             'author': author,
+             'date': user_time(request.req, format_datetime, time),
              'artifact': artifact}
         )
 
@@ -319,7 +322,7 @@ def post_new_spec(request, dbp, obj, resource):
     brand_new_inst = Entity(name=name, attributes=attributes, bases=bases)
 
     dbp.pool.add(brand_new_inst)
-    dbp.save('author', 'comment', 'address')
+    dbp.save(get_reporter_id(request.req), 'comment', request.req.remote_addr)
     add_notice(request.req, 'Your changes have been saved.')
     url = request.req.href.adaptiveartifacts('spec', brand_new_inst.get_name(), action='view')
     request.req.redirect(url)
@@ -358,7 +361,7 @@ def post_edit_spec(request, dbp, obj, resource):
         base=base,
         attributes=attributes)
 
-    dbp.save('author', 'comment', 'address')
+    dbp.save(get_reporter_id(request.req), 'comment', request.req.remote_addr)
     add_notice(request.req, 'Your changes have been saved.')
     url = request.req.href.adaptiveartifacts('spec', obj.get_name(), action='view')
     request.req.redirect(url)
@@ -452,7 +455,7 @@ def post_edit_artifact(request, dbp, obj, resource):
     obj.replace_values(values)
     obj.str_attr = str_attr if not str_attr is None else 'id'
 
-    dbp.save('author', 'comment', 'address')
+    dbp.save(get_reporter_id(request.req), 'comment', request.req.remote_addr)
     url = request.req.href.adaptiveartifacts('artifact/%s' % (obj.get_id(),), action='view')
     if request.get_format() == 'page':
         add_notice(request.req, 'Your changes have been saved.')

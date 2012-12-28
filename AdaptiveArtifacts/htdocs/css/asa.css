@@ -335,3 +335,27 @@ a.asa-link {
 a.wiki {
     color: #B00;
 }
+
+/* Related pages and artifacts */
+
+dl.related {
+    margin-right: 3em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-left: 0;
+}
+
+dl.related dt {
+    margin: 1.5em 0 0;
+}
+
+dl.related dd {
+    font-size: 80%;
+    margin: 0;
+    padding: 0;
+}
+
+dl.related dd .author,
+dl.related dd .date {
+    color: #090;
+}
