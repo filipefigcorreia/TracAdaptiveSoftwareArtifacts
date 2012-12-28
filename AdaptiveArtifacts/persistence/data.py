@@ -280,6 +280,8 @@ class DBPool(object):
                                     """, (art_id, version_id, attr_name, value, order))
                         item.id=art_id
 
+                        self.update_artifact_ref_count(item, db)
+
     def delete(self, item, author, comment, remote_addr, t=None):
         if not item in self.pool.get_items():
             raise Exception("Item not in pool")
@@ -376,28 +378,29 @@ class DBPool(object):
         for version, ts, author, ipnr, comment in cursor:
             yield version, from_utimestamp(ts), author, ipnr, comment
 
-    # Returns list of wiki page names that reference the specified artifact
-    def update_wiki_page_references(self, page, artifacts_ids, db=None):
-        # delete references count for the last version of the page
-        # insert references count for the last version of the page
-        if db is None:
-            db = self.env.get_db_cnx()
-
+    def _get_aggregated_counts(self, artifacts_ids):
         artifacts_ids_count = set([(aid,artifacts_ids.count(aid)) for aid in artifacts_ids])
         artifacts_ids_versions = [(aid,vid,ref_count)
                                   for aid,vid,ref_count in ((aid, self._get_latest_artifact_version(aid), ref_count)
                                       for aid,ref_count in artifacts_ids_count)
                                           if not vid is None]
+        return artifacts_ids_versions
+
+    def update_wiki_page_references(self, page, artifacts_ids, db=None):
+        if db is None:
+            db = self.env.get_db_cnx()
+
+        artifacts_ids_versions = self._get_aggregated_counts(artifacts_ids)
 
         cursor = db.cursor()
         query = """
-                DELETE FROM asa_artifact_wiki
+                DELETE FROM asa_artifact_wiki_references
                 WHERE page_name=%s AND page_version_id=%s;"""
         cursor.execute(query, (page.name, page.version))
 
         for aid,vid,ref_count in artifacts_ids_versions:
             query = """
-                    INSERT INTO asa_artifact_wiki(artifact_id, artifact_version_id, page_name, page_version_id, ref_count)
+                    INSERT INTO asa_artifact_wiki_references(artifact_id, artifact_version_id, page_name, page_version_id, ref_count)
                     VALUES (%s,%s,%s,%s,%s);"""
             cursor.execute(query, (int(aid), vid, page.name, page.version, ref_count))
 
@@ -423,7 +426,7 @@ class DBPool(object):
         cursor = db.cursor()
         query = """
                 SELECT page_name, page_version_id AS page_version, ref_count
-                FROM asa_artifact_wiki aw
+                FROM asa_artifact_wiki_references aw
                 INNER JOIN (
                     SELECT name, max(version) AS version
                     FROM wiki
@@ -435,3 +438,61 @@ class DBPool(object):
         cursor.execute(query)
         for pagename, page_version_id, ref_count in cursor:
             yield pagename, page_version_id, ref_count
+
+
+    def update_artifact_ref_count(self, artifact, db=None):
+        text = u""
+        for attr_name, value in artifact.get_values():
+            text += " " + (" ".join(value) if type(value) is list else value)
+        from AdaptiveArtifacts import get_artifact_ids_from_text
+        related_artifacts_ids = get_artifact_ids_from_text(text)
+        self.update_related_artifact_references(artifact, related_artifacts_ids, db)
+
+    def update_related_artifact_references(self, artifact, related_artifacts_ids, db):
+        artifact_version_id = self._get_latest_artifact_version(artifact.get_id())
+        artifacts_ids_versions = self._get_aggregated_counts(related_artifacts_ids)
+
+        cursor = db.cursor()
+        query = """
+                DELETE FROM asa_artifact_artifact_references
+                WHERE artifact_id=%s AND artifact_version_id=%s;"""
+        cursor.execute(query, (artifact.get_id(), artifact_version_id))
+
+        for aid,vid,ref_count in artifacts_ids_versions:
+            query = """
+                    INSERT INTO asa_artifact_artifact_references(artifact_id, artifact_version_id, related_artifact_id, related_artifact_version_id, ref_count)
+                    VALUES (%s,%s,%s,%s,%s);"""
+            cursor.execute(query, (artifact.get_id(), artifact_version_id, int(aid), vid, ref_count))
+
+
+    def get_related_artifact_ref_counts(self, artifact, db=None):
+        if not artifact in self.pool.get_items():
+            raise Exception("Item not in pool")
+
+        assert not isinstance(artifact, Entity)
+
+        if artifact.is_new():
+            return
+
+        if db is None:
+            db = self.env.get_db_cnx()
+
+        version = self._get_latest_artifact_version(artifact.get_id(), db)
+        if version is None:
+            raise ValueError("No version found for artifact with id '%s'" % (artifact.get_id(),))
+
+        cursor = db.cursor()
+        query = """
+                SELECT artifact_id, aa.artifact_version_id, ref_count
+                FROM asa_artifact_artifact_references aa
+                INNER JOIN (
+                    SELECT id, max(version_id) AS version
+                    FROM asa_artifact
+                    GROUP BY id
+                ) maxv ON maxv.id=aa.artifact_id AND maxv.version=aa.artifact_version_id
+                WHERE aa.related_artifact_id=%d
+                GROUP BY artifact_id""" % (int(artifact.get_id()))
+
+        cursor.execute(query)
+        for pagename, related_artifact_version_id, ref_count in cursor:
+            yield pagename, related_artifact_version_id, ref_count

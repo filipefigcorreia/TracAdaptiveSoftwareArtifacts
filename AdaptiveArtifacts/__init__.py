@@ -18,6 +18,9 @@ from AdaptiveArtifacts.model.pool import InstancePool
 from AdaptiveArtifacts.model.pool import Entity, Instance
 from AdaptiveArtifacts.requests.request import Request
 
+def get_artifact_ids_from_text(wiki_text):
+    return re.findall('\[asa:(\d+)\ [\w ]+\]', wiki_text)
+
 class Core(Component):
     """Core module of the plugin. Provides the Adaptive-Artifacts themselves."""
     implements(INavigationContributor, IRequestHandler, ITemplateProvider, IResourceManager, IRequestFilter, IWikiSyntaxProvider, IWikiChangeListener)
@@ -166,11 +169,9 @@ class Core(Component):
         self._update_wiki_page_ref_count(page)
 
     def _update_wiki_page_ref_count(self, page):
-        artifacts_ids = re.findall('\[asa:(\d+)\ [\w ]+\]', page.text)
-
+        artifacts_ids = get_artifact_ids_from_text(page.text)
         dbp = DBPool(self.env, InstancePool())
         dbp.update_wiki_page_references(page, artifacts_ids)
-
 
 from trac.search import ISearchSource
 from trac.resource import get_resource_url

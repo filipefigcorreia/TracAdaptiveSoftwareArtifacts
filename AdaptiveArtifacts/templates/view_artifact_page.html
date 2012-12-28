@@ -26,16 +26,36 @@
 
             <a name="pages" />
             <h2>Related Wiki Pages</h2>
-            <dl id="results">
-                <py:for each="result in results">
-                    <dt><a href="${result.href}" class="searchable">${result.title}</a></dt>
-                    <dd class="searchable">${result.excerpt}</dd>
-                    <dd>
-                        <py:if test="result.author"><span class="author">By ${format_author(result.author)}</span> &mdash;</py:if>
-                        <span class="date">${result.date}</span>
-                    </dd>
-                </py:for>
-            </dl>
+            <py:if test="len(related_pages)==0">
+                <p style="font-style: italic">This adaptive artifact is not referred from a wiki page.</p>
+            </py:if>
+            <py:if test="len(related_pages)>0">
+                <dl id="results">
+                    <py:for each="page in related_pages">
+                        <dt><a href="${page.href}" class="searchable">${page.title}</a></dt>
+                        <dd class="searchable">${page.excerpt}</dd>
+                        <dd>
+                            <py:if test="page.author"><span class="author">By ${format_author(page.author)}</span> &mdash;</py:if>
+                            <span class="date">${page.date}</span>
+                        </dd>
+                    </py:for>
+                </dl>
+            </py:if>
+
+
+            <a name="artifacts" />
+            <h2>Related Adaptive Artifacts</h2>
+            <py:if test="len(related_artifacts)==0">
+                <p style="font-style: italic">This adaptive artifact is not referred from other adaptive artifacts.</p>
+            </py:if>
+            <py:if test="len(related_artifacts)>0">
+                <ul>
+                    <py:for each="artifact in related_artifacts">
+                        <li><a href="${artifact.href}" class="asa-link">${str(artifact.artifact)}</a></li>
+                    </py:for>
+                </ul>
+            </py:if>
+
             <br/><br/>
         </div>
     </body>

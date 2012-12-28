@@ -162,19 +162,30 @@ def get_view_artifact(request, dbp, obj, resource):
     from trac.util.datefmt import format_datetime, user_time, utc
     from datetime import datetime
 
-    results = []
+    related_pages = []
     from trac.wiki.model import WikiPage
     from trac.resource import get_resource_url
     from trac.search import shorten_result
     for pagename, page_version_id, ref_count in dbp.get_wiki_page_ref_counts(obj):
         page = WikiPage(dbp.env, pagename)
-
-        results.append(
+        related_pages.append(
             {'href': get_resource_url(dbp.env, page.resource, request.req.href),
              'title': pagename,
              'date': user_time(request.req, format_datetime, datetime.now(utc)),
              'author': page.author,
-             'excerpt': shorten_result(page.text)}
+             'excerpt': shorten_result(page.text)})
+
+
+    # Getting artifacts whose attribute values refer the artifact
+    related_artifacts = []
+    for related_artifact_id, related_artifact_version_id, ref_count in dbp.get_related_artifact_ref_counts(obj):
+        dbp.load_artifact(related_artifact_id)
+        artifact = dbp.pool.get_item(related_artifact_id)
+
+        url = request.req.href.adaptiveartifacts('artifact/%d' % (artifact.get_id(),), action='view')
+        related_artifacts.append(
+            {'href': url,
+             'artifact': artifact}
         )
 
     data = {
@@ -183,7 +194,8 @@ def get_view_artifact(request, dbp, obj, resource):
         'spec_url': spec_url,
         'artifact': obj,
         'artifacts_values': values,
-        'results': results, # referred wiki pages
+        'related_pages': related_pages,
+        'related_artifacts': related_artifacts,
     }
     return 'view_artifact_%s.html' % (request.get_format(),), data, None
 
