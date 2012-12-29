@@ -44,6 +44,9 @@ Requests.searchRelatedPages = function(artifacts_by_id, callback) {
         success: function (data) {
             callback(data);
         },
+        error: function (data){
+            error(data);
+        },
         data: {'__FORM_TOKEN':form_token, 'attributes':JSON.stringify(artifacts_by_id)}
     });
 };

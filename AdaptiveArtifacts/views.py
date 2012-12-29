@@ -270,27 +270,29 @@ def post_list_search_relatedpages_json(request, dbp, obj, resource):
     artifacts_array = []
 
     for artifact in attributes:
-        dbp.load_artifact(artifact)
-        full_artifact = dbp.pool.get_item(artifact)
-        #artifacts_array.append(full_artifact)
-        results = []
-        for pagename, page_version_id, ref_count in dbp.get_wiki_page_ref_counts(full_artifact):
-            page = WikiPage(dbp.env, pagename)
+        try:
+            dbp.load_artifact(artifact)
+            full_artifact = dbp.pool.get_item(artifact)
+            #artifacts_array.append(full_artifact)
+            results = []
+            for pagename, page_version_id, ref_count in dbp.get_wiki_page_ref_counts(full_artifact):
+                page = WikiPage(dbp.env, pagename)
 
-            results.append(
-                {'href': get_resource_url(dbp.env, page.resource, request.req.href),
-                 'title': pagename,
-                 'date': user_time(request.req, format_datetime, page.time),
-                 'author': page.author,
-                 'excerpt': shorten_result(page.text)}
-            )
+                results.append(
+                    {'href': get_resource_url(dbp.env, page.resource, request.req.href),
+                     'title': pagename,
+                     'date': user_time(request.req, format_datetime, page.time),
+                     'author': page.author,
+                     'excerpt': shorten_result(page.text)}
+                )
 
-        artifacts_array.append(
-            {'id': full_artifact.get_id(),
-             'href': request.req.href.adaptiveartifacts('artifact', full_artifact.get_id(), action='view'),
-             'title': str(full_artifact),
-             'results' : results})
-
+            artifacts_array.append(
+                {'id': full_artifact.get_id(),
+                 'href': request.req.href.adaptiveartifacts('artifact', full_artifact.get_id(), action='view'),
+                 'title': str(full_artifact),
+                 'results' : results})
+        except ValueError:
+            continue
     _return_as_json(request, artifacts_array)
     return
 

@@ -528,12 +528,14 @@ function addRelatedPages(editor){
     var artifacts=  text.match(regex);
     var artifacts_by_id = new Array();
     var counter =0;
-    for (var i=0;i<artifacts.length; i++){
-        var asa_token_content = artifacts[i];
-        var id = asa_token_content.match(/\d+/g);
-        if(artifacts_by_id.indexOf(id[0])==-1){
-            artifacts_by_id[counter] = id[0];
-            counter++;
+    if(artifacts!=null){
+        for (var i=0;i<artifacts.length; i++){
+            var asa_token_content = artifacts[i];
+            var id = asa_token_content.match(/\d+/g);
+            if(artifacts_by_id.indexOf(id[0])==-1){
+                artifacts_by_id[counter] = id[0];
+                counter++;
+            }
         }
     }
     Requests.searchRelatedPages(artifacts_by_id, function(data){
@@ -549,6 +551,9 @@ function addRelatedPages(editor){
             }
         }
 
+    }, function(data){
+        $('#equivalent_pages_list').empty();
+        $('#equivalent_pages_list').append('<dt>'+'Error in search'+'</dt>');
     })
 }
 
