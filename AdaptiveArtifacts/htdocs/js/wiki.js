@@ -508,8 +508,8 @@ var setupListing = function(editor){
     $('fieldset#listing').css('width', '39%');
     $('fieldset#listing').css('min-height', height_box);
     $('fieldset#listing').css('height', 'auto');
-    $('fieldset#listing').html('<legend>Artifacts List</legend>' +
-        '<div id="equivalent_pages_list" class="search"></div>' );
+    $('fieldset#listing').html('<legend>Pages that refer the same Adaptive Artifacts</legend>' +
+        '<div id="equivalent_pages_list" class="search"><dl class="related"></dl></div>' );
 
     addRelatedPages(editor);
 
@@ -538,13 +538,13 @@ function addRelatedPages(editor){
     }
     Requests.searchRelatedPages(artifacts_by_id, function(data){
 
-        $('#equivalent_pages_list').empty();
+        $('#equivalent_pages_list dl.related').empty();
         if(data.length==0){
-            $('#equivalent_pages_list').append('<dt>'+'No Identical Adaptive Artifacts found'+'</dt>');
+            $('#equivalent_pages_list dl.related').append('<dt>'+'No pages were found'+'</dt>');
         }
         for(var i=0;i<data.length;i++){
             if(data[i].results.length>0){
-                var artifact_search = $('#equivalent_pages_list').append('<dt>'+data[i].title+'</dt>');
+                var artifact_search = $('#equivalent_pages_list dl.related').append('<dt><a class="asa-link" href="' + data[i].href + '">'+data[i].title+'</a></dt>');
                 addResultRow(data[i].results, artifact_search);
             }
         }
@@ -555,8 +555,9 @@ function addRelatedPages(editor){
 function addResultRow(results, artifact_search){
     for(i = 0 ; i< results.length; i++){
         var result = results[i];
-        $('#equivalent_pages_list').append('' +
-            '<dd><a href="'+result.href+'" class="searchable">'+result.title+'</a>' + ' '+
+        $('#equivalent_pages_list dl.related').append('' +
+            '<dd style="margin-top:0.2em"><a class="wiki" href="'+result.href+'">'+result.title+'</a></dd>' +
+            '<dd>' +
                 '<span class="author">By '+result.author+'</span> &mdash; ' +
                 '<span class="date">'+result.date+'</span>' +
             '</dd>');

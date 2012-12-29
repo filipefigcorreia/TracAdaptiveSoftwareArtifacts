@@ -280,8 +280,11 @@ def post_list_search_relatedpages_json(request, dbp, obj, resource):
                  'excerpt': shorten_result(page.text)}
             )
 
-
-        artifacts_array.append(dict({'id': full_artifact.get_id(), 'title': str(full_artifact), 'spec': full_artifact.__class__.get_name(), 'results' : results}))
+        artifacts_array.append(
+            {'id': full_artifact.get_id(),
+             'href': request.req.href.adaptiveartifacts('artifact', full_artifact.get_id(), action='view'),
+             'title': str(full_artifact),
+             'results' : results})
 
     _return_as_json(request, artifacts_array)
     return
