@@ -102,7 +102,7 @@ function link_to_existing_artifact_ajax_call(click_callback, value){
                         var attr_value = $('.filter #value').val();
                         var attribute = {};
                         attribute[attr_name] = [attr_value];
-                        console.log(attribute);
+
                         Requests.searchArtifacts(spec, attribute, function(data){
                             clearRows();
                             if(data.length==0){
@@ -374,13 +374,11 @@ var setupTokenizer = function(editor){
                 dirtySessions.push(this);
             // set state to null to indicate that it needs updating
             this.states[row] = null;
-
             return this.lines[row] = data;
+
         };
         self.setTokenizer(tokenizer);
     };
-
-
 
 
     var queryServer = function() {
@@ -497,6 +495,7 @@ var setupBalloons = function(editor){
     });
 };
 
+var timeout_pages;
 var setupListing = function(editor){
     $('fieldset#changeinfo').css('width', '56%');
     $('fieldset#changeinfo').css('min-width', '56%');
@@ -512,13 +511,25 @@ var setupListing = function(editor){
     $('fieldset#listing').html('<legend>Artifacts List</legend>' +
         '<div id="equivalent_pages_list" class="search"></div>' );
 
-    setTimeout(function(){
-    var artifacts = document.getElementsByClassName('ace_asa_artifact');
+    addRelatedPages(editor);
+
+    editor.on('change', function(){
+        clearTimeout(timeout_pages);
+        timeout_pages = setTimeout(function(){
+            addRelatedPages(editor);
+        }, 500);
+    });
+
+}
+
+function addRelatedPages(editor){
+    var text = editor.session.getValue();
+    var regex = /\[(asa):[0-9]+\s+[^[]+\]/g;
+    var artifacts=  text.match(regex);
     var artifacts_by_id = new Array();
     var counter =0;
     for (var i=0;i<artifacts.length; i++){
         var asa_token_content = artifacts[i];
-        asa_token_content = $(asa_token_content).text();
         var id = asa_token_content.match(/\d+/g);
         if(artifacts_by_id.indexOf(id[0])==-1){
             artifacts_by_id[counter] = id[0];
@@ -526,6 +537,8 @@ var setupListing = function(editor){
         }
     }
     Requests.searchRelatedPages(artifacts_by_id, function(data){
+
+        $('#equivalent_pages_list').empty();
         if(data.length==0){
             $('#equivalent_pages_list').append('<dt>'+'No Identical Adaptive Artifacts found'+'</dt>');
         }
@@ -537,7 +550,6 @@ var setupListing = function(editor){
         }
 
     })
-    },1000);
 }
 
 function addResultRow(results, artifact_search){
