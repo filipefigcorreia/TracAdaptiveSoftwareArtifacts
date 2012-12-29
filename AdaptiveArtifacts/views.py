@@ -183,9 +183,13 @@ def get_view_artifact(request, dbp, obj, resource):
         artifact = dbp.pool.get_item(related_artifact_id)
 
         url = request.req.href.adaptiveartifacts('artifact/%d' % (artifact.get_id(),), action='view')
+        spec_name = artifact.__class__.get_name() if not artifact.__class__ is Instance else None
+        spec_url = request.req.href.adaptiveartifacts('spec', artifact.__class__.get_id(), action='view'),
         id_version, time, author, ipnr, comment, readonly = dbp.get_latest_version_details(artifact.get_id())
         related_artifacts.append(
             {'href': url,
+             'spec_name': spec_name,
+             'spec_url': spec_url,
              'author': author,
              'date': user_time(request.req, format_datetime, time),
              'artifact': artifact}

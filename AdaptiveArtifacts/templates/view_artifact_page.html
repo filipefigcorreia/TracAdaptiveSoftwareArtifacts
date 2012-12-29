@@ -56,7 +56,7 @@
                             <dt><a href="${artifact.href}" class="asa-link">${str(artifact.artifact)}</a></dt>
                             <dd>Adaptive Artifact of
                                     <py:if test="spec_name">
-                                        the type <em><a href="${spec_url}" class="asa-link">${spec_name}</a></em>.
+                                        the type <em><a href="${artifact.spec_url}" class="asa-link">${artifact.spec_name}</a></em>.
                                     </py:if>
                                     <py:if test="not spec_name">
                                         unspecified type.
