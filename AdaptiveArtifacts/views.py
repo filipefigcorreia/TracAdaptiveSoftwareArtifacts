@@ -138,6 +138,7 @@ def get_view_spec(request, dbp, obj, resource):
     data = {
         'context': Context.from_request(request.req, resource),
         'spec': obj,
+        'artifacts_url': request.req.href.adaptiveartifacts(spec=obj.get_name()),
     }
     return 'view_spec_page.html', data, None
 
@@ -183,8 +184,8 @@ def get_view_artifact(request, dbp, obj, resource):
         artifact = dbp.pool.get_item(related_artifact_id)
 
         url = request.req.href.adaptiveartifacts('artifact/%d' % (artifact.get_id(),), action='view')
-        spec_name = artifact.__class__.get_name() if not artifact.__class__ is Instance else None
-        spec_url = request.req.href.adaptiveartifacts('spec', artifact.__class__.get_id(), action='view'),
+        spec_name = obj.__class__.get_name() if not obj.__class__ is Instance else None
+        spec_url = request.req.href.adaptiveartifacts('spec', obj.__class__.get_id(), action='view'),
         id_version, time, author, ipnr, comment, readonly = dbp.get_latest_version_details(artifact.get_id())
         related_artifacts.append(
             {'href': url,
