@@ -112,6 +112,23 @@ class DBPool(object):
         if self.pool.get_item(spec.get_name()) is None:
             self.pool.add(spec)
 
+    def get_latest_version_details(self, id_artifact, db=None):
+        if not db:
+            db = self.env.get_read_db()
+
+        version = self._get_latest_artifact_version(id_artifact)
+        if not version:
+            return None, None, None, None, None, None
+
+        cursor = db.cursor()
+        rows = cursor.execute("""
+                       SELECT id, time, author, ipnr, comment, readonly
+                       FROM asa_version
+                       WHERE id=%s
+                       """ % (version,))
+        row = rows.fetchone()
+        return row[0], row[1], row[2], row[3], row[4], row[5],
+
     def _get_latest_artifact_version(self, id, db=None):
         if not db:
             db = self.env.get_read_db()
