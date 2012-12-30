@@ -58,7 +58,7 @@ function link_to_existing_artifact_ajax_call(click_callback, value){
                 $("#button-choose").button("disable");
 
                 var selectionUpdated = function(selected){
-                    var content_div = $(".artifacts #asa #dialog-content");
+                    var content_div = $(".artifacts #asa-wrapper #dialog-content");
                     var asa_div = $(".artifacts #asa");
                     var close_button = $("#button-choose");
                     if (selected.length==0){

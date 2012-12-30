@@ -300,14 +300,14 @@ div.filter input {
     margin: 1em 0;
 }
 
-#artifact-select #asa {
+#artifact-select #asa-wrapper {
     float: right;
     width: 392px;
     margin-top:0;
     margin-left:16px;
 }
 
-#artifact-select #asa.invisible {
+#artifact-select #asa-wrapper.invisible {
     background-color: transparent;
     border: none;
 }
