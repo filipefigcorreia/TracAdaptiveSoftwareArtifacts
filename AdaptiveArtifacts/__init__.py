@@ -183,7 +183,7 @@ class Search(Component):
     # ISearchSource methods
 
     def get_search_filters(self, req):
-        yield ('asa', 'Adaptive Artifacts', True)
+        yield ('asa-filter', 'Adaptive Artifacts', True)
 
     def get_search_results(self, req, terms, filters):
         if 'asa' in filters:
