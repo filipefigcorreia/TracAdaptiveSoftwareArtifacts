@@ -481,7 +481,6 @@ var setupBalloons = function(editor){
                         editordiv.hideBalloon();
                     }).mouseenter(function(e) {
                         clearTimeout(timeout);
-                        editordiv.showBalloon();
                     });
                 }
             }else{
