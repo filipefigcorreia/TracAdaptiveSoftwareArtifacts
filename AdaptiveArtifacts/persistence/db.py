@@ -103,7 +103,7 @@ class Setup(Component):
         try:
             if self.schema_version == self.default_version:
                 self._install_asa_support()
-            elif self.schema_version == '0.1':
+            elif self.schema_version in ('0.1', '0.2'):
                 self._upgrade_to_0dot3(db)
 #           elif self.schema_version == 'XXXX':
 #                cursor = db.cursor()
