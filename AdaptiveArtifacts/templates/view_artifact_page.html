@@ -52,19 +52,19 @@
                 </py:if>
                 <py:if test="len(related_artifacts)>0">
                     <dl class="related">
-                        <py:for each="artifact in related_artifacts">
-                            <dt><a href="${artifact.href}" class="asa-link">${str(artifact.artifact)}</a></dt>
+                        <py:for each="rel_artifact in related_artifacts">
+                            <dt><a href="${rel_artifact.href}" class="asa-link">${str(rel_artifact.artifact)}</a></dt>
                             <dd>Adaptive Artifact of
-                                    <py:if test="spec_name">
-                                        the type <em><a href="${artifact.spec_url}" class="asa-link">${artifact.spec_name}</a></em>.
+                                    <py:if test="rel_artifact.spec_name">
+                                        the type <em><a href="${rel_artifact.spec_url}" class="asa-link">${rel_artifact.spec_name}</a></em>.
                                     </py:if>
-                                    <py:if test="not spec_name">
+                                    <py:if test="not rel_artifact.spec_name">
                                         unspecified type.
                                     </py:if>
                             </dd>
                             <dd>
-                                <py:if test="artifact.author"><span class="author">By ${format_author(artifact.author)}</span> &mdash;</py:if>
-                                <span class="date">${artifact.date}</span>
+                                <py:if test="rel_artifact.author"><span class="author">By ${format_author(rel_artifact.author)}</span> &mdash;</py:if>
+                                <span class="date">${rel_artifact.date}</span>
                             </dd>
                         </py:for>
                     </dl>
