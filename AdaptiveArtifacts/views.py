@@ -5,10 +5,12 @@
 
 import uuid
 import json
+from datetime import datetime
 from trac.mimeview.api import Context
 from trac.web.chrome import add_notice, add_warning
 from trac.util import get_reporter_id
 from trac.resource import Resource, get_resource_url
+from trac.util.datefmt import format_datetime, user_time
 from AdaptiveArtifacts.model.core import Entity, Instance, Attribute
 from AdaptiveArtifacts.persistence.search import Searcher
 
@@ -88,6 +90,9 @@ def get_index(request, dbp, obj, resource):
         for artifact in artifacts:
             artifacts_pages_count[artifact] = len(list(dbp.get_wiki_page_ref_counts(artifact)))
 
+    # track access
+    dbp.track_it("index", "", "view", request.req.authname, str(datetime.now()))
+
     data = {
         'context': Context.from_request(request.req, resource),
         'action': 'list',
@@ -102,9 +107,6 @@ def get_index(request, dbp, obj, resource):
     return 'index_page.html', data, None
 
 def get_list_pages(request, dbp, obj, resource):
-    from trac.util.datefmt import format_datetime, user_time, utc
-    from datetime import datetime
-
     artifact_id = request.req.args.get('artifact', None)
     if artifact_id is None:
         raise Exception("No artifact was specified.")
@@ -135,6 +137,9 @@ def get_list_pages(request, dbp, obj, resource):
 
 
 def get_view_spec(request, dbp, obj, resource):
+    # track access
+    dbp.track_it("spec", obj.get_id(), "view", request.req.authname, str(datetime.now()))
+
     data = {
         'context': Context.from_request(request.req, resource),
         'spec': obj,
@@ -160,9 +165,6 @@ def get_view_artifact(request, dbp, obj, resource):
 
 
     # Getting wiki pages that refer the artifact
-    from trac.util.datefmt import format_datetime, user_time, utc
-    from datetime import datetime
-
     related_pages = []
     from trac.wiki.model import WikiPage
     from trac.resource import get_resource_url
@@ -195,6 +197,9 @@ def get_view_artifact(request, dbp, obj, resource):
              'date': user_time(request.req, format_datetime, time),
              'artifact': artifact}
         )
+
+    # track access
+    dbp.track_it("artifact", obj.get_id(), "view", request.req.authname, str(datetime.now()))
 
     data = {
         'context': Context.from_request(request.req, resource),
@@ -237,6 +242,9 @@ def get_list_search_by_filter(request, dbp, obj, resource):
     dbp.load_artifacts_of(Instance.get_name())
     artifacts_with_no_spec = dbp.pool.get_instances_of(Instance.get_name(), direct_instances_only=True)
 
+    # track access
+    dbp.track_it("pick_artifact", "", "view", request.req.authname, str(datetime.now()))
+
     data = {
         'context': Context.from_request(request.req, resource),
         'url_path': '',
@@ -264,8 +272,6 @@ def post_list_search_relatedpages_json(request, dbp, obj, resource):
     from trac.wiki.model import WikiPage
     from trac.resource import get_resource_url
     from trac.search import shorten_result
-    from trac.util.datefmt import format_datetime, user_time, utc
-    from datetime import datetime
 
     artifacts_array = []
 
@@ -343,6 +349,9 @@ def get_new_spec(request, dbp, obj, resource):
     else:
         raise Exception("Trying to instantiate something that can't be instantiated '%s'" % (obj,))
 
+    # track access
+    dbp.track_it("spec", "", "new", request.req.authname, str(datetime.now()))
+
     data = {
         'context': Context.from_request(request.req, resource),
         'types' : ['Text', 'Number'], # , 'Adaptive Artifact'
@@ -379,6 +388,9 @@ def post_new_spec(request, dbp, obj, resource):
 
 def get_edit_spec(request, dbp, obj, resource):
     assert(obj is Instance or isinstance(obj, Entity))
+
+    # track access
+    dbp.track_it("spec", obj.get_id(), "edit", request.req.authname, str(datetime.now()))
 
     data = {
         'context': Context.from_request(request.req, resource),
@@ -418,6 +430,9 @@ def post_edit_spec(request, dbp, obj, resource):
 
 def get_new_artifact(request, dbp, obj, resource):
     assert(obj is Instance or isinstance(obj, Entity)) # otherwise, we're trying to instantiate something that is not an artifact
+
+    # track access
+    dbp.track_it("artifact", obj.get_id(), "new", request.req.authname, str(datetime.now()))
 
     data = {
         'context': Context.from_request(request.req, resource),
@@ -473,6 +488,9 @@ def get_edit_artifact(request, dbp, obj, resource):
                 values.append((str(uuid.uuid4()), name, v))
         else:
             values.append((str(uuid.uuid4()), name, val))
+
+    # track access
+    dbp.track_it("artifact", obj.get_id(), "edit", request.req.authname, str(datetime.now()))
 
     data = {
         'context': Context.from_request(request.req, resource),

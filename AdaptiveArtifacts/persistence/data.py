@@ -513,3 +513,12 @@ class DBPool(object):
         cursor.execute(query)
         for pagename, related_artifact_version_id, ref_count in cursor:
             yield pagename, related_artifact_version_id, ref_count
+
+    def track_it(self, resource_type, resource_id, operation, username, time, db=None):
+        @with_transaction(self.env)
+        def do_track_it(db):
+            cursor = db.cursor()
+            cursor.execute(
+                """INSERT INTO asa_analytics VALUES('%s','%s','%s','%s','%s')""" %
+                (resource_type, resource_id, operation, username, time)
+            )

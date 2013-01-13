@@ -115,8 +115,19 @@ class Core(Component):
         add_javascript(req, 'adaptiveartifacts/js/util.js')
         add_javascript(req, 'adaptiveartifacts/js/uuid.js')
         add_javascript(req, 'adaptiveartifacts/js/forms.js')
-        if req.environ.get('PATH_INFO', '')[0:5] == '/wiki' and 'action' in req.args and req.args['action'] == 'edit':
-            add_javascript(req, "adaptiveartifacts/js/wiki.js")
+        if req.environ.get('PATH_INFO', '')[0:5] == '/wiki':
+            from datetime import datetime
+            dbp = DBPool(self.env, InstancePool())
+            parts = req.environ.get('PATH_INFO', '').split("/")
+            resource_id = ""
+            if len(parts) > 2:
+                resource_id = parts[2]
+
+            if 'action' in req.args and req.args['action'] == 'edit':
+                add_javascript(req, "adaptiveartifacts/js/wiki.js")
+                dbp.track_it("wiki", resource_id, "edit", req.authname, str(datetime.now()))
+            else:
+                dbp.track_it("wiki", resource_id, "view", req.authname, str(datetime.now()))
 
         add_script_data(req, {'baseurl': req.href.adaptiveartifacts()})
         add_script_data(req, {'form_token': req.form_token})

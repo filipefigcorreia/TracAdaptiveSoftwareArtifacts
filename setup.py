@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 from finddata import find_package_data
 
 PACKAGE = 'AdaptiveArtifacts'
-VERSION = '0.3'
+VERSION = '0.4'
 
 setup(name=PACKAGE,
     version=VERSION,

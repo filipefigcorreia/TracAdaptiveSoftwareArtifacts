@@ -73,7 +73,13 @@ schema = [
         Column('uiorder', type='int'),
         Index(['spec_name', 'version_id']),
     ],
-]
+    Table('asa_analytics')[
+        Column('resource_type'),
+        Column('resource_id'),
+        Column('operation'),
+        Column('username'),
+        Column('time'),
+    ],]
 
 class Setup(Component):
     """Installs, upgrades and uninstalls database support for the plugin."""
@@ -85,7 +91,7 @@ class Setup(Component):
         self.db_key = 'asa_plugin_database_version'
         self.default_version = '0.0'
         self.schema_version = version.StrictVersion(self._get_system_value(self.db_key) or self.default_version)
-        self.running_version = version.StrictVersion('0.3') # TODO: get this value from setup.py
+        self.running_version = version.StrictVersion('0.4') # TODO: get this value from setup.py
 
     # start IEnvironmentSetupParticipant methods
     def environment_created(self):
@@ -105,6 +111,9 @@ class Setup(Component):
                 self._install_asa_support()
             elif self.schema_version in ('0.1', '0.2'):
                 self._upgrade_to_0dot3(db)
+                self._upgrade_to_0dot4(db)
+            elif self.schema_version == '0.3':
+                self._upgrade_to_0dot4(db)
 #           elif self.schema_version == 'XXXX':
 #                cursor = db.cursor()
 #                cursor.execute("UPDATE various stuff ...")
@@ -148,6 +157,16 @@ class Setup(Component):
 
         cursor.execute("UPDATE system SET value='0.3' WHERE name='%s'" % (self.db_key,))
         self.log.info('Upgraded ASA tables from versions 0.1/0.2 to 0.3')
+
+    # 0.3 -> 0.4
+    def _upgrade_to_0dot4(self, db):
+        cursor = db.cursor()
+        for table in schema: # TODO: fix. reference to global var
+            if table.name == "asa_analytics":
+                self._create_table(table, cursor)
+                break
+        cursor.execute("UPDATE system SET value='0.4' WHERE name='%s'" % (self.db_key,))
+        self.log.info('Upgraded ASA tables from version 0.3 to 0.4')
 
     def _create_table(self, table, cursor):
         connector, _ = DatabaseManager(self.env)._get_connector()
