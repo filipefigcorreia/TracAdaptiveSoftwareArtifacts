@@ -35,8 +35,15 @@ Tracker.prototype.parse_url = function(pathname, query){
     return [resource_type, resource_id, operation];
 };
 
-Tracker.prototype.track_it_start = function(pathname, query){
-    var parts = this.parse_url(pathname, query);
+Tracker.prototype.track_it_start = function(url){
+    var url_obj = null;
+    if (typeof url == "string"){
+        url_obj = document.createElement('a');
+        url_obj.href = url;
+    } else {
+        url_obj = url;
+    }
+    var parts = this.parse_url(url_obj.pathname, url_obj.search);
     if (parts != null){
         //console.log(["start", parts]);
         var me = this;
@@ -60,7 +67,7 @@ $(document).ready(function(){
     page_tracker = new Tracker();
 
     $(window).focus(function() {
-        page_tracker.track_it_start(location.pathname, location.search);
+        page_tracker.track_it_start(location);
     });
 
     $(window).blur(function() {
@@ -71,7 +78,7 @@ $(document).ready(function(){
         page_tracker.track_it_end();
     };
 
-    page_tracker.track_it_start(location.pathname, location.search);
+    page_tracker.track_it_start(location);
 
 /*
     // set name of hidden property and visibility change event

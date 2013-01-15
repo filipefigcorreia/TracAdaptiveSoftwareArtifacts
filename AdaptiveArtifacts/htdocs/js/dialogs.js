@@ -65,12 +65,11 @@ function createASAFormDialogFromUrl(title, url, buttons, functions){
 
                                 page_tracker.track_it_end();
                                 var dialog_tracker = new Tracker();
-                                var url_obj = parse_url(url);
-                                dialog_tracker.track_it_start(url_obj.pathname, url_obj.search);
+                                dialog_tracker.track_it_start(url);
                                 dialogdiv.bind( "dialogbeforeclose", function(event, ui) {
                                     //TODO: instead of using "dialogbeforeclose", use "dialogclose" on createDialogFromUrl()
                                     dialog_tracker.track_it_end();
-                                    page_tracker.track_it_start(location.pathname, location.search);
+                                    page_tracker.track_it_start(location);
                                     return true; //don't prevent closing
                                 });
                             },

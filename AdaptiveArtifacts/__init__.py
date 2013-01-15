@@ -112,8 +112,8 @@ class Core(Component):
 
         add_javascript(req, "adaptiveartifacts/js/requests.js")
         add_javascript(req, 'adaptiveartifacts/js/tracking.js')
-        add_javascript(req, 'adaptiveartifacts/js/util.js')
         add_javascript(req, "adaptiveartifacts/js/dialogs.js")
+        add_javascript(req, 'adaptiveartifacts/js/util.js')
         add_javascript(req, 'adaptiveartifacts/js/uuid.js')
         add_javascript(req, 'adaptiveartifacts/js/forms.js')
         if req.environ.get('PATH_INFO', '')[0:5] == '/wiki':
