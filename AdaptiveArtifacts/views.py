@@ -556,6 +556,21 @@ def get_delete_artifact(request, dbp, obj, resource):
     url = request.req.href.adaptiveartifacts()
     request.req.redirect(url)
 
+def post_new_tracking(request, dbp, obj, resource):
+    data = {}
+    if obj == "start":
+        resource = json.loads(request.req.args['resource'])
+        resource_type = resource['resource_type'] if 'resource_type' in resource else ""
+        resource_id = resource['resource_id'] if 'resource_id' in resource else ""
+        operation = resource['operation'] if 'operation' in resource else ""
+        session_id = dbp.track_it_acc_start(resource_type, resource_id, operation, request.req.authname, str(datetime.now()))
+        data = {"id": session_id}
+    elif obj == "end":
+        id = request.req.args['id']
+        dbp.track_it_acc_end(id, str(datetime.now()))
+    _return_as_json(request, data)
+    return
+
 def _group_spec_attributes(req):
     # group posted attributes into a list of tuples (attr_name, attr_type, attr_multiplicity)
     # {'attr_name_1':'Age', 'attr_type_1':'str', 'attr_multiplicity_1':None} -> [('Age', 'str', None)]

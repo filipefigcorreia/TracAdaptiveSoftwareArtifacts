@@ -63,3 +63,33 @@ Requests.getArtifactHtml = function(artifact_id, callback){
       error: undefined
     });
 };
+
+Requests.track_it_start = function(resource_type, resource_id, operation, callback){
+    $.ajax({
+        url: baseurl+"/tracking/start",
+        type: 'POST',
+        dataType: 'json',
+        traditional: true,
+        success: function (data) {
+            callback(data);
+        },
+        data: {'__FORM_TOKEN':form_token, 'resource': JSON.stringify(
+            {
+                'resource_type': resource_type,
+                'resource_id': resource_id,
+                'operation': operation
+            }
+        )}
+    });
+};
+
+Requests.track_it_end = function(id){
+    $.ajax({
+        url: baseurl+"/tracking/end",
+        type: 'POST',
+        dataType: 'json',
+        traditional: true,
+        async: false,
+        data: {'__FORM_TOKEN':form_token, 'id': id}
+    });
+};

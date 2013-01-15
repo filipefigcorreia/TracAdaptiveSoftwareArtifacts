@@ -1,4 +1,5 @@
 $(document).ready(function(){
+    /*
     $('.opendialog.newartifact').click( function() {
         createASAFormDialogFromUrl('Artifact', this.href,
                                     { "Create": function() { submitASAFormDialog($(this)) } }
@@ -11,6 +12,7 @@ $(document).ready(function(){
                                   ).dialog('open');
         return false;
     });
+    */
 });
 
 
@@ -60,6 +62,17 @@ function createASAFormDialogFromUrl(title, url, buttons, functions){
 
                                 attachFormEventHandlers($(this));
                                 functions && $.isFunction(functions.open) && (functions.open).call(this);
+
+                                page_tracker.track_it_end();
+                                var dialog_tracker = new Tracker();
+                                var url_obj = parse_url(url);
+                                dialog_tracker.track_it_start(url_obj.pathname, url_obj.search);
+                                dialogdiv.bind( "dialogbeforeclose", function(event, ui) {
+                                    //TODO: instead of using "dialogbeforeclose", use "dialogclose" on createDialogFromUrl()
+                                    dialog_tracker.track_it_end();
+                                    page_tracker.track_it_start(location.pathname, location.search);
+                                    return true; //don't prevent closing
+                                });
                             },
                             error: function (data, textStatus, jqXHR){
                                 functions && $.isFunction(functions.error) && (functions.error).call(this);

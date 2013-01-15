@@ -11,7 +11,7 @@ class Request(object):
         self.req = req
 
         self.resource_type = req.args.get('asa_resource_type', None)
-        if not self.resource_type in ['spec', 'artifact', 'search', 'pages', None]:
+        if not self.resource_type in ['spec', 'artifact', 'search', 'pages', 'tracking', None]:
             raise ValueError("Unknown type of resource '%s'" % (self.resource_type,))
 
         self.resource_id = req.args.get('asa_resource', None)
@@ -42,6 +42,9 @@ class Request(object):
         elif self.resource_type == 'pages':
             self.obj = None
             self.action = 'list'
+        elif self.resource_type == 'tracking':
+            self.obj = self.resource_id # start || end
+            self.action = 'new'
         elif self.resource_type in ['spec', 'artifact']:
             if self.resource_id is None:
                 if self.resource_type == 'spec':

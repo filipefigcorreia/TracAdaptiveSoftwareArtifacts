@@ -522,3 +522,25 @@ class DBPool(object):
                 """INSERT INTO asa_analytics VALUES('%s','%s','%s','%s','%s')""" %
                 (resource_type, resource_id, operation, username, time)
             )
+
+    def track_it_acc_start(self, resource_type, resource_id, operation, username, time_started):
+        session_id = [None] # a bit hackish. session_id must be a reference to be available inside the function below
+        @with_transaction(self.env)
+        def do_track_it_acc_start(db):
+            cursor = db.cursor()
+            cursor.execute("""
+                INSERT INTO asa_accurate_analytics(resource_type, resource_id, operation, username, time_started)
+                VALUES('%s','%s','%s','%s','%s')""" %
+                (resource_type, resource_id, operation, username, time_started)
+            )
+            session_id[0] = cursor.lastrowid
+        return session_id[0]
+
+    def track_it_acc_end(self, id, time_ended):
+        @with_transaction(self.env)
+        def do_track_it_acc_end(db):
+            cursor = db.cursor()
+            cursor.execute("""
+                UPDATE asa_accurate_analytics SET time_ended='%s' WHERE id=%s""" %
+                (time_ended, id)
+            )

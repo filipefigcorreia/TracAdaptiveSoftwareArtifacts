@@ -79,7 +79,17 @@ schema = [
         Column('operation'),
         Column('username'),
         Column('time'),
-    ],]
+    ],
+    Table('asa_accurate_analytics', key=['id'])[
+        Column('id', type='int64', auto_increment=True),
+        Column('resource_type'),
+        Column('resource_id'),
+        Column('operation'),
+        Column('username'),
+        Column('time_started'),
+        Column('time_ended'),
+    ],
+    ]
 
 class Setup(Component):
     """Installs, upgrades and uninstalls database support for the plugin."""
@@ -162,9 +172,8 @@ class Setup(Component):
     def _upgrade_to_0dot4(self, db):
         cursor = db.cursor()
         for table in schema: # TODO: fix. reference to global var
-            if table.name == "asa_analytics":
+            if table.name in ("asa_analytics", "asa_accurate_analytics"):
                 self._create_table(table, cursor)
-                break
         cursor.execute("UPDATE system SET value='0.4' WHERE name='%s'" % (self.db_key,))
         self.log.info('Upgraded ASA tables from version 0.3 to 0.4')
 
