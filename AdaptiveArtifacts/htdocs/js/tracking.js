@@ -79,43 +79,5 @@ $(document).ready(function(){
     };
 
     page_tracker.track_it_start(location);
-
-/*
-    // set name of hidden property and visibility change event
-    var hidden, visibilityChange;
-    if (typeof document.hidden !== "undefined") {
-    	hidden = "hidden";
-    	visibilityChange = "visibilitychange";
-    } else if (typeof document.mozHidden !== "undefined") {
-    	hidden = "mozHidden";
-    	visibilityChange = "mozvisibilitychange";
-    } else if (typeof document.msHidden !== "undefined") {
-    	hidden = "msHidden";
-    	visibilityChange = "msvisibilitychange";
-    } else if (typeof document.webkitHidden !== "undefined") {
-    	hidden = "webkitHidden";
-    	visibilityChange = "webkitvisibilitychange";
-    }
-
-    var tracker = new Tracker();
-
-    function handleVisibilityChange() {
-    	if (document[hidden]) {
-            tracker.track_it_end();
-    	} else {
-            tracker.track_it_start(location.pathname, location.search);
-    	}
-    }
-
-    // warn if the browser doesn't support addEventListener or the Page Visibility API
-    if (typeof document.addEventListener === "undefined" ||
-    	typeof hidden === "undefined") {
-    	alert("You need a browser that supports the Page Visibility API.");
-    } else {
-        // handle page visibility change
-        // see https://developer.mozilla.org/en/API/PageVisibility/Page_Visibility_API
-        document.addEventListener(visibilityChange, handleVisibilityChange, false);
-    }
-    */
 });
 

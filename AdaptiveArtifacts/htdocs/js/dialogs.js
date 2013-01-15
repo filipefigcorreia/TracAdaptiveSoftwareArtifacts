@@ -1,21 +1,3 @@
-$(document).ready(function(){
-    /*
-    $('.opendialog.newartifact').click( function() {
-        createASAFormDialogFromUrl('Artifact', this.href,
-                                    { "Create": function() { submitASAFormDialog($(this)) } }
-                                  ).dialog('open');
-        return false;
-    });
-    $('.opendialog.viewartifact').click( function() {
-        createASAFormDialogFromUrl('Artifact', this.href,
-                                    { "Close": function() { $(this).dialog("close"); } }
-                                  ).dialog('open');
-        return false;
-    });
-    */
-});
-
-
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Submits a jquery-ui dialog. The dialog is closed if
 submission goes flawlessly, and shows an error message
