@@ -186,7 +186,7 @@ def get_view_artifact(request, dbp, obj, resource):
         for related_artifact_id,related_artifact_text in get_artifact_id_names_from_text(str(value)):
             if dbp.pool.get_item(related_artifact_id) is None:
                 dbp.load_artifact(related_artifact_id)
-            referred_artifacts.append((dbp.pool.get_item(related_artifact_id), related_artifact_text))
+            referred_artifacts.append((dbp.pool.get_item(related_artifact_id),  "%s (%s)" % (related_artifact_text, attribute_name)))
 
     # Getting artifacts whose attribute values refer this artifact
     referring_artifacts = []
