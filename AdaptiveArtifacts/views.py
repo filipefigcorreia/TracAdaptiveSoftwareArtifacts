@@ -219,8 +219,9 @@ def get_view_artifact(request, dbp, obj, resource):
             self.classes.append({'header': header, 'body': body, 'associations': associations})
 
         def serialize(self):
+            from urllib2 import quote
             def _add_to_diagram(fragment):
-                if len(self.base_ul) + len(self._diagram) + len(fragment)  > 1000:
+                if len(quote(self.base_ul + self._diagram + fragment, "[],;:")) > 1000:
                     return False
                 self._diagram += fragment
                 return True
