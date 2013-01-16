@@ -254,7 +254,7 @@ def get_view_artifact(request, dbp, obj, resource):
         body = []
         if include_values:
             for attribute_name, value in rel_artifact.get_values():
-                if len(value) < 10 and not (True in [c in str(value) for c in '[],;|']):
+                if len(value) < 24 and not (True in [c in str(value) for c in '[],;:->=|{}']):
                     cleanedup_value = value
                 else:
                     cleanedup_value = "..."
