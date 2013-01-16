@@ -249,7 +249,7 @@ def get_view_artifact(request, dbp, obj, resource):
 
     def artifact_to_yuml_class(rel_artifact, include_values=True):
         def is_valid_value(value):
-            is_it = len(value) < 24 and not (True in [c in str(value) for c in '[],;->|{}'])
+            is_it = len(value) < 36 and not (True in [c in str(value) for c in '[],;->|{}'])
             return is_it
         def sanitize(value):
             return value if is_valid_value(value) else "..."
