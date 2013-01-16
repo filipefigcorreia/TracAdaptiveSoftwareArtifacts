@@ -208,8 +208,45 @@ def get_view_artifact(request, dbp, obj, resource):
         )
 
     # Build yuml url
-    yuml_classes = []
-    def get_yuml_class(rel_artifact, include_values=True):
+    class YUMLDiagram(object):
+        def __init__(self):
+            self.classes = []
+            self.base_ul = "http://yuml.me/diagram/plain/class/"
+            self._diagram = ""
+            self.is_incomplete = False
+
+        def add_class(self, header, body, associations):
+            self.classes.append({'header': header, 'body': body, 'associations': associations})
+
+        def serialize(self):
+            def _add_to_diagram(fragment):
+                if len(self.base_ul) + len(self._diagram) + len(fragment)  > 1000:
+                    return False
+                self._diagram += fragment
+                return True
+
+            for yuml_class in self.classes:
+                yuml_fragment = "[" + yuml_class['header']
+                if yuml_class['body']:
+                    yuml_fragment += "|" + ";".join(yuml_class['body'])
+                yuml_fragment += "],"
+                if not _add_to_diagram(yuml_fragment):
+                    self.is_incomplete = True
+                    return
+
+                if yuml_class['associations']:
+                    for association_target,association_label, in yuml_class['associations']:
+                        yuml_fragment = "[%s]-%s>[%s]," % (yuml_class['header'], association_label, association_target)
+                        if not _add_to_diagram(yuml_fragment):
+                            self.is_incomplete = True
+                            return
+
+        def get_url(self):
+            return self.base_ul + self._diagram
+
+    yuml = YUMLDiagram()
+
+    def artifact_to_yuml_class(rel_artifact, include_values=True):
         rel_artifact_title = str(rel_artifact)
         rel_spec_name = (" : " + rel_artifact.__class__.get_name()) if not rel_artifact.__class__ is Instance else ""
         header = rel_artifact_title + rel_spec_name
@@ -223,26 +260,17 @@ def get_view_artifact(request, dbp, obj, resource):
                 body.append("%s = %s" % (attribute_name, cleanedup_value))
         return {'header': header, 'body': body, 'associations': []}
 
-    yuml_class = get_yuml_class(obj)
-    yuml_class['associations'] = [(get_yuml_class(rel_artifact, False)['header'], rel_artifact_text) for rel_artifact, rel_artifact_text in referred_artifacts]
+    yuml_class = artifact_to_yuml_class(obj)
     yuml_class['body'].append('{bg:orange}') # color the main artifact differently
-    yuml_classes.append(yuml_class)
+    yuml_class['associations'] = [(artifact_to_yuml_class(rel_artifact, False)['header'], rel_artifact_text) for rel_artifact, rel_artifact_text in referred_artifacts]
+    yuml.add_class(**yuml_class)
 
     for rel_artifact in referring_artifacts:
-        rel_yuml_class = get_yuml_class(rel_artifact['artifact'])
-        rel_yuml_class['associations'] = [(get_yuml_class(obj, False)['header'], "")]
-        yuml_classes.append(rel_yuml_class)
+        rel_yuml_class = artifact_to_yuml_class(rel_artifact['artifact'])
+        rel_yuml_class['associations'] = [(artifact_to_yuml_class(obj, False)['header'], "")]
+        yuml.add_class(**rel_yuml_class)
 
-    yuml_diagram = ""
-    for yuml_class in yuml_classes:
-        yuml_diagram += "[" + yuml_class['header']
-        if yuml_class['body']:
-            yuml_diagram += "|" + ";".join(yuml_class['body'])
-        yuml_diagram += "],"
-
-        if yuml_class['associations']:
-            for association_target,association_label, in yuml_class['associations']:
-                yuml_diagram += "[%s]-%s>[%s]," % (yuml_class['header'], association_label, association_target)
+    yuml.serialize()
 
     # track access
     dbp.track_it("artifact", obj.get_id(), "view", request.req.authname, str(datetime.now()))
@@ -255,7 +283,8 @@ def get_view_artifact(request, dbp, obj, resource):
         'artifacts_values': values,
         'related_pages': related_pages,
         'related_artifacts': referring_artifacts,
-        'yuml_url': "http://yuml.me/diagram/plain/class/" + yuml_diagram,
+        'yuml_url': yuml.get_url(),
+        'yuml_incomplete': yuml.is_incomplete,
     }
     return 'view_artifact_%s.html' % (request.get_format(),), data, None
 
