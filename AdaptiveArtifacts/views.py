@@ -178,18 +178,27 @@ def get_view_artifact(request, dbp, obj, resource):
              'author': page.author,
              'excerpt': shorten_result(page.text)})
 
+    # Getting artifacts that this artifact refers to
+    referred_artifacts = []
+    from AdaptiveArtifacts import get_artifact_id_names_from_text
+    for attribute_name, value in obj.get_values():
+        for related_artifact_id,related_artifact_text in get_artifact_id_names_from_text(str(value)):
+            if dbp.pool.get_item(related_artifact_id) is None:
+                dbp.load_artifact(related_artifact_id)
+            referred_artifacts.append((dbp.pool.get_item(related_artifact_id), related_artifact_text))
 
-    # Getting artifacts whose attribute values refer the artifact
-    related_artifacts = []
+    # Getting artifacts whose attribute values refer this artifact
+    referring_artifacts = []
     for related_artifact_id, related_artifact_version_id, ref_count in dbp.get_related_artifact_ref_counts(obj):
-        dbp.load_artifact(related_artifact_id)
+        if dbp.pool.get_item(related_artifact_id) is None:
+            dbp.load_artifact(related_artifact_id)
         artifact = dbp.pool.get_item(related_artifact_id)
 
         url = request.req.href.adaptiveartifacts('artifact/%d' % (artifact.get_id(),), action='view')
         rel_spec_name = artifact.__class__.get_name() if not artifact.__class__ is Instance else None
         rel_spec_url = request.req.href.adaptiveartifacts('spec', artifact.__class__.get_id(), action='view'),
         id_version, time, author, ipnr, comment, readonly = dbp.get_latest_version_details(artifact.get_id())
-        related_artifacts.append(
+        referring_artifacts.append(
             {'href': url,
              'spec_name': rel_spec_name,
              'spec_url': rel_spec_url,
@@ -197,6 +206,43 @@ def get_view_artifact(request, dbp, obj, resource):
              'date': user_time(request.req, format_datetime, time),
              'artifact': artifact}
         )
+
+    # Build yuml url
+    yuml_classes = []
+    def get_yuml_class(rel_artifact, include_values=True):
+        rel_artifact_title = str(rel_artifact)
+        rel_spec_name = (" : " + rel_artifact.__class__.get_name()) if not rel_artifact.__class__ is Instance else ""
+        header = rel_artifact_title + rel_spec_name
+        body = []
+        if include_values:
+            for attribute_name, value in rel_artifact.get_values():
+                if len(value) < 10 and not (True in [c in str(value) for c in '[],;|']):
+                    cleanedup_value = value
+                else:
+                    cleanedup_value = "..."
+                body.append("%s = %s" % (attribute_name, cleanedup_value))
+        return {'header': header, 'body': body, 'associations': []}
+
+    yuml_class = get_yuml_class(obj)
+    yuml_class['associations'] = [(get_yuml_class(rel_artifact, False)['header'], rel_artifact_text) for rel_artifact, rel_artifact_text in referred_artifacts]
+    yuml_class['body'].append('{bg:orange}') # color the main artifact differently
+    yuml_classes.append(yuml_class)
+
+    for rel_artifact in referring_artifacts:
+        rel_yuml_class = get_yuml_class(rel_artifact['artifact'])
+        rel_yuml_class['associations'] = [(get_yuml_class(obj, False)['header'], "")]
+        yuml_classes.append(rel_yuml_class)
+
+    yuml_diagram = ""
+    for yuml_class in yuml_classes:
+        yuml_diagram += "[" + yuml_class['header']
+        if yuml_class['body']:
+            yuml_diagram += "|" + ";".join(yuml_class['body'])
+        yuml_diagram += "],"
+
+        if yuml_class['associations']:
+            for association_target,association_label, in yuml_class['associations']:
+                yuml_diagram += "[%s]-%s>[%s]," % (yuml_class['header'], association_label, association_target)
 
     # track access
     dbp.track_it("artifact", obj.get_id(), "view", request.req.authname, str(datetime.now()))
@@ -208,7 +254,8 @@ def get_view_artifact(request, dbp, obj, resource):
         'artifact': obj,
         'artifacts_values': values,
         'related_pages': related_pages,
-        'related_artifacts': related_artifacts,
+        'related_artifacts': referring_artifacts,
+        'yuml_url': "http://yuml.me/diagram/plain/class/" + yuml_diagram,
     }
     return 'view_artifact_%s.html' % (request.get_format(),), data, None
 

@@ -19,7 +19,10 @@ from AdaptiveArtifacts.model.pool import Entity, Instance
 from AdaptiveArtifacts.requests.request import Request
 
 def get_artifact_ids_from_text(wiki_text):
-    return re.findall('\[asa:(\d+)\ [^\[]+\]', wiki_text)
+    return [id for id,val in get_artifact_id_names_from_text(wiki_text)]
+
+def get_artifact_id_names_from_text(wiki_text):
+    return re.findall('\[asa:(\d+)\ ([^\[]+)\]', wiki_text)
 
 class Core(Component):
     """Core module of the plugin. Provides the Adaptive-Artifacts themselves."""
