@@ -248,18 +248,20 @@ def get_view_artifact(request, dbp, obj, resource):
     yuml = YUMLDiagram()
 
     def artifact_to_yuml_class(rel_artifact, include_values=True):
+        def is_valid_value(value):
+            is_it = len(value) < 24 and not (True in [c in str(value) for c in '[],;->|{}'])
+            return is_it
+        def sanitize(value):
+            return value if is_valid_value(value) else "..."
+
         rel_artifact_title = str(rel_artifact)
         rel_spec_name = (" : " + rel_artifact.__class__.get_name()) if not rel_artifact.__class__ is Instance else ""
         header = rel_artifact_title + rel_spec_name
         body = []
         if include_values:
             for attribute_name, value in rel_artifact.get_values():
-                if len(value) < 24 and not (True in [c in str(value) for c in '[],;:->=|{}']):
-                    cleanedup_value = value
-                else:
-                    cleanedup_value = "..."
-                body.append("%s = %s" % (attribute_name, cleanedup_value))
-        return {'header': header, 'body': body, 'associations': []}
+                body.append("%s = %s" % (sanitize(attribute_name), sanitize(value)))
+        return {'header': sanitize(header), 'body': body, 'associations': []}
 
     yuml_class = artifact_to_yuml_class(obj)
     yuml_class['body'].append('{bg:orange}') # color the main artifact differently
