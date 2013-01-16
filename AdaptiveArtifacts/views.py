@@ -6,6 +6,7 @@
 import uuid
 import json
 from datetime import datetime
+from urllib2 import quote
 from trac.mimeview.api import Context
 from trac.web.chrome import add_notice, add_warning
 from trac.util import get_reporter_id
@@ -219,9 +220,8 @@ def get_view_artifact(request, dbp, obj, resource):
             self.classes.append({'header': header, 'body': body, 'associations': associations})
 
         def serialize(self):
-            from urllib2 import quote
             def _add_to_diagram(fragment):
-                if len(quote(self.base_ul + self._diagram + fragment, "[],;:")) > 1000:
+                if len(self.base_ul + quote(self._diagram + fragment, "[],;:->=")) > 1000:
                     return False
                 self._diagram += fragment
                 return True
@@ -243,7 +243,7 @@ def get_view_artifact(request, dbp, obj, resource):
                             return
 
         def get_url(self):
-            return self.base_ul + self._diagram
+            return self.base_ul + quote(self._diagram, "[],;:->=")
 
     yuml = YUMLDiagram()
 
