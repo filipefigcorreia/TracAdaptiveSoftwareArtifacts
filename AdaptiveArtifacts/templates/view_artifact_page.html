@@ -44,7 +44,7 @@
                 </py:if>
             </div>
 
-            <div style="display: inline-block; width:36%; vertical-align: top; max-width: 100%">
+            <div style="display: inline-block; width:36%; vertical-align: top;">
                 <a name="artifacts"/>
                 <h2 title="Other Adaptive Artifacts that refer to this one">Adaptive Artifacts that link here</h2>
                 <py:if test="len(related_artifacts)==0">
@@ -72,7 +72,7 @@
             </div>
             <div>
                 <h2>Diagram of related Adaptive Artifacts</h2>
-                <img src="${yuml_url}" style="display: block; margin-left: auto; margin-right: auto;"/>
+                <img src="${yuml_url}" style="display: block; margin-left: auto; margin-right: auto; max-width: 100%"/>
                 <py:if test="yuml_incomplete">
                     <p><strong>Warning:</strong> The diagram shown above is incomplete, as it exceeded its maximum possible size.</p>
                 </py:if>
