@@ -36,8 +36,9 @@ class Core(Component):
         return 'adaptiveartifacts'
 
     def get_navigation_items(self, req):
-        yield 'mainnav', self.base_url, Markup('<a href="%s">Adaptive Artifacts</a>' % (
-                self.env.href.adaptiveartifacts() ) )
+        if 'WIKI_VIEW' in req.perm('wiki'): # TODO: there should be specific permissions for ASA
+            yield 'mainnav', self.base_url, Markup('<a href="%s">Adaptive Artifacts</a>' % (
+                    self.env.href.adaptiveartifacts() ) )
 
     # IRequestHandler methods
     def match_request(self, req):
