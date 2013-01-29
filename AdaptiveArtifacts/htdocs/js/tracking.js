@@ -14,7 +14,7 @@ Tracker.prototype.parse_url = function(pathname, query){
             operation = "view"
         } else {
             var split = rel_path.split("/");
-            resource_type = split[1];
+            resource_type = "asa_" + split[1];
             resource_id = split[2];
             if (query.indexOf("action=edit")!=-1){
                 operation = "edit";
