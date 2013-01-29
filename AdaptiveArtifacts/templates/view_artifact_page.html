@@ -26,7 +26,7 @@
 
             <div style="display: inline-block; width:62%; vertical-align: top;">
                 <a name="pages" />
-                <h2 title="Wiki Pages that refer to this Adaptive Artifact">Wiki Pages that link here</h2>
+                <h2 title="Wiki Pages about this Adaptive Artifact">Wiki Pages about <em>${str(artifact)}</em></h2>
                 <py:if test="len(related_pages)==0">
                     <p style="font-style: italic">This adaptive artifact is not referred from a wiki page.</p>
                 </py:if>
@@ -72,10 +72,7 @@
             </div>
             <div>
                 <h2>Diagram of related Adaptive Artifacts</h2>
-                <img src="${yuml_url}" style="display: block; margin-left: auto; margin-right: auto; max-width: 100%"/>
-                <py:if test="yuml_incomplete">
-                    <p><strong>Warning:</strong> The diagram shown above is incomplete, as it exceeded its maximum possible size.</p>
-                </py:if>
+                <img src="${yuml_url}" class="yuml"/>
             </div>
             <br/><br/><br/>
         </div>
