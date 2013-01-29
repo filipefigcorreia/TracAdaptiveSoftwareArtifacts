@@ -28,6 +28,10 @@ Tracker.prototype.parse_url = function(pathname, query){
         resource_type = "wiki";
         resource_id = pathname.split("/wiki")[1];
         operation = query.indexOf("action=edit")!=-1 ? "edit" : "view";
+    } else if (pathname.indexOf("/search") != -1){ // we're using trac's search feature
+        resource_type = "search";
+        resource_id = pathname.split("/search")[1];
+        operation = "";
     } else { // another trac area
         // do nothing
         return null;
