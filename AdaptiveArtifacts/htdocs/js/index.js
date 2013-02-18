@@ -3,7 +3,7 @@ $(document).ready(function(){
     var get_last_column_cells = function(){
         var column_count = table.find("tr th").length;
         var overflows_count = table.find("tr th.overflowed").length;
-        return table.find("tr > *:not(.artifact-pages, .artifact-options, .overflowed):nth-child(n+" + (column_count-2-overflows_count) + ")");
+        return table.find("tr > *:not(.artifact-pages, .artifact-options, .overflowed):nth-child(n+" + (column_count-1-overflows_count) + ")");
     };
 
     var counter = 0 ;

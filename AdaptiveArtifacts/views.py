@@ -41,6 +41,7 @@ def get_index(request, dbp, obj, resource):
         artifacts_attrs = []
         artifacts_values = []
         artifacts_pages_count = {}
+        artifacts_rel_artifact_count = {}
     else:
         if not selected_search is None and selected_search == 'no_spec':
             artifacts = dbp.pool.get_instances_of(selected_spec.get_name(), direct_instances_only=True)
@@ -86,10 +87,12 @@ def get_index(request, dbp, obj, resource):
         # Reorder the lines of the matrix so that artifacts with the first columns filled in appear first
         artifacts_values = sorted(artifacts_values, key=lambda x: tuple([unicode.lower(v["full"]) if v["full"] else 'zzzzzzzzzz' for v in x[1]]))
 
-        # get a count of the number of pages that are referenced by each artifact
+        # get a count of the number of pages and number of artifacts that are referenced by each artifact
         artifacts_pages_count = {}
+        artifacts_rel_artifact_count = {}
         for artifact in artifacts:
             artifacts_pages_count[artifact] = len(list(dbp.get_wiki_page_ref_counts(artifact)))
+            artifacts_rel_artifact_count[artifact] = len(list(dbp.get_related_artifact_ref_counts(artifact)))
 
     # track access
     dbp.track_it("index", "", "view", request.req.authname, str(datetime.now()))
@@ -104,6 +107,7 @@ def get_index(request, dbp, obj, resource):
         'arti_columns': artifacts_attrs,
         'artifacts_values': artifacts_values,
         'artifacts_pages_count': artifacts_pages_count,
+        'artifacts_rel_artifact_count': artifacts_rel_artifact_count,
     }
     return 'index_page.html', data, None
 
