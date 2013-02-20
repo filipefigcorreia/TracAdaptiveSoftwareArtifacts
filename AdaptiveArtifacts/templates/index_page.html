@@ -31,22 +31,22 @@
          <div class="buttons" style="float:right;">
              <form method="get" action="${href.adaptiveartifacts('artifact')}">
                  <input type="hidden" name="action" value="new" />
-                 <input type="submit" value="New Adaptive Artifact" />
+                 <input type="submit" value="New Custom Artifact" />
              </form>
              <form method="get" action="${href.adaptiveartifacts('spec')}">
                  <input type="hidden" name="action" value="new" />
                  <input type="submit" value="New Type" />
              </form>
          </div>
-        <h1>Adaptive Artifacts</h1>
+         <br/><br/>
 
         <div id="entry-points" class="tree">
-            <h2>By Type</h2>
+            <h1>Custom Artifacts Types</h1>
             <div id="specs">
             ${spec_markup(specs)}
             </div>
 
-            <h2>By Other Features</h2>
+            <h2>More Custom Artifacts Lists</h2>
             <div id="others">
                 <ul>
                     <li>
@@ -63,8 +63,9 @@
         <py:choose test="">
           <py:when test="not selected_spec and not selected_search">
               <div id="artifacts" class="message">
-              Please select one of the options on the left, or use the <br/>
-              buttons on the right to create new Adaptive Artifacts or Types.
+                Please use one of the options on the left to see the chosen list of Custom Artifacts.
+                  <br/>
+                You can also create a <form method="get" action="${href.adaptiveartifacts('artifact')}" style="display:inline"><input type="hidden" name="action" value="new" /><input type="submit" value="New Custom Artifact" /></form> or a <form method="get" action="${href.adaptiveartifacts('spec')}" style="display:inline"><input type="hidden" name="action" value="new" /><input type="submit" value="New Type of Custom Artifact" /></form>
               </div>
           </py:when>
           <py:otherwise>
@@ -75,13 +76,13 @@
                     <div class="spec-details">
                     ${len(spec_columns)} Attributes;
                     <!-- X Subspecs; -->
-                    ${len(artifacts_values)} Adaptive Artifacts.
+                    ${len(artifacts_values)} Custom Artifacts.
                     </div>
                 </py:if>
                 <py:if test="selected_search and selected_search=='no_spec'">
                     <h2>All without Type</h2>
                     <div class="spec-details">
-                    ${len(artifacts_values)} Adaptive Artifacts.
+                    ${len(artifacts_values)} Custom Artifacts.
                     </div>
                 </py:if>
 
@@ -92,7 +93,7 @@
                     <span class="next"><a href="/my-trac-environment/search?asa=on&amp;changeset=on&amp;milestone=on&amp;ticket=on&amp;wiki=on&amp;q=trac&amp;page=2&amp;noquickjump=1" title="Next Page">→</a></span>
                 </div>
                 -->
-                <h3>Adaptive Artifacts</h3>
+                <h3>Custom Artifacts</h3>
 
                 <table class="listing">
                     <thead>
@@ -104,7 +105,7 @@
                     </thead>
                     <py:if test="len(artifacts_values)==0">
                         <tr>
-                            <td colspan="${len(spec_columns)+len(arti_columns)+2}" class="message">No Adaptive Artifacts found</td>
+                            <td colspan="${len(spec_columns)+len(arti_columns)+2}" class="message">No Custom Artifacts found</td>
                         </tr>
                     </py:if>
                     <py:if test="len(artifacts_values)>0">

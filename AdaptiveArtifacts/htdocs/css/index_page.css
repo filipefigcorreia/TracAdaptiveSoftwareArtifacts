@@ -107,3 +107,20 @@ ul#tabs {
 div#entry-points li a.selected {
     background-color: #add8e6;
 }
+
+div#entry-points ul {
+    list-style-type: none;
+    padding-left: 0.5em;
+    margin-top: 0;
+    font-size: 12pt;
+}
+
+div#entry-points ul li {
+    margin-top: 0.1em;
+    margin-bottom: 0.1em;
+}
+
+div#entry-points ul ul {
+    list-style-image: url(../media/inherits_bullet.png?a);
+    list-style-position: inside;
+}

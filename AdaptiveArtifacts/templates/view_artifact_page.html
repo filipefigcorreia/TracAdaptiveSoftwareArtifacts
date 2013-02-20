@@ -6,7 +6,7 @@
     <xi:include href="view_artifact_common.html" />
 
     <head>
-        <title>Adaptive Artifact #${artifact.get_id()} <py:if test="spec_name">(${spec_name})</py:if></title>
+        <title>Custom Artifact #${artifact.get_id()} <py:if test="spec_name">(${spec_name})</py:if></title>
     </head>
     <body>
         <div id="content" class="asa search">
@@ -26,9 +26,9 @@
 
             <div style="display: inline-block; width:62%; vertical-align: top;">
                 <a name="pages" />
-                <h2 title="Wiki Pages about this Adaptive Artifact">Wiki Pages about <em>${str(artifact)}</em></h2>
+                <h2 title="Wiki Pages about this Custom Artifact">Wiki Pages about <em>${str(artifact)}</em></h2>
                 <py:if test="len(related_pages)==0">
-                    <p style="font-style: italic">This adaptive artifact is not referred from a wiki page.</p>
+                    <p style="font-style: italic">This custom artifact is not referred from a wiki page.</p>
                 </py:if>
                 <py:if test="len(related_pages)>0">
                     <dl class="related">
@@ -46,15 +46,15 @@
 
             <div style="display: inline-block; width:36%; vertical-align: top;">
                 <a name="artifacts"/>
-                <h2 title="Other Adaptive Artifacts that refer to this one">Adaptive Artifacts that link here</h2>
+                <h2 title="Other Custom Artifacts that refer to this one">Custom Artifacts that link here</h2>
                 <py:if test="len(related_artifacts)==0">
-                    <p style="font-style: italic">This adaptive artifact is not referred from other adaptive artifacts.</p>
+                    <p style="font-style: italic">This custom artifact is not referred from other custom artifacts.</p>
                 </py:if>
                 <py:if test="len(related_artifacts)>0">
                     <dl class="related">
                         <py:for each="rel_artifact in related_artifacts">
                             <dt><a href="${rel_artifact.href}" class="asa-link">${str(rel_artifact.artifact)}</a></dt>
-                            <dd>Adaptive Artifact of
+                            <dd>Custom Artifact of
                                     <py:if test="rel_artifact.spec_name">
                                         the type <em><a href="${rel_artifact.spec_url}" class="asa-link">${rel_artifact.spec_name}</a></em>.
                                     </py:if>
@@ -71,7 +71,7 @@
                 </py:if>
             </div>
             <div>
-                <h2>Diagram of related Adaptive Artifacts</h2>
+                <h2>Diagram of related Custom Artifacts</h2>
                 <img src="${yuml_url}" class="yuml"/>
             </div>
             <br/><br/><br/>

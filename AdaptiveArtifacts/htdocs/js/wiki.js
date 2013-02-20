@@ -4,11 +4,11 @@ function view_artifact_ajax_call(asa_token_content, editor){
     var ind_end = sub.indexOf(" ");
     var id = sub.substr(0, ind_end);
 
-    createASAFormDialogFromUrl('View Adaptive Artifact', baseurl+"/artifact/"+id+"?action=view",
+    createASAFormDialogFromUrl('View Custom Artifact', baseurl+"/artifact/"+id+"?action=view",
         {
             "Edit": function() {
                 $(this).dialog("close");
-                createASAFormDialogFromUrl('Edit Adaptive Artifact', baseurl+"/artifact/"+id+"?action=edit",
+                createASAFormDialogFromUrl('Edit Custom Artifact', baseurl+"/artifact/"+id+"?action=edit",
                     {
                         "Save   ": function() {
                             addAttributeOrderFields($("#artifact-form"));
@@ -29,7 +29,7 @@ function view_artifact_ajax_call(asa_token_content, editor){
             "Close": function() { $(this).dialog("close"); } },
             {
                 error: function(){
-                    alert("Sorry, the adaptive artifact with id #"+id+" \ncould not be found.");
+                    alert("Sorry, the custom artifact with id #"+id+" \ncould not be found.");
             }
         }
     ).dialog('open');
@@ -37,7 +37,7 @@ function view_artifact_ajax_call(asa_token_content, editor){
 }
 
 function link_to_existing_artifact_ajax_call(click_callback, value){
-    createASAFormDialogFromUrl('Select Adaptive Artifact',  baseurl+"/search/by_filter?",
+    createASAFormDialogFromUrl('Select Custom Artifact',  baseurl+"/search/by_filter?",
         [
             {
                 id:'button-choose',
@@ -106,7 +106,7 @@ function link_to_existing_artifact_ajax_call(click_callback, value){
                         Requests.searchArtifacts(spec, attribute, function(data){
                             clearRows();
                             if(data.length==0){
-                                addMessageRow('No Adaptive Artifacts found');
+                                addMessageRow('No Custom Artifacts found');
                             }
                             for(var i=0;i<data.length;i++)
                                 addResultRow(data[i].id, data[i].spec, data[i].title);
@@ -249,8 +249,8 @@ var setupToolbar = function(editor){
 
     toolbar.after('<div class="wikitoolbar" id="asa_toolbar"></div>');
     var asa_toolbar = $('#asa_toolbar');
-    asa_toolbar.append('<a href="#" id="asa_create_button" title="Create and link to adaptive artifact" tabindex="400"></a>');
-    asa_toolbar.append('<a href="#" id="asa_link_button" title="Link to existing adaptive artifact" tabindex="400"></a>');
+    asa_toolbar.append('<a href="#" id="asa_create_button" title="Create and link to custom artifact" tabindex="400"></a>');
+    asa_toolbar.append('<a href="#" id="asa_link_button" title="Link to existing custom artifact" tabindex="400"></a>');
 
     var updateToolbarButtonState = function(){
         if(!editor.getSelection().isEmpty()){
@@ -270,7 +270,7 @@ var setupToolbar = function(editor){
     $("#asa_create_button").click(function() {
         editor.focus();
         if(!editor.getSelection().isEmpty()){
-            createASAFormDialogFromUrl('Create Adaptive Artifact',  baseurl+"/artifact?action=new",
+            createASAFormDialogFromUrl('Create Custom Artifact',  baseurl+"/artifact?action=new",
                 { "Create": function() {
                     addAttributeOrderFields($("#artifact-form"));
                     submitASAFormDialog(
@@ -452,14 +452,14 @@ var setupBalloons = function(editor){
                                 var content = $('<a href="#"></a>');
                                 if (token.type == 'asa_artifact'){
                                     content.attr("id", "asa_view_button_tooltip");
-                                    content.attr("title", "View Adaptive Artifact");
+                                    content.attr("title", "View Custom Artifact");
                                     content.click(function(){
                                         balloon && editordiv.hideBalloon();
                                         view_artifact_ajax_call(token.value, editor);
                                     });
                                 }else if (token.type == 'keyword'){
                                     content.attr("id", "asa_link_button_tooltip");
-                                    content.attr("title", "Link to existing Adaptive Artifact");
+                                    content.attr("title", "Link to existing Custom Artifact");
                                     content.click(function(){
                                         balloon && editordiv.hideBalloon();
                                         link_to_existing_artifact_ajax_call(function() {
@@ -507,7 +507,7 @@ var setupListing = function(editor){
     $('fieldset#listing').css('width', '39%');
     $('fieldset#listing').css('min-height', height_box);
     $('fieldset#listing').css('height', 'auto');
-    $('fieldset#listing').html('<legend>Pages that refer the same Adaptive Artifacts</legend>' +
+    $('fieldset#listing').html('<legend>Pages that refer the same Custom Artifacts</legend>' +
         '<div id="equivalent_pages_list" class="search"><dl class="related"></dl></div>' );
 
     addRelatedPages(editor);

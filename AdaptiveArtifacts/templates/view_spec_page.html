@@ -3,14 +3,14 @@
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
   <xi:include href="layout.html" />
-  <head><title>Adaptive Artifact Type - ${spec.get_name()}</title></head>
+  <head><title>Custom Artifact Type - ${spec.get_name()}</title></head>
   <body>
     <div id="content" class="asa">
         <div id="asa">
             <h1>
                 <em>${spec.get_name()}</em>
                 <div style="font-weight: normal;font-size: 60%;">
-                    Type of Adaptive Artifact.
+                    Type of Custom Artifact.
                 </div>
             </h1>
             <span class="label">Inherits:</span> <py:if test="not spec.get_parent() is None"><a href="${href.adaptiveartifacts('spec/' + spec.get_parent().get_id(), action='view')}">${spec.get_parent().get_name()}</a></py:if>
@@ -38,7 +38,7 @@
             </form>
         </div>
         <br/>
-        <div style="float:right">See <a href="${artifacts_url}">Adaptive Artifacts of the <em>${spec.get_name()}</em> type</a> ››</div>
+        <div style="float:right">See <a href="${artifacts_url}">Custom Artifacts of the <em>${spec.get_name()}</em> type</a> ››</div>
         <br/><br/><br/>
     </div>
   </body>

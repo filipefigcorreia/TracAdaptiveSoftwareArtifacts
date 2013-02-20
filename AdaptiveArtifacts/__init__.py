@@ -37,7 +37,7 @@ class Core(Component):
 
     def get_navigation_items(self, req):
         if 'WIKI_VIEW' in req.perm('wiki'): # TODO: there should be specific permissions for ASA
-            yield 'mainnav', self.base_url, Markup('<a href="%s">Adaptive Artifacts</a>' % (
+            yield 'mainnav', self.base_url, Markup('<a href="%s">Custom Artifacts</a>' % (
                     self.env.href.adaptiveartifacts() ) )
 
     # IRequestHandler methods
@@ -160,11 +160,11 @@ class Core(Component):
             artifact = pool.get_item(id=target)
             spec_name = artifact.__class__.get_name() if not artifact.__class__ is Instance else None
             if spec_name is None:
-                title = "Adaptive Software Artifact '%s'" % (label,)
+                title = "Custom Software Artifact '%s'" % (label,)
             else:
-                title = "Adaptive Software Artifact '%s' of type '%s'" % (label,spec_name)
+                title = "Custom Software Artifact '%s' of type '%s'" % (label,spec_name)
         except ValueError:
-            title = "Adaptive Software Artifact with ID '%s' does not exist" % (target,)
+            title = "Custom Software Artifact with ID '%s' does not exist" % (target,)
         return tag.a(label, href=formatter.href.adaptiveartifacts('artifact', target), class_="asa-link", title=title)
 
     # IWikiChangeListener methods
@@ -199,7 +199,7 @@ class Search(Component):
     # ISearchSource methods
 
     def get_search_filters(self, req):
-        yield ('asa-filter', 'Adaptive Artifacts', True)
+        yield ('asa-filter', 'Custom Artifacts', True)
 
     def get_search_results(self, req, terms, filters):
         if 'asa' in filters:

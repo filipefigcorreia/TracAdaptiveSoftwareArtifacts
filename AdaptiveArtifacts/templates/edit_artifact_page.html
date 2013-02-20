@@ -11,10 +11,10 @@
             <div>
                 <h1>
                     <py:if test="not artifact">
-                        Create Adaptive Artifact
+                        Create Custom Artifact
                     </py:if>
                     <py:if test="artifact">
-                        Edit Adaptive Artifact #${artifact.get_id()}
+                        Edit Custom Artifact #${artifact.get_id()}
                     </py:if>
                 </h1>
                 <form method="post" action="${url_path}" id="artifact-form">

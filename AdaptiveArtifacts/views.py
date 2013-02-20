@@ -639,7 +639,7 @@ def get_delete_artifact(request, dbp, obj, resource):
 
     dbp.delete(obj, 'author', 'comment', 'address')
 
-    add_notice(request.req, 'The Adaptive Artifact was deleted.')
+    add_notice(request.req, 'The Custom Artifact was deleted.')
     url = request.req.href.adaptiveartifacts()
     request.req.redirect(url)
 
