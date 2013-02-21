@@ -562,12 +562,15 @@ def get_new_artifact(request, dbp, obj, resource):
 
     assert(obj is Instance or isinstance(obj, Entity)) # otherwise, we're trying to instantiate something that is not an artifact
 
+    attr_suggestions = [attr.name for attr in obj.get_attributes()]
+
     # track access
     dbp.track_it("artifact", obj.get_id(), "new", request.req.authname, str(datetime.now()))
 
     data = {
         'context': Context.from_request(request.req, resource),
         'spec_name': obj.get_name() if not obj == Instance else "",
+        'attr_suggestions' : attr_suggestions,
         'url_path': request.req.href.customartifacts('artifact'),
     }
     return 'edit_artifact_%s.html' % (request.get_format(),), data, None
