@@ -122,11 +122,12 @@ div#entry-points ul {
 }
 
 div#entry-points ul li {
-    margin-top: 0.1em;
-    margin-bottom: 0.1em;
+    margin-top: 0.2em;
+    margin-bottom: 0.2em;
 }
 
 div#entry-points ul ul {
     list-style-image: url(../media/inherits_bullet.png?a);
     list-style-position: inside;
+    margin-bottom: 0;
 }
