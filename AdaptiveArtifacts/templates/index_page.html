@@ -9,8 +9,8 @@
       <py:for each="spec,subspecs,arts_count in specs">
               <li id="spec-${spec.get_id()}">
                   <div py:choose="">
-                  <a py:when="selected_spec and spec.get_id() == selected_spec.get_id()" class="selected" href="${req.href.adaptiveartifacts(spec=spec.get_id(), page=page_nr)}">${spec_anchor_content_markup(spec, arts_count, len(subspecs))}</a>
-                  <a py:otherwise="" href="${req.href.adaptiveartifacts(spec=spec.get_id(), page=page_nr)}">${spec_anchor_content_markup(spec, arts_count, len(subspecs))}</a>
+                  <a py:when="selected_spec and spec.get_id() == selected_spec.get_id()" class="selected" href="${req.href.customartifacts(spec=spec.get_id(), page=page_nr)}">${spec_anchor_content_markup(spec, arts_count, len(subspecs))}</a>
+                  <a py:otherwise="" href="${req.href.customartifacts(spec=spec.get_id(), page=page_nr)}">${spec_anchor_content_markup(spec, arts_count, len(subspecs))}</a>
                   <py:if test="subspecs">
                       ${spec_markup(subspecs)}
                   </py:if>
@@ -29,11 +29,11 @@
      <div id="content" class="asa-index">
 
          <div class="buttons" style="float:right;">
-             <form method="get" action="${href.adaptiveartifacts('artifact')}">
+             <form method="get" action="${href.customartifacts('artifact')}">
                  <input type="hidden" name="action" value="new" />
                  <input type="submit" value="New Custom Artifact" />
              </form>
-             <form method="get" action="${href.adaptiveartifacts('spec')}">
+             <form method="get" action="${href.customartifacts('spec')}">
                  <input type="hidden" name="action" value="new" />
                  <input type="submit" value="New Type" />
              </form>
@@ -51,8 +51,8 @@
                 <ul>
                     <li>
                         <py:choose test="">
-                        <a py:when="selected_search == 'no_spec'" class="selected" href="${req.href.adaptiveartifacts(search='no_spec')}">Artifacts with no Type<small> (${len(artifacts_values)})</small></a>
-                        <a py:otherwise="" href="${req.href.adaptiveartifacts(search='no_spec')}">Artifacts with no Type</a>
+                        <a py:when="selected_search == 'no_spec'" class="selected" href="${req.href.customartifacts(search='no_spec')}">Artifacts with no Type<small> (${len(artifacts_values)})</small></a>
+                        <a py:otherwise="" href="${req.href.customartifacts(search='no_spec')}">Artifacts with no Type</a>
                         </py:choose>
                     </li>
                 </ul>
@@ -65,14 +65,14 @@
               <div id="artifacts" class="message">
                 Please use one of the options on the left to see the chosen list of Custom Artifacts.
                   <br/>
-                You can also create a <form method="get" action="${href.adaptiveartifacts('artifact')}" style="display:inline"><input type="hidden" name="action" value="new" /><input type="submit" value="New Custom Artifact" /></form> or a <form method="get" action="${href.adaptiveartifacts('spec')}" style="display:inline"><input type="hidden" name="action" value="new" /><input type="submit" value="New Type of Custom Artifact" /></form>
+                You can also create a <form method="get" action="${href.customartifacts('artifact')}" style="display:inline"><input type="hidden" name="action" value="new" /><input type="submit" value="New Custom Artifact" /></form> or a <form method="get" action="${href.customartifacts('spec')}" style="display:inline"><input type="hidden" name="action" value="new" /><input type="submit" value="New Type of Custom Artifact" /></form>
               </div>
           </py:when>
           <py:otherwise>
               <div id="artifacts">
 
                 <py:if test="selected_spec and not selected_search">
-                    <h2>${selected_spec.get_name()}</h2> <span class="spec-options"><a href="${req.href.adaptiveartifacts('spec', selected_spec.get_id(), action='view')}">[view]</a><a href="${req.href.adaptiveartifacts('spec', selected_spec.get_id(), action='edit')}">[edit]</a></span>
+                    <h2>${selected_spec.get_name()}</h2> <span class="spec-options"><a href="${req.href.customartifacts('spec', selected_spec.get_id(), action='view')}">[view]</a><a href="${req.href.customartifacts('spec', selected_spec.get_id(), action='edit')}">[edit]</a></span>
                     <div class="spec-details">
                     ${len(spec_columns)} Attributes;
                     <!-- X Subspecs; -->
@@ -126,7 +126,7 @@
                                         </py:if>
                                     </td>
                                 </py:for>
-                                <td class="artifact-options"><a href="${req.href.adaptiveartifacts('artifact', artifact.get_id(), action='view')}">[view]</a><br/></td>
+                                <td class="artifact-options"><a href="${req.href.customartifacts('artifact', artifact.get_id(), action='view')}">[view]</a><br/></td>
                             </tr>
                         </py:for>
                     </py:if>

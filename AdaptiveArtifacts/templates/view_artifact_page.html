@@ -13,11 +13,11 @@
             <div id="dialog-content"></div>
 
             <div class="buttons" style="position: absolute; top: 0; right: 0;">
-                <form method="get" action="${href.adaptiveartifacts('artifact/' + artifact.get_id())}">
+                <form method="get" action="${href.customartifacts('artifact/' + artifact.get_id())}">
                     <input type="hidden" name="action" value="edit" />
                     <input type="submit" value="Edit" />
                 </form>
-                <form method="get" action="${href.adaptiveartifacts('artifact/' + artifact.get_id())}">
+                <form method="get" action="${href.customartifacts('artifact/' + artifact.get_id())}">
                     <input type="hidden" name="action" value="delete" />
                     <input type="submit" value="Delete" />
                 </form>

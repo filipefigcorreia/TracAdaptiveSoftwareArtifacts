@@ -13,7 +13,7 @@
                     Type of Custom Artifact.
                 </div>
             </h1>
-            <span class="label">Inherits:</span> <py:if test="not spec.get_parent() is None"><a href="${href.adaptiveartifacts('spec/' + spec.get_parent().get_id(), action='view')}">${spec.get_parent().get_name()}</a></py:if>
+            <span class="label">Inherits:</span> <py:if test="not spec.get_parent() is None"><a href="${href.customartifacts('spec/' + spec.get_parent().get_id(), action='view')}">${spec.get_parent().get_name()}</a></py:if>
             <div class="label">Attributes</div>
             <table class="attributes" style="border-top: none;">
                 <thead>
@@ -28,11 +28,11 @@
             <br/>
         </div>
         <div class="buttons" style="position: absolute; top: 0; right: 0;">
-            <form method="get" action="${href.adaptiveartifacts('spec/' + spec.get_id())}">
+            <form method="get" action="${href.customartifacts('spec/' + spec.get_id())}">
                 <input type="hidden" name="action" value="edit" />
                 <input type="submit" value="Edit" />
             </form>
-            <form method="get" action="${href.adaptiveartifacts('spec/' + spec.get_id())}">
+            <form method="get" action="${href.customartifacts('spec/' + spec.get_id())}">
                 <input type="hidden" name="action" value="delete" />
                 <input type="submit" value="Delete" />
             </form>

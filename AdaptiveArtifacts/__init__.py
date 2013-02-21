@@ -29,16 +29,16 @@ class Core(Component):
     implements(INavigationContributor, IRequestHandler, ITemplateProvider, IResourceManager, IRequestFilter, IWikiSyntaxProvider, IWikiChangeListener)
 
     def __init__(self):
-        self.base_url = 'adaptiveartifacts'
+        self.base_url = 'customartifacts'
 
     # INavigationContributor methods
     def get_active_navigation_item(self, req):
-        return 'adaptiveartifacts'
+        return 'customartifacts'
 
     def get_navigation_items(self, req):
         if 'WIKI_VIEW' in req.perm('wiki'): # TODO: there should be specific permissions for ASA
             yield 'mainnav', self.base_url, Markup('<a href="%s">Custom Artifacts</a>' % (
-                    self.env.href.adaptiveartifacts() ) )
+                    self.env.href.customartifacts() ) )
 
     # IRequestHandler methods
     def match_request(self, req):
@@ -55,7 +55,7 @@ class Core(Component):
     def process_request(self, req):
         asa_resource_id = req.args.get('asa_resource', None)
         if not asa_resource_id is None and asa_resource_id.endswith('/'):
-            req.redirect(req.href.adaptiveartifacts(asa_resource_id.strip('/')))
+            req.redirect(req.href.customartifacts(asa_resource_id.strip('/')))
 
         dbp = DBPool(self.env, InstancePool())
         try:
@@ -65,9 +65,9 @@ class Core(Component):
                 raise
             return 'unable_to_retrieve_resource.html', {}, None
 
-        add_javascript(req, 'adaptiveartifacts/js/lib/jstree/jquery.jstree.js')
-        add_javascript(req, 'adaptiveartifacts/js/indextree.js')
-        add_javascript(req, 'adaptiveartifacts/js/index.js')
+        add_javascript(req, 'customartifacts/js/lib/jstree/jquery.jstree.js')
+        add_javascript(req, 'customartifacts/js/indextree.js')
+        add_javascript(req, 'customartifacts/js/index.js')
 
         if req.environ.get('PATH_INFO', '')[-5:] == 'pages' or req.args.get('asa_resource_type', None) == 'artifact':
             add_stylesheet(req, 'common/css/search.css')
@@ -93,7 +93,7 @@ class Core(Component):
 
     def get_htdocs_dirs(self):
         from pkg_resources import resource_filename
-        return [('adaptiveartifacts', resource_filename(__name__, 'htdocs'))]
+        return [('customartifacts', resource_filename(__name__, 'htdocs'))]
 
     # IResourceManager
     def get_resource_realms(self):
@@ -102,7 +102,7 @@ class Core(Component):
     def get_resource_url(self, resource, href, **kwargs):
         dbp = DBPool(self.env, InstancePool())
         item = dbp.load_item(resource.id)
-        return href.adaptiveartifacts('artifact/%d' % (resource.id,), action='view')
+        return href.customartifacts('artifact/%d' % (resource.id,), action='view')
 
     # IRequestFilter methods
     def pre_process_request(self, req, handler):
@@ -110,16 +110,16 @@ class Core(Component):
 
     def post_process_request(self, req, template, data, content_type):
         Chrome(self.env).add_jquery_ui(req)
-        add_javascript(req, "adaptiveartifacts/js/lib/ace/ace.js")
-        add_javascript(req, "adaptiveartifacts/js/lib/ace/theme-trac_wiki.js")
-        add_javascript(req, 'adaptiveartifacts/js/lib/jquery.balloon.js')
+        add_javascript(req, "customartifacts/js/lib/ace/ace.js")
+        add_javascript(req, "customartifacts/js/lib/ace/theme-trac_wiki.js")
+        add_javascript(req, 'customartifacts/js/lib/jquery.balloon.js')
 
-        add_javascript(req, "adaptiveartifacts/js/requests.js")
-        add_javascript(req, 'adaptiveartifacts/js/tracking.js')
-        add_javascript(req, "adaptiveartifacts/js/dialogs.js")
-        add_javascript(req, 'adaptiveartifacts/js/util.js')
-        add_javascript(req, 'adaptiveartifacts/js/uuid.js')
-        add_javascript(req, 'adaptiveartifacts/js/forms.js')
+        add_javascript(req, "customartifacts/js/requests.js")
+        add_javascript(req, 'customartifacts/js/tracking.js')
+        add_javascript(req, "customartifacts/js/dialogs.js")
+        add_javascript(req, 'customartifacts/js/util.js')
+        add_javascript(req, 'customartifacts/js/uuid.js')
+        add_javascript(req, 'customartifacts/js/forms.js')
         if req.environ.get('PATH_INFO', '')[0:5] == '/wiki':
             from datetime import datetime
             dbp = DBPool(self.env, InstancePool())
@@ -129,16 +129,16 @@ class Core(Component):
                 resource_id = parts[2]
 
             if 'action' in req.args and req.args['action'] == 'edit':
-                add_javascript(req, "adaptiveartifacts/js/wiki.js")
+                add_javascript(req, "customartifacts/js/wiki.js")
                 dbp.track_it("wiki", resource_id, "edit", req.authname, str(datetime.now()))
             else:
                 dbp.track_it("wiki", resource_id, "view", req.authname, str(datetime.now()))
 
-        add_script_data(req, {'baseurl': req.href.adaptiveartifacts()})
+        add_script_data(req, {'baseurl': req.href.customartifacts()})
         add_script_data(req, {'form_token': req.form_token})
-        add_stylesheet(req, 'adaptiveartifacts/css/asa.css', media='screen')
-        add_stylesheet(req, 'adaptiveartifacts/css/wiki.css')
-        add_stylesheet(req, 'adaptiveartifacts/css/index_page.css')
+        add_stylesheet(req, 'customartifacts/css/asa.css', media='screen')
+        add_stylesheet(req, 'customartifacts/css/wiki.css')
+        add_stylesheet(req, 'customartifacts/css/index_page.css')
 
         return (template, data, content_type)
 
@@ -165,7 +165,7 @@ class Core(Component):
                 title = "Custom Software Artifact '%s' of type '%s'" % (label,spec_name)
         except ValueError:
             title = "Custom Software Artifact with ID '%s' does not exist" % (target,)
-        return tag.a(label, href=formatter.href.adaptiveartifacts('artifact', target), class_="asa-link", title=title)
+        return tag.a(label, href=formatter.href.customartifacts('artifact', target), class_="asa-link", title=title)
 
     # IWikiChangeListener methods
     def wiki_page_added(self, page):

@@ -12,12 +12,16 @@ from trac.web.chrome import add_notice, add_warning
 from trac.util import get_reporter_id
 from trac.resource import Resource, get_resource_url
 from trac.util.datefmt import format_datetime, user_time
+#from trac.perm import PermissionError
 from AdaptiveArtifacts.model.core import Entity, Instance, Attribute
 from AdaptiveArtifacts.persistence.search import Searcher
 
 #All the methods here should return a `(template_name, data, content_type)` tuple
 
 def get_index(request, dbp, obj, resource):
+    #if not 'WIKI_VIEW' in request.req.perm('wiki'): # TODO: there should be specific permissions for ASA
+    #    raise PermissionError('WIKI_VIEW', resource)
+
     # Load *everything* TODO: make more efficient
     dbp.load_specs()
     dbp.load_artifacts_of(Instance.get_name())
@@ -148,14 +152,14 @@ def get_view_spec(request, dbp, obj, resource):
     data = {
         'context': Context.from_request(request.req, resource),
         'spec': obj,
-        'artifacts_url': request.req.href.adaptiveartifacts(spec=obj.get_name()),
+        'artifacts_url': request.req.href.customartifacts(spec=obj.get_name()),
     }
     return 'view_spec_page.html', data, None
 
 def get_view_artifact(request, dbp, obj, resource):
     if not obj.__class__ == Instance:
         spec_name = obj.__class__.get_name()
-        spec_url = request.req.href.adaptiveartifacts('spec/' + obj.__class__.get_id(), action='view')
+        spec_url = request.req.href.customartifacts('spec/' + obj.__class__.get_id(), action='view')
     else:
         spec_name = spec_url = ""
 
@@ -199,9 +203,9 @@ def get_view_artifact(request, dbp, obj, resource):
             dbp.load_artifact(related_artifact_id)
         artifact = dbp.pool.get_item(related_artifact_id)
 
-        url = request.req.href.adaptiveartifacts('artifact/%d' % (artifact.get_id(),), action='view')
+        url = request.req.href.customartifacts('artifact/%d' % (artifact.get_id(),), action='view')
         rel_spec_name = artifact.__class__.get_name() if not artifact.__class__ is Instance else None
-        rel_spec_url = request.req.href.adaptiveartifacts('spec', artifact.__class__.get_id(), action='view'),
+        rel_spec_url = request.req.href.customartifacts('spec', artifact.__class__.get_id(), action='view'),
         id_version, time, author, ipnr, comment, readonly = dbp.get_latest_version_details(artifact.get_id())
         referring_artifacts.append(
             {'href': url,
@@ -381,7 +385,7 @@ def post_list_search_relatedpages_json(request, dbp, obj, resource):
 
             artifacts_array.append(
                 {'id': full_artifact.get_id(),
-                 'href': request.req.href.adaptiveartifacts('artifact', full_artifact.get_id(), action='view'),
+                 'href': request.req.href.customartifacts('artifact', full_artifact.get_id(), action='view'),
                  'title': str(full_artifact),
                  'results' : results})
         except ValueError:
@@ -443,7 +447,7 @@ def get_new_spec(request, dbp, obj, resource):
         'context': Context.from_request(request.req, resource),
         'types' : ['Text', 'Number'], # , 'Adaptive Artifact'
         'multiplicities' : ['1', '0..*', '1..*'],
-        'url_path': request.req.href.adaptiveartifacts('spec', obj.get_name()),
+        'url_path': request.req.href.customartifacts('spec', obj.get_name()),
     }
     return 'edit_spec_page.html', data, None
 
@@ -470,7 +474,7 @@ def post_new_spec(request, dbp, obj, resource):
     dbp.pool.add(brand_new_inst)
     dbp.save(get_reporter_id(request.req), 'comment', request.req.remote_addr)
     add_notice(request.req, 'Your changes have been saved.')
-    url = request.req.href.adaptiveartifacts('spec', brand_new_inst.get_name(), action='view')
+    url = request.req.href.customartifacts('spec', brand_new_inst.get_name(), action='view')
     request.req.redirect(url)
 
 def get_edit_spec(request, dbp, obj, resource):
@@ -489,7 +493,7 @@ def get_edit_spec(request, dbp, obj, resource):
                         attr.get_multiplicity_readable()) for attr in obj.get_attributes()],
         'types' : ['Text', 'Number'], # , 'Adaptive Artifact'
         'multiplicities' : ['1', '0..*', '1..*'],
-        'url_path': request.req.href.adaptiveartifacts('spec', obj.get_name()),
+        'url_path': request.req.href.customartifacts('spec', obj.get_name()),
 
     }
     return 'edit_spec_page.html', data, None
@@ -512,7 +516,7 @@ def post_edit_spec(request, dbp, obj, resource):
 
     dbp.save(get_reporter_id(request.req), 'comment', request.req.remote_addr)
     add_notice(request.req, 'Your changes have been saved.')
-    url = request.req.href.adaptiveartifacts('spec', obj.get_name(), action='view')
+    url = request.req.href.customartifacts('spec', obj.get_name(), action='view')
     request.req.redirect(url)
 
 def get_new_artifact(request, dbp, obj, resource):
@@ -524,7 +528,7 @@ def get_new_artifact(request, dbp, obj, resource):
     data = {
         'context': Context.from_request(request.req, resource),
         'spec_name': obj.get_name() if not obj == Instance else "",
-        'url_path': request.req.href.adaptiveartifacts('artifact'),
+        'url_path': request.req.href.customartifacts('artifact'),
     }
     return 'edit_artifact_%s.html' % (request.get_format(),), data, None
 
@@ -550,11 +554,11 @@ def post_new_artifact(request, dbp, obj, resource):
 
     if request.get_format() == 'page':
         add_notice(request.req, 'Your changes have been saved.')
-        url = request.req.href.adaptiveartifacts('artifact/%d' % (brand_new_inst.get_id(),), action='view', format=request.get_format())
+        url = request.req.href.customartifacts('artifact/%d' % (brand_new_inst.get_id(),), action='view', format=request.get_format())
         request.req.redirect(url)
     else:
         import json
-        url = request.req.href.adaptiveartifacts('artifact/%d' % (brand_new_inst.get_id(),), action='view')
+        url = request.req.href.customartifacts('artifact/%d' % (brand_new_inst.get_id(),), action='view')
         msg = json.dumps([{'result': 'success', 'resource_id': brand_new_inst.get_id(), 'resource_url': url}])
         request.req.send_response(200)
         request.req.send_header('Content-Type', 'application/json')
@@ -586,7 +590,7 @@ def get_edit_artifact(request, dbp, obj, resource):
         'artifact_values': values,
         'attr_suggestions' : attr_suggestions,
         'default': obj.str_attr,
-        'url_path': request.req.href.adaptiveartifacts('artifact', obj.get_id()),
+        'url_path': request.req.href.customartifacts('artifact', obj.get_id()),
         }
     return 'edit_artifact_%s.html' % (request.get_format(),), data, None
 
@@ -611,7 +615,7 @@ def post_edit_artifact(request, dbp, obj, resource):
     obj.str_attr = str_attr if not str_attr is None else 'id'
 
     dbp.save(get_reporter_id(request.req), 'comment', request.req.remote_addr)
-    url = request.req.href.adaptiveartifacts('artifact/%s' % (obj.get_id(),), action='view')
+    url = request.req.href.customartifacts('artifact/%s' % (obj.get_id(),), action='view')
     if request.get_format() == 'page':
         add_notice(request.req, 'Your changes have been saved.')
 
@@ -631,7 +635,7 @@ def get_delete_spec(request, dbp, obj, resource):
     dbp.delete(obj, 'author', 'comment', 'address')
 
     add_notice(request.req, 'The Type was deleted.')
-    url = request.req.href.adaptiveartifacts()
+    url = request.req.href.customartifacts()
     request.req.redirect(url)
 
 def get_delete_artifact(request, dbp, obj, resource):
@@ -640,7 +644,7 @@ def get_delete_artifact(request, dbp, obj, resource):
     dbp.delete(obj, 'author', 'comment', 'address')
 
     add_notice(request.req, 'The Custom Artifact was deleted.')
-    url = request.req.href.adaptiveartifacts()
+    url = request.req.href.customartifacts()
     request.req.redirect(url)
 
 def post_new_tracking(request, dbp, obj, resource):
