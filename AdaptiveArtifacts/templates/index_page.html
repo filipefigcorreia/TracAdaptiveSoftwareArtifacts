@@ -27,24 +27,27 @@
   <head><title></title></head>
   <body>
      <div id="content" class="asa-index">
-        <!--
-         <div class="buttons" style="float:right;">
-             <form method="get" action="${href.customartifacts('artifact')}">
-                 <input type="hidden" name="action" value="new" />
-                 <input type="submit" value="New Custom Artifact" />
-             </form>
-             <form method="get" action="${href.customartifacts('spec')}">
-                 <input type="hidden" name="action" value="new" />
-                 <input type="submit" value="New Type" />
-             </form>
-         </div>
-         <br/><br/>
-         -->
+
+        <py:if test="selected_spec">
+            <div class="buttons" style="float:right; margin-right:2em;">
+                <br/>
+                <form method="get" action="${href.customartifacts('spec',selected_spec.get_name())}">
+                    <input type="hidden" name="action" value="new" />
+                    <input type="submit" value='New "${selected_spec.get_name()}" Artifact' />
+                </form>
+            </div>
+        </py:if>
 
         <div id="entry-points" class="tree">
             <h1>Custom Artifact Types</h1>
             <div id="specs">
             ${spec_markup(specs)}
+
+            <form method="get" action="${href.customartifacts('spec')}">
+                <input type="hidden" name="action" value="new" />
+                <input type="submit" value="New Type of Artifact" />
+            </form>
+
             </div>
 
             <h1>More Custom Artifacts</h1>
@@ -64,9 +67,9 @@
         <py:choose test="">
           <py:when test="not selected_spec and not selected_search">
               <div id="artifacts" class="message">
-                Please use one of the options on the left to see the chosen list of Custom Artifacts.
+                Please use one of the options on the left to see a list of Custom Artifacts.
                   <br/>
-                You can also create a <form method="get" action="${href.customartifacts('artifact')}" style="display:inline"><input type="hidden" name="action" value="new" /><input type="submit" value="New Custom Artifact" /></form> or a <form method="get" action="${href.customartifacts('spec')}" style="display:inline"><input type="hidden" name="action" value="new" /><input type="submit" value="New Type of Custom Artifact" /></form>
+                You can also create a <form method="get" action="${href.customartifacts('artifact')}" style="display:inline"><input type="hidden" name="action" value="new" /><input type="submit" value="New Custom Artifact" /></form> or a <form method="get" action="${href.customartifacts('spec')}" style="display:inline"><input type="hidden" name="action" value="new" /><input type="submit" value="New Type of Artifact" /></form>
               </div>
           </py:when>
           <py:otherwise>
@@ -94,7 +97,6 @@
                     <span class="next"><a href="/my-trac-environment/search?asa=on&amp;changeset=on&amp;milestone=on&amp;ticket=on&amp;wiki=on&amp;q=trac&amp;page=2&amp;noquickjump=1" title="Next Page">→</a></span>
                 </div>
                 -->
-                <h3>Custom Artifacts</h3>
 
                 <table class="listing">
                     <thead>

@@ -10,7 +10,7 @@
             <h1>
                 <em>${spec.get_name()}</em>
                 <div style="font-weight: normal;font-size: 60%;">
-                    Type of Custom Artifact.
+                    Type of Artifact.
                 </div>
             </h1>
             <span class="label">Inherits:</span> <py:if test="not spec.get_parent() is None"><a href="${href.customartifacts('spec/' + spec.get_parent().get_id(), action='view')}">${spec.get_parent().get_name()}</a></py:if>
