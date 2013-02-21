@@ -6,21 +6,26 @@
 import uuid
 import json
 from datetime import datetime
-from urllib2 import quote
+from urllib2 import quote, HTTPError
 from trac.mimeview.api import Context
 from trac.web.chrome import add_notice, add_warning
 from trac.util import get_reporter_id
 from trac.resource import Resource, get_resource_url
 from trac.util.datefmt import format_datetime, user_time
-#from trac.perm import PermissionError
+from trac.perm import PermissionError
 from AdaptiveArtifacts.model.core import Entity, Instance, Attribute
 from AdaptiveArtifacts.persistence.search import Searcher
+
+
+def require_permission(req, resource, env, operation="VIEW"):
+    if not 'WIKI_VIEW' in req.perm('wiki'): # TODO: there should be specific permissions for ASA
+        raise PermissionError('WIKI_{0}'.format(operation), resource, env)
+
 
 #All the methods here should return a `(template_name, data, content_type)` tuple
 
 def get_index(request, dbp, obj, resource):
-    #if not 'WIKI_VIEW' in request.req.perm('wiki'): # TODO: there should be specific permissions for ASA
-    #    raise PermissionError('WIKI_VIEW', resource)
+    require_permission(request.req, resource, dbp.env)
 
     # Load *everything* TODO: make more efficient
     dbp.load_specs()
@@ -116,6 +121,8 @@ def get_index(request, dbp, obj, resource):
     return 'index_page.html', data, None
 
 def get_list_pages(request, dbp, obj, resource):
+    require_permission(request.req, resource, dbp.env)
+
     artifact_id = request.req.args.get('artifact', None)
     if artifact_id is None:
         raise Exception("No artifact was specified.")
@@ -146,6 +153,8 @@ def get_list_pages(request, dbp, obj, resource):
 
 
 def get_view_spec(request, dbp, obj, resource):
+    require_permission(request.req, resource, dbp.env)
+
     # track access
     dbp.track_it("spec", obj.get_id(), "view", request.req.authname, str(datetime.now()))
 
@@ -157,6 +166,8 @@ def get_view_spec(request, dbp, obj, resource):
     return 'view_spec_page.html', data, None
 
 def get_view_artifact(request, dbp, obj, resource):
+    require_permission(request.req, resource, dbp.env)
+
     if not obj.__class__ == Instance:
         spec_name = obj.__class__.get_name()
         spec_url = request.req.href.customartifacts('spec/' + obj.__class__.get_id(), action='view')
@@ -248,7 +259,10 @@ def get_view_artifact(request, dbp, obj, resource):
             #return self.base_url + quote(self.get_dsl_text(), "[],;:->=")
             from urllib2 import Request, urlopen
             from urllib import urlencode
-            image_filename = urlopen(Request(yuml.base_url, data=urlencode({'dsl_text': yuml.get_dsl_text()}))).read()
+            try:
+                image_filename = urlopen(Request(yuml.base_url, data=urlencode({'dsl_text': yuml.get_dsl_text()}))).read()
+            except HTTPError:
+                return ""
             return self.base_url + image_filename
 
     yuml = YUMLDiagram()
@@ -304,6 +318,8 @@ def get_view_artifact(request, dbp, obj, resource):
     return 'view_artifact_%s.html' % (request.get_format(),), data, None
 
 def get_list_spec(request, dbp, obj, resource):
+    require_permission(request.req, resource, dbp.env)
+
     dbp.load_artifacts_of(obj.get_name())
     artifacts = dbp.pool.get_instances_of(obj.get_name())
 
@@ -317,6 +333,8 @@ def get_list_spec(request, dbp, obj, resource):
     return 'list_spec_artifacts_page.html', data, None
 
 def get_list_search_no_spec(request, dbp, obj, resource):
+    require_permission(request.req, resource, dbp.env)
+
     dbp.load_artifacts_of(Instance.get_name())
     artifacts_with_no_spec = dbp.pool.get_instances_of(Instance.get_name(), direct_instances_only=True)
 
@@ -330,6 +348,8 @@ def get_list_search_no_spec(request, dbp, obj, resource):
     return 'list_spec_artifacts_page.html', data, None
 
 def get_list_search_by_filter(request, dbp, obj, resource):
+    require_permission(request.req, resource, dbp.env)
+
     dbp.load_artifacts_of(Instance.get_name())
     artifacts_with_no_spec = dbp.pool.get_instances_of(Instance.get_name(), direct_instances_only=True)
 
@@ -343,6 +363,8 @@ def get_list_search_by_filter(request, dbp, obj, resource):
     return 'index_dialog.html', data, None
 
 def post_list_search_artifact_json(request, dbp, obj, resource):
+    require_permission(request.req, resource, dbp.env)
+
     unparsed_spec = request.req.args.get('spec', '')
     spec_name = json.loads(unparsed_spec) if unparsed_spec else ''
     attributes = json.loads(request.req.args.get('attributes', '[]'))
@@ -353,6 +375,8 @@ def post_list_search_artifact_json(request, dbp, obj, resource):
     return
 
 def post_list_search_relatedpages_json(request, dbp, obj, resource):
+    require_permission(request.req, resource, dbp.env)
+
     unparsed_spec = request.req.args.get('spec', '')
     spec_name = json.loads(unparsed_spec) if unparsed_spec else ''
     attributes = json.loads(request.req.args.get('attributes', '[]'))
@@ -394,6 +418,8 @@ def post_list_search_relatedpages_json(request, dbp, obj, resource):
     return
 
 def post_list_search_spec_json(request, dbp, obj, resource):
+    require_permission(request.req, resource, dbp.env)
+
     from AdaptiveArtifacts.persistence.search import Searcher
 
     term = request.req.args.get('q', '')
@@ -417,12 +443,16 @@ def _return_as_json(request, data):
     request.req.write(msg)
 
 def get_list_search(request, dbp, obj, resource):
+    require_permission(request.req, resource, dbp.env)
+
     if obj == 'no_spec':
         return get_list_search_no_spec(request, dbp, obj, resource)
     elif obj == 'by_filter':
         return get_list_search_by_filter(request, dbp, obj, resource)
 
 def post_list_search(request, dbp, obj, resource):
+    require_permission(request.req, resource, dbp.env)
+
     if obj == 'artifact':
         return post_list_search_artifact_json(request, dbp, obj, resource)
     elif obj == 'spec':
@@ -431,6 +461,8 @@ def post_list_search(request, dbp, obj, resource):
         return post_list_search_relatedpages_json(request, dbp, obj, resource)
 
 def get_new_spec(request, dbp, obj, resource):
+    require_permission(request.req, resource, dbp.env, operation="CREATE")
+
     from model import Entity
 
     if obj is Entity: # instantiating Entity (i.e., creating a spec)
@@ -452,6 +484,8 @@ def get_new_spec(request, dbp, obj, resource):
     return 'edit_spec_page.html', data, None
 
 def post_new_spec(request, dbp, obj, resource):
+    require_permission(request.req, resource, dbp.env, operation="CREATE")
+
     if obj is Entity: # instantiating Entity (i.e., creating a spec)
         pass
     elif obj is Instance or isinstance(obj, Entity): # instantiating an existing spec
@@ -478,6 +512,8 @@ def post_new_spec(request, dbp, obj, resource):
     request.req.redirect(url)
 
 def get_edit_spec(request, dbp, obj, resource):
+    require_permission(request.req, resource, dbp.env, operation="MODIFY")
+
     assert(obj is Instance or isinstance(obj, Entity))
 
     # track access
@@ -499,6 +535,8 @@ def get_edit_spec(request, dbp, obj, resource):
     return 'edit_spec_page.html', data, None
 
 def post_edit_spec(request, dbp, obj, resource):
+    require_permission(request.req, resource, dbp.env, operation="MODIFY")
+
     assert(obj is Instance or isinstance(obj, Entity))
 
     attributes = [Attribute(n,m,t) for n,t,m in _group_spec_attributes(request.req)]
@@ -520,6 +558,8 @@ def post_edit_spec(request, dbp, obj, resource):
     request.req.redirect(url)
 
 def get_new_artifact(request, dbp, obj, resource):
+    require_permission(request.req, resource, dbp.env, operation="CREATE")
+
     assert(obj is Instance or isinstance(obj, Entity)) # otherwise, we're trying to instantiate something that is not an artifact
 
     # track access
@@ -533,6 +573,8 @@ def get_new_artifact(request, dbp, obj, resource):
     return 'edit_artifact_%s.html' % (request.get_format(),), data, None
 
 def post_new_artifact(request, dbp, obj, resource):
+    require_permission(request.req, resource, dbp.env, operation="CREATE")
+
     assert(obj is Instance or isinstance(obj, Entity)) # otherwise, we're trying to instantiate something that is not an artifact
 
     spec_name = request.req.args['spec']
@@ -567,6 +609,8 @@ def post_new_artifact(request, dbp, obj, resource):
         request.req.write(msg)
 
 def get_edit_artifact(request, dbp, obj, resource):
+    require_permission(request.req, resource, dbp.env, operation="MODIFY")
+
     assert(isinstance(obj, Instance)) # otherwise, we're trying to edit something that is not an artifact
 
     aa_attributes = [name for name, val in obj.get_values()]
@@ -595,6 +639,8 @@ def get_edit_artifact(request, dbp, obj, resource):
     return 'edit_artifact_%s.html' % (request.get_format(),), data, None
 
 def post_edit_artifact(request, dbp, obj, resource):
+    require_permission(request.req, resource, dbp.env, operation="MODIFY")
+
     assert(isinstance(obj, Instance)) # otherwise, we're trying to edit something that is not an artifact
 
     spec_name = request.req.args['spec']
@@ -630,6 +676,8 @@ def post_edit_artifact(request, dbp, obj, resource):
         request.req.write(msg)
 
 def get_delete_spec(request, dbp, obj, resource):
+    require_permission(request.req, resource, dbp.env, operation="DELETE")
+
     assert(isinstance(obj, Entity)) # otherwise, we're trying to delete something that is not a spec
 
     dbp.delete(obj, 'author', 'comment', 'address')
@@ -639,6 +687,8 @@ def get_delete_spec(request, dbp, obj, resource):
     request.req.redirect(url)
 
 def get_delete_artifact(request, dbp, obj, resource):
+    require_permission(request.req, resource, dbp.env, operation="DELETE")
+
     assert(isinstance(obj, Instance)) # otherwise, we're trying to delete something that is not an artifact
 
     dbp.delete(obj, 'author', 'comment', 'address')
