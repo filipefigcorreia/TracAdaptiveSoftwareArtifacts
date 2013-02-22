@@ -2,6 +2,17 @@ $(document).ready(function(){
     attachFormEventHandlers($("body"));
 });
 
+function throttle(fn, delay) {
+  var timer = null;
+  return function () {
+    var context = this, args = arguments;
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      fn.apply(context, args);
+    }, delay);
+  };
+}
+
 // Adds hidden input fields indicating the attributes' order.
 // This method works both for a Type's attributes and for
 // an AA's values, as both rely on an input named attr-name-*
@@ -45,6 +56,19 @@ function attachFormEventHandlers(context){
                 callback(data);
             });
         }}
+    );
+    $("input#spec").bind("change keyup input",
+        throttle(function(){
+            Requests.searchSpecDetails(this.value, function(data){
+                            if (data.spec == null){
+                                //TODO: update icon
+                                updateAttributeSuggestions([])
+                            }else{
+                                //TODO: update icon
+                                updateAttributeSuggestions(data.attr_suggestions)
+                            }
+                        });
+            }, 500)
     );
 
     context.find("tr.attribute td.attrname input").blur(function() {
@@ -96,8 +120,8 @@ function addValueFromPhantom(context, phantom){
     var value = phantom.find("input[name^='attr-value-']").attr("value");
     phantom.hide();
     var inputs = addValue(context, name, value);
-    var name_input = inputs[0];
-    var value_input = inputs[1];
+    var name_input = inputs[1];
+    var value_input = inputs[2];
     if (phantom.hasClass("suggestion")){
          phantom.remove();
          value_input.focus();
@@ -109,8 +133,9 @@ function addValueFromPhantom(context, phantom){
     return false;
 }
 
-function addValue(context, name, val){
-    var newid = uuid.v4();
+function addValue(context, name, val, newid){
+    newid = typeof newid !== "undefined" ? newid : uuid.v4();
+
     var copy = context.find("tr.attribute.prototype").clone(true);
     copy.removeClass('prototype');
     var name_input = copy.find("input[name^='attr-name-']");
@@ -124,7 +149,29 @@ function addValue(context, name, val){
     if ($('form#artifact-form input[name=default]:checked').length==0)
         default_input.attr('checked', true);
     context.find("table.attributes tr:not(.phantom):last").after(copy);
-    return [name_input, value_input];
+    return [copy, name_input, value_input];
+}
+
+function addPhantomValue(context, name, val){
+    var tr = addValue(context, name, val, "X")[0];
+    tr.attr("class", tr.attr("class") + " phantom addvalue suggestion");
+    tr.find("td.attristitle, td.attrreorder, td.attrdelete").remove().after($("<td/>"));
+    tr.find("a.tomultiline").remove();
+    tr.find("input").focus(function() { //add event missing in the copied prototype
+        return addValueFromPhantom(context, $(this).parents("tr.phantom"));
+    });
+    return tr;
+}
+
+function updateAttributeSuggestions(attributes){
+    var suggestion_phantoms = $("tr.suggestion.phantom")
+    suggestion_phantoms.remove()
+
+    context = $("fieldset#properties");
+    for (var i=attributes.length; i>0; i--) {
+        if (context.find("input[name^='attr-name-'][value='" + attributes[i-1] + "']").length==0)
+            addPhantomValue(context, attributes[i-1], "")
+    }
 }
 
 function toMultiline(){

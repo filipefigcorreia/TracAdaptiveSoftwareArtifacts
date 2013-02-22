@@ -13,6 +13,19 @@ Requests.searchSpecNames = function(needles, callback) {
     });
 };
 
+Requests.searchSpecDetails = function(spec, callback) {
+    $.ajax({
+        url: baseurl+'/search/specdetails',
+        type: 'post',
+        dataType: 'json',
+        traditional: true,
+        success: function (data) {
+            callback(data);
+        },
+        data: {'__FORM_TOKEN':form_token, 'spec':spec}
+    });
+};
+
 /*
  * Searches artifacts by attribute value.
  * The "attributes" argument is an object, with each key being the attribute name and

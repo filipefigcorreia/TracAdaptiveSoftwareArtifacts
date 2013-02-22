@@ -427,6 +427,24 @@ def post_list_search_spec_json(request, dbp, obj, resource):
     _return_as_json(request, data)
     return
 
+def post_list_search_specdetails_json(request, dbp, obj, resource):
+    require_permission(request.req, resource, dbp.env)
+
+    spec_name = request.req.args.get('spec', '')
+
+    try:
+        dbp.load_spec(spec_name)
+        spec = dbp.pool.get_item(spec_name)
+    except:
+        spec = None
+
+    data = {}
+    data['spec'] = spec.get_name() if not spec is None else None
+    data['attr_suggestions'] = [attr.name for attr in sorted(spec.get_attributes(), key=lambda x: x.order)] if not spec is None else None
+
+    _return_as_json(request, data)
+    return
+
 def _return_as_json(request, data):
     import json
     try:
@@ -457,6 +475,8 @@ def post_list_search(request, dbp, obj, resource):
         return post_list_search_artifact_json(request, dbp, obj, resource)
     elif obj == 'spec':
         return post_list_search_spec_json(request, dbp, obj, resource)
+    elif obj == 'specdetails':
+        return post_list_search_specdetails_json(request, dbp, obj, resource)
     elif obj == 'relatedpages':
         return post_list_search_relatedpages_json(request, dbp, obj, resource)
 

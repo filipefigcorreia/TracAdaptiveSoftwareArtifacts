@@ -35,7 +35,7 @@ class Request(object):
             self.obj = None
             self.action = 'index'
         elif self.resource_type == 'search':
-            if not self.resource_id in ['no_spec', 'by_filter', 'artifact', 'spec', 'relatedpages']:
+            if not self.resource_id in ['no_spec', 'by_filter', 'artifact', 'spec', 'relatedpages', 'specdetails']:
                 raise Exception("Unknown search '%s'" % (self.resource_id,))
             self.obj = self.resource_id
             self.action = 'list'
