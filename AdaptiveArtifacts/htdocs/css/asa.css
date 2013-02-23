@@ -370,3 +370,20 @@ img.yuml {
     margin-right: auto;
     max-width: 100%;
 }
+
+div#is_valid_spec{
+    display: inline-block;
+    width: 18px;
+    height: 14px;
+    margin-left: 2px;
+    background: none;
+    vertical-align: middle;
+}
+
+div#is_valid_spec.valid {
+    background: transparent url(../media/yes.png) no-repeat;
+}
+
+div#is_valid_spec.invalid {
+    background: transparent url(../media/no.png) no-repeat;
+}

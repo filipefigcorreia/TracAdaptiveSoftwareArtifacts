@@ -59,16 +59,24 @@ function attachFormEventHandlers(context){
     );
     $("input#spec").bind("change keyup input",
         throttle(function(){
-            Requests.searchSpecDetails(this.value, function(data){
+            if (!this.value){
+                $("div#is_valid_spec").removeClass("invalid");
+                $("div#is_valid_spec").removeClass("valid");
+                updateAttributeSuggestions([]);
+            }else{
+                Requests.searchSpecDetails(this.value, function(data){
                             if (data.spec == null){
-                                //TODO: update icon
+                                $("div#is_valid_spec").addClass("invalid");
+                                $("div#is_valid_spec").removeClass("valid");
                                 updateAttributeSuggestions([])
                             }else{
-                                //TODO: update icon
+                                $("div#is_valid_spec").removeClass("invalid");
+                                $("div#is_valid_spec").addClass("valid");
                                 updateAttributeSuggestions(data.attr_suggestions)
                             }
                         });
-            }, 500)
+            }
+        }, 500)
     );
 
     context.find("tr.attribute td.attrname input").blur(function() {

@@ -39,7 +39,7 @@
     </py:def>
 
     <py:match path="div[@id='dialog-content']" once="true">
-        <label>Type:</label> <input type="text" id="spec" name="spec" value="${spec_name}" autocomplete="off"/> <br/>
+        <label>Type:</label> <input type="text" id="spec" name="spec" value="${spec_name}" autocomplete="off"/><py:if test="spec_name"><div id="is_valid_spec" class="valid"></div></py:if><py:if test="not spec_name"><div id="is_valid_spec"></div></py:if><br/>
         <label>Attributes:</label>
         <table class="attributes" style="width: 55em; position: relative; top:-10px;">
             <tr><th style="width: 13em; text-align: center;"></th><th></th><th style="width: 1em; text-align: center;">Title</th><th style="text-align: center;">Order</th><th></th></tr>
