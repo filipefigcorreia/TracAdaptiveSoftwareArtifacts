@@ -25,20 +25,11 @@ def get_artifact_id_names_from_text(wiki_text):
     return re.findall('\[asa:(\d+)\ ([^\[]+)\]', wiki_text)
 
 class Core(Component):
-    """Core module of the plugin. Provides the Adaptive-Artifacts themselves."""
-    implements(INavigationContributor, IRequestHandler, ITemplateProvider, IResourceManager, IRequestFilter, IWikiSyntaxProvider, IWikiChangeListener)
+    """Core module of the plugin. Provides the Adaptive-Artifacts themselves. Needed by any of the other components."""
+    implements(IRequestHandler, IResourceManager, IRequestFilter, ITemplateProvider)
 
     def __init__(self):
         self.base_url = 'customartifacts'
-
-    # INavigationContributor methods
-    def get_active_navigation_item(self, req):
-        return 'customartifacts'
-
-    def get_navigation_items(self, req):
-        if 'WIKI_VIEW' in req.perm('wiki'): # TODO: there should be specific permissions for ASA
-            yield 'mainnav', self.base_url, Markup('<a href="%s">Custom Artifacts</a>' % (
-                    self.env.href.customartifacts() ) )
 
     # IRequestHandler methods
     def match_request(self, req):
@@ -81,19 +72,9 @@ class Core(Component):
                 raise Exception("No data returned by view '%s'" % request.view.__name__)
             return result
 
-
     @staticmethod
     def _get_resource(instance):
         return Resource('asa', instance.get_id(), instance.version)
-
-    # ITemplateProvider methods
-    def get_templates_dirs(self):
-        from pkg_resources import resource_filename
-        return [resource_filename(__name__, 'templates')]
-
-    def get_htdocs_dirs(self):
-        from pkg_resources import resource_filename
-        return [('customartifacts', resource_filename(__name__, 'htdocs'))]
 
     # IResourceManager
     def get_resource_realms(self):
@@ -120,6 +101,7 @@ class Core(Component):
         add_javascript(req, 'customartifacts/js/util.js')
         add_javascript(req, 'customartifacts/js/uuid.js')
         add_javascript(req, 'customartifacts/js/forms.js')
+
         if req.environ.get('PATH_INFO', '')[0:5] == '/wiki':
             from datetime import datetime
             dbp = DBPool(self.env, InstancePool())
@@ -141,6 +123,33 @@ class Core(Component):
         add_stylesheet(req, 'customartifacts/css/index_page.css')
 
         return (template, data, content_type)
+
+    # ITemplateProvider methods
+    def get_templates_dirs(self):
+        from pkg_resources import resource_filename
+        return [resource_filename(__name__, 'templates')]
+
+    def get_htdocs_dirs(self):
+        from pkg_resources import resource_filename
+        return [('customartifacts', resource_filename(__name__, 'htdocs'))]
+
+
+
+class UI(Component):
+    """Provides the plugin's user-interface."""
+    implements(INavigationContributor, IWikiSyntaxProvider, IWikiChangeListener)
+
+    def __init__(self):
+        self.base_url = 'customartifacts'
+
+    # INavigationContributor methods
+    def get_active_navigation_item(self, req):
+        return 'customartifacts'
+
+    def get_navigation_items(self, req):
+        if 'WIKI_VIEW' in req.perm('wiki'): # TODO: there should be specific permissions for ASA
+            yield 'mainnav', self.base_url, Markup('<a href="%s">Custom Artifacts</a>' % (
+                    self.env.href.customartifacts() ) )
 
     # IWikiSyntaxProvider methods
     def get_link_resolvers(self):

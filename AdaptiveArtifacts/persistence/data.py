@@ -519,8 +519,8 @@ class DBPool(object):
         def do_track_it(db):
             cursor = db.cursor()
             cursor.execute(
-                """INSERT INTO asa_analytics VALUES('%s','%s','%s','%s','%s')""" %
-                (resource_type, resource_id, operation, username, time)
+                u"""INSERT INTO asa_analytics VALUES('%s','%s','%s','%s','%s')""" %
+                (resource_type, resource_id.decode("utf-8"), operation, username, time)
             )
 
     def track_it_acc_start(self, resource_type, resource_id, operation, username, time_started):
