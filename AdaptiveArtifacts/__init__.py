@@ -56,8 +56,8 @@ class Core(Component):
                 raise
             return 'unable_to_retrieve_resource.html', {}, None
 
-        add_javascript(req, 'customartifacts/js/lib/jstree/jquery.jstree.js')
-        add_javascript(req, 'customartifacts/js/indextree.js')
+        #add_javascript(req, 'customartifacts/js/lib/jstree/jquery.jstree.js')
+        #add_javascript(req, 'customartifacts/js/indextree.js')
         add_javascript(req, 'customartifacts/js/index.js')
 
         if req.environ.get('PATH_INFO', '')[-5:] == 'pages' or req.args.get('asa_resource_type', None) == 'artifact':
