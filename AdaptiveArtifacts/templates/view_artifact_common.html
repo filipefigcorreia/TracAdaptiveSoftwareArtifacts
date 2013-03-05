@@ -9,7 +9,7 @@
                 <h1>
                     <div style="font-style: italic;">
                         <py:if test="artifact.str_attr">
-                            ${str(artifact)}
+                            ${unicode(artifact)}
                         </py:if>
                         <py:if test="not artifact.str_attr">
                             #${artifact.get_id()}

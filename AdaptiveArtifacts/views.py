@@ -281,8 +281,8 @@ def get_view_artifact(request, dbp, obj, resource):
                 value = value.replace(i, j)
             return value if len(value) < 128 else "..."
 
-        rel_artifact_title = str(rel_artifact)
-        rel_spec_name = (" : " + rel_artifact.__class__.get_name()) if not rel_artifact.__class__ is Instance else ""
+        rel_artifact_title = unicode(rel_artifact)
+        rel_spec_name = (u" : " + rel_artifact.__class__.get_name()) if not rel_artifact.__class__ is Instance else u""
         header = rel_artifact_title + rel_spec_name
         body = []
         if include_values:

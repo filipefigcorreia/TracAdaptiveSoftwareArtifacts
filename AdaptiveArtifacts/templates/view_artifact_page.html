@@ -26,7 +26,7 @@
 
             <div style="display: inline-block; width:62%; vertical-align: top;">
                 <a name="pages" />
-                <h2 title="Wiki Pages about this Custom Artifact">Wiki Pages about <em>${str(artifact)}</em></h2>
+                <h2 title="Wiki Pages about this Custom Artifact">Wiki Pages about <em>${unicode(artifact)}</em></h2>
                 <py:if test="len(related_pages)==0">
                     <p style="font-style: italic">This custom artifact is not referred from a wiki page.</p>
                 </py:if>
@@ -53,7 +53,7 @@
                 <py:if test="len(related_artifacts)>0">
                     <dl class="related">
                         <py:for each="rel_artifact in related_artifacts">
-                            <dt><a href="${rel_artifact.href}" class="asa-link">${str(rel_artifact.artifact)}</a></dt>
+                            <dt><a href="${rel_artifact.href}" class="asa-link">${unicode(rel_artifact.artifact)}</a></dt>
                             <dd>Custom Artifact of
                                     <py:if test="rel_artifact.spec_name">
                                         the type <em><a href="${rel_artifact.spec_url}" class="asa-link">${rel_artifact.spec_name}</a></em>.
