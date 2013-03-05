@@ -370,7 +370,7 @@ def post_list_search_artifact_json(request, dbp, obj, resource):
     attributes = json.loads(request.req.args.get('attributes', '[]'))
 
     search_results = Searcher.search_artifacts(dbp, spec=spec_name, attributes=attributes)
-    data = [dict({'term' : term, 'id': artifact.get_id(), 'title': str(artifact), 'spec': artifact.__class__.get_name() if artifact.__class__ != Instance else '', 'url':get_resource_url(dbp.env, Resource('asa', artifact.get_id(), artifact.version), request.req.href)}) for artifact, term in search_results]
+    data = [dict({'term' : term, 'id': artifact.get_id(), 'title': unicode(artifact), 'spec': artifact.__class__.get_name() if artifact.__class__ != Instance else '', 'url':get_resource_url(dbp.env, Resource('asa', artifact.get_id(), artifact.version), request.req.href)}) for artifact, term in search_results]
     _return_as_json(request, data)
     return
 
@@ -410,7 +410,7 @@ def post_list_search_relatedpages_json(request, dbp, obj, resource):
             artifacts_array.append(
                 {'id': full_artifact.get_id(),
                  'href': request.req.href.customartifacts('artifact', full_artifact.get_id(), action='view'),
-                 'title': str(full_artifact),
+                 'title': unicode(full_artifact),
                  'results' : results})
         except ValueError:
             continue
