@@ -26,7 +26,7 @@ def get_artifact_id_names_from_text(wiki_text):
 
 class Core(Component):
     """Core module of the plugin. Provides the Adaptive-Artifacts themselves. Needed by any of the other components."""
-    implements(IRequestHandler, IResourceManager, IRequestFilter, ITemplateProvider)
+    implements(IRequestHandler, INavigationContributor, IResourceManager, IRequestFilter, ITemplateProvider)
 
     def __init__(self):
         self.base_url = 'customartifacts'
@@ -75,6 +75,13 @@ class Core(Component):
     @staticmethod
     def _get_resource(instance):
         return Resource('asa', instance.get_id(), instance.version)
+
+    # INavigationContributor methods
+    def get_active_navigation_item(self, req):
+        return 'customartifacts'
+
+    def get_navigation_items(self, req):
+        return []
 
     # IResourceManager
     def get_resource_realms(self):
