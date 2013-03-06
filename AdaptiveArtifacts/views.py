@@ -6,13 +6,16 @@
 import uuid
 import json
 from datetime import datetime
-from urllib2 import quote, HTTPError
+import re
+from urllib2 import HTTPError
 from trac.mimeview.api import Context
 from trac.web.chrome import add_notice, add_warning
 from trac.util import get_reporter_id
 from trac.resource import Resource, get_resource_url
 from trac.util.datefmt import format_datetime, user_time
 from trac.perm import PermissionError
+from trac.wiki.model import WikiPage
+from trac.search import shorten_result
 from AdaptiveArtifacts.model.core import Entity, Instance, Attribute
 from AdaptiveArtifacts.persistence.search import Searcher
 
@@ -130,9 +133,6 @@ def get_list_pages(request, dbp, obj, resource):
     artifact = dbp.pool.get_item(artifact_id)
 
     results = []
-    from trac.wiki.model import WikiPage
-    from trac.resource import get_resource_url
-    from trac.search import shorten_result
     for pagename, page_version_id, ref_count in dbp.get_wiki_page_ref_counts(artifact):
         page = WikiPage(dbp.env, pagename)
 
@@ -186,17 +186,29 @@ def get_view_artifact(request, dbp, obj, resource):
 
     # Getting wiki pages that refer the artifact
     related_pages = []
-    from trac.wiki.model import WikiPage
-    from trac.resource import get_resource_url
-    from trac.search import shorten_result
+    from trac.wiki.formatter import OutlineFormatter
+    from trac.web.chrome import web_context
+
+    class NullOut(object):
+        def write(self, *args): pass
+
     for pagename, page_version_id, ref_count in dbp.get_wiki_page_ref_counts(obj):
         page = WikiPage(dbp.env, pagename)
+
+        fmt = OutlineFormatter(dbp.env, web_context(request.req))
+        fmt.format(page.text, NullOut())
+        title = ''
+        text = page.text
+        if fmt.outline:
+            title = fmt.outline[0][2]
+            text = re.sub('[=]+[ ]+' + title + '[ ]+[=]+\s?','', text)
+
         related_pages.append(
             {'href': get_resource_url(dbp.env, page.resource, request.req.href),
-             'title': pagename,
+             'title': title if title else pagename,
              'date': user_time(request.req, format_datetime, page.time),
              'author': page.author,
-             'excerpt': shorten_result(page.text)})
+             'excerpt': shorten_result(text)})
 
     # Getting artifacts that this artifact refers to
     referred_artifacts = []
@@ -383,10 +395,6 @@ def post_list_search_relatedpages_json(request, dbp, obj, resource):
 
     if attributes is None:
         raise Exception("No artifacts specified.")
-
-    from trac.wiki.model import WikiPage
-    from trac.resource import get_resource_url
-    from trac.search import shorten_result
 
     artifacts_array = []
 
