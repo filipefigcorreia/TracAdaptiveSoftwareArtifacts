@@ -42,7 +42,8 @@ def get_index(request, dbp, obj, resource):
 
     specs = get_spec_data(Instance.get_name())
 
-    selected_spec = dbp.pool.get_item(request.req.args.get('spec', ''))
+    spec_name = request.req.args.get('spec', None)
+    selected_spec = dbp.pool.get_item(spec_name) if spec_name else None
     selected_search = request.req.args.get('search', None)
 
     if selected_spec is None and not selected_search is None and selected_search == 'no_spec':
