@@ -4,6 +4,7 @@
 # you should have received as part of this distribution.
 
 from trac.search import search_to_sql
+from trac.util.datefmt import from_utimestamp
 
 class Searcher(object):
     stopwords_en = set([u"a", u"about", u"above", u"after", u"again", u"against", u"all", u"am", u"an", u"and", u"any", u"are", u"aren't", u"as", u"at", u"be", u"because", u"been", u"before", u"being", u"below", u"between", u"both", u"but", u"by", u"can't", u"cannot", u"could", u"couldn't", u"did", u"didn't", u"do", u"does", u"doesn't", u"doing", u"don't", u"down", u"during", u"each", u"few", u"for", u"from", u"further", u"had", u"hadn't", u"has", u"hasn't", u"have", u"haven't", u"having", u"he", u"he'd", u"he'll", u"he's", u"her", u"here", u"here's", u"hers", u"herself", u"him", u"himself", u"his", u"how", u"how's", u"i", u"i'd", u"i'll", u"i'm", u"i've", u"if", u"in", u"into", u"is", u"isn't", u"it", u"it's", u"its", u"itself", u"let's", u"me", u"more", u"most", u"mustn't", u"my", u"myself", u"no", u"nor", u"not", u"of", u"off", u"on", u"once", u"only", u"or", u"other", u"ought", u"our", u"ours", u"ourselves", u"out", u"over", u"own", u"same", u"shan't", u"she", u"she'd", u"she'll", u"she's", u"should", u"shouldn't", u"so", u"some", u"such", u"than", u"that", u"that's", u"the", u"their", u"theirs", u"them", u"themselves", u"then", u"there", u"there's", u"these", u"they", u"they'd", u"they'll", u"they're", u"they've", u"this", u"those", u"through", u"to", u"too", u"under", u"until", u"up", u"very", u"was", u"wasn't", u"we", u"we'd", u"we'll", u"we're", u"we've", u"were", u"weren't", u"what", u"what's", u"when", u"when's", u"where", u"where's", u"which", u"while", u"who", u"who's", u"whom", u"why", u"why's", u"with", u"won't", u"would", u"wouldn't", u"you", u"you'd", u"you'll", u"you're", u"you've", u"your", u"yours", u"yourself", u"yourselves"])
@@ -38,14 +39,14 @@ class Searcher(object):
         with env.db_query as db:
             sql_query, args = search_to_sql(db, ['val.attr_value'], terms)
 
-            for id, attr_name, attr_value, vid, time, author in db("""
+            for a_id, attr_name, attr_value, vid, time, author in db("""
                     SELECT a.id, val.attr_name, val.attr_value, max(v.id), v.time, v.author
                     FROM asa_artifact_value val
                         INNER JOIN asa_version v ON v.id=val.version_id
                         INNER JOIN asa_artifact a ON a.id=val.artifact_id
                     WHERE """ + sql_query +
                     """ GROUP BY a.id""", args):
-                yield (id, attr_name, attr_value, vid, time, author)
+                yield (a_id, attr_name, attr_value, vid, from_utimestamp(time), author)
 
     @classmethod
     def search_artifacts(cls, dbp, spec=None, attributes=None):

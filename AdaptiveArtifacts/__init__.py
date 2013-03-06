@@ -205,7 +205,7 @@ class UI(Component):
         dbp = DBPool(self.env, InstancePool())
         dbp.update_wiki_page_references(page, artifacts_ids)
 
-from trac.search import ISearchSource
+from trac.search import ISearchSource, shorten_result
 from trac.resource import get_resource_url
 class Search(Component):
     """Allows to search Adaptive-Artifacts resources."""
@@ -213,16 +213,20 @@ class Search(Component):
     implements(ISearchSource)
 
     # ISearchSource methods
-
     def get_search_filters(self, req):
         yield ('asa-filter', 'Custom Artifacts', True)
 
     def get_search_results(self, req, terms, filters):
-        if 'asa' in filters:
-            for id, attr_name, attr_value, vid, time, author in Searcher.search(self.env, terms):
-                res = Resource('asa', id, vid)
+        if 'asa-filter' in filters:
+            for a_id, attr_name, attr_value, vid, time, author in Searcher.search(self.env, terms):
+                dbp = DBPool(self.env, InstancePool())
+                dbp.load_artifact(a_id)
+                artifact = dbp.pool.get_item(a_id)
+
+                res = Resource('asa', a_id, vid)
                 link = get_resource_url(self.env, res, req.href)
-                title = "%s: %s" % (attr_name,attr_value)
-                yield (link, title, time, author, '')
+                title = unicode(artifact)
+                text = "%s: %s" % (attr_name,attr_value)
+                yield (link, title, time, author, shorten_result(text, terms))
         return
 

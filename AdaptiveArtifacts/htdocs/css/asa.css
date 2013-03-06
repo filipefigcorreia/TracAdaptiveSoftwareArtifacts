@@ -387,3 +387,9 @@ div#is_valid_spec.valid {
 div#is_valid_spec.invalid {
     background: transparent url(../media/no.png) no-repeat;
 }
+
+/* Search */
+
+#content.search #results dt a {
+    color: #b00;
+}
