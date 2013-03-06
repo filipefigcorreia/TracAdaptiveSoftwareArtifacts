@@ -59,18 +59,20 @@ Tracker.prototype.track_it_start = function(url){
 
 Tracker.prototype.track_it_end = function(){
     if (this.session_id != null){
-        //console.log(["stop"]);
         Requests.track_it_end(this.session_id);
         this.session_id = null;
     }else{
-        console.log(["ups"]);
+        console.log("Session already ended... Ignoring.");
     }
 };
 
 $(document).ready(function(){
     page_tracker = new Tracker();
 
-    $(window).focus(function() {
+    $(window).on("focus", function() {
+        if (page_tracker.session_id != null){
+            page_tracker.track_it_end();
+        }
         page_tracker.track_it_start(location);
     });
 
