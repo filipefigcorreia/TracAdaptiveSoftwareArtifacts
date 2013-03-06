@@ -226,7 +226,8 @@ class Search(Component):
                 res = Resource('asa', a_id, vid)
                 link = get_resource_url(self.env, res, req.href)
                 title = unicode(artifact)
-                text = "%s: %s" % (attr_name,attr_value)
-                yield (link, title, time, author, shorten_result(text, terms))
+                text = "Custom Artifact of the type {0}.".format(artifact.__class__.get_name())
+                text += " {0}: {1}".format(attr_name, shorten_result(attr_value, terms))
+                yield (link, title, time, author, text)
         return
 
