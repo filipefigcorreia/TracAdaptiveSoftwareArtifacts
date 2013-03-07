@@ -74,12 +74,19 @@ function createDialogFromUrl(url, options, dialogdivclass){
     error: options.error,
     complete: options.complete,
     success: function(data, textStatus, jqXHR) {
-      var opts = {modal: options.modal, width: 'auto', buttons: options.buttons};
+      var opts = {modal: options.modal, width: 'auto', position: 'center', buttons: options.buttons};
       if(typeof data == "object" && data.html) { //response is assumed to be JSON
         dialogdiv.html(data.html).dialog($.extend(opts, {title: data.title}));
       } else { //response is assumed to be HTML
         dialogdiv.html(data).dialog($.extend(opts, {title: options.title}));
       }
+
+      if(dialogdiv.width()>800){
+          dialogdiv.css({'width':'800px'});
+      }
+      dialogdiv.dialog("option", "position", "center");
+      $(':focus', dialogdiv).blur();
+
       $.isFunction(options.success) && (options.success).call(dialogdiv, data, textStatus, jqXHR);
     }
   });
