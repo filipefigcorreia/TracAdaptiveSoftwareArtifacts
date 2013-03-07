@@ -109,24 +109,28 @@ class Core(Component):
         add_javascript(req, 'customartifacts/js/uuid.js')
         add_javascript(req, 'customartifacts/js/forms.js')
 
-        if req.environ.get('PATH_INFO', '')[0:5] == '/wiki':
+        path_parts = req.environ.get('PATH_INFO', '').split("/")
+        if path_parts[1] == 'wiki':
             from datetime import datetime
             dbp = DBPool(self.env, InstancePool())
-            parts = req.environ.get('PATH_INFO', '').split("/")
             resource_id = ""
-            if len(parts) > 2:
-                resource_id = parts[2]
+            if len(path_parts) > 2:
+                resource_id = path_parts[2]
 
             if 'action' in req.args and req.args['action'] == 'edit':
-                add_javascript(req, "customartifacts/js/wiki.js")
                 dbp.track_it("wiki", resource_id, "edit", req.authname, str(datetime.now()))
             else:
                 dbp.track_it("wiki", resource_id, "view", req.authname, str(datetime.now()))
+
+        if path_parts[1] == 'wiki' and 'action' in req.args and req.args['action'] == 'edit' or \
+            path_parts[1] in ['ticket', 'newticket']:
+                add_javascript(req, "customartifacts/js/wiki.js")
 
         add_script_data(req, {'baseurl': req.href.customartifacts()})
         add_script_data(req, {'form_token': req.form_token})
         add_stylesheet(req, 'customartifacts/css/asa.css', media='screen')
         add_stylesheet(req, 'customartifacts/css/wiki.css')
+        add_stylesheet(req, 'customartifacts/css/ticket.css')
         add_stylesheet(req, 'customartifacts/css/index_page.css')
 
         return (template, data, content_type)

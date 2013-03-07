@@ -129,7 +129,7 @@ function link_to_existing_artifact_ajax_call(click_callback, value){
 
 var setupEditor = function() {
     // Hide trac's textarea and show a contenteditable div in its place
-    var textarea = $('#text');
+    var textarea = $('textarea#text,textarea#field-description');
     textarea.hide().before('<div id="editor"/>');
 
     var editor = ace.edit("editor");
@@ -180,7 +180,7 @@ var setupEditor = function() {
           $(document).unbind('mousemove', dragging).unbind('mouseup', endDrag);
         }
 
-        var grip = $('.trac-grip').mousedown(beginDrag)[0];
+        var grip = $('#editor').parent().find('.trac-grip').mousedown(beginDrag)[0];
         if (grip != undefined){
             editordiv.wrap('<div class="trac-resizable"><div></div></div>')
                 .parent().append(grip);
@@ -207,45 +207,46 @@ var setupToolbar = function(editor){
         editor.focus();
     };
 
+    var toolbar = $('#editor').closest("fieldset").find(".wikitoolbar");
+
     // Rewire the event handlers of the toolbat buttons to work with the div instead of the textarea
-    $("#strong").click(function() {
+    toolbar.find("#strong").click(function() {
         wrapSelection("'''", "'''");
     });
 
-    $("#heading").click(function() {
+    toolbar.find("#heading").click(function() {
         wrapSelection("\n== ", " ==\n");
     });
 
-    $("#em").click(function() {
+    toolbar.find("#em").click(function() {
         wrapSelection("''", "''");
     });
 
-    $("#link").click(function() {
+    toolbar.find("#link").click(function() {
         wrapSelection("[", "]");
     });
 
-    $("#code").click(function() {
+    toolbar.find("#code").click(function() {
         wrapSelection("\n{{{\n", "\n}}}\n");
     });
 
-    $("#hr").click(function() {
+    toolbar.find("#hr").click(function() {
         wrapSelection("\n----\n", "");
     });
 
-    $("#np").click(function() {
+    toolbar.find("#np").click(function() {
         wrapSelection("\n\n", "");
     });
 
-    $("#br").click(function() {
+    toolbar.find("#br").click(function() {
         wrapSelection("[[BR]]\n", "");
     });
 
-    $("#img").click(function() {
+    toolbar.find("#img").click(function() {
         wrapSelection("[[Image(", ")]]");
     });
 
     // Add custom buttons to the toolbar
-    var toolbar = $('.wikitoolbar');
 
     toolbar.after('<div class="wikitoolbar" id="asa_toolbar"></div>');
     var asa_toolbar = $('#asa_toolbar');
@@ -436,13 +437,14 @@ var setupBalloons = function(editor){
                     old_token==token;
                 }
                 timeout = setTimeout(function(){
-                    var screenPosition = editor.renderer.textToScreenCoordinates(position.row, token.start + token.value.length + 2);
+                    var screenPosition = editor.renderer.textToScreenCoordinates(position.row, token.start + token.value.length);
+                    // 35: magic number for the expected width of the balloon.
                     balloon = editordiv.showBalloon(
                         {
                             position: "top left",
-                            offsetX: screenPosition.pageX + editor.renderer.characterWidth*2/3,
+                            offsetX: screenPosition.pageX - $("#editor").offset().left + 35 + editor.renderer.characterWidth*2/3,
                             offsetY: canvasPos.top - screenPosition.pageY - editor.renderer.lineHeight*1.5,
-                            tipSize: 10,
+                            tipSize: 0,
                             delay: 0,
                             minLifetime: 200,
                             showDuration: 300,
