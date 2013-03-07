@@ -458,6 +458,7 @@ var setupBalloons = function(editor){
                                     content.click(function(){
                                         balloon && editordiv.hideBalloon();
                                         view_artifact_ajax_call(token.value, editor);
+                                        return false;
                                     });
                                 }else if (token.type == 'keyword'){
                                     content.attr("id", "asa_link_button_tooltip");
@@ -470,6 +471,7 @@ var setupBalloons = function(editor){
                                             editor.session.insert({row: position.row, column: token.start}, "[asa:"+artifact_id+" ");
                                             editor.focus();
                                         }, token.value);
+                                        return false;
                                     });
                                 }
                                 return content;
