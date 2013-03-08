@@ -302,7 +302,7 @@ var setupToolbar = function(editor){
                 }
             ).dialog('open');
         }
-
+        return false;
     });
 
     $("#asa_link_button").click(function() {
@@ -312,6 +312,7 @@ var setupToolbar = function(editor){
                 wrapSelection("[asa:"+artifact_id+" ", "]");
             }, "")
         }
+        return false;
     });
 
 };
