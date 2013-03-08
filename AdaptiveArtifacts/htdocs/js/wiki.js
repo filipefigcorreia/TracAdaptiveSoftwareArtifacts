@@ -197,6 +197,12 @@ var setupEditor = function() {
         editor.renderer.onResize(true);
     });
 
+    // Ensure the editor is updated after showing it (in case it was hidden...)
+    $("#modify").parent().bind('classremoved', function(ev, newClasses) {
+        editor.resize();
+        editor.renderer.updateFull();
+    });
+
     return editor;
 };
 
@@ -571,6 +577,16 @@ function addResultRow(results, artifact_search){
             '</dd>');
     }
 }
+
+(function() {
+    var ev = new $.Event('classremoved');
+    var orig = $.fn.removeClass;
+    $.fn.removeClass = function() {
+        var result = orig.apply(this, arguments);
+        $(this).trigger(ev, arguments);
+        return result;
+    }
+})();
 
 $(document).ready(function(){
     var editor = setupEditor();
