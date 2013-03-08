@@ -41,9 +41,10 @@ def get_index(request, dbp, obj, resource):
         return specs
 
     specs = get_spec_data(Instance.get_name())
-
     spec_name = request.req.args.get('spec', None)
     selected_spec = dbp.pool.get_item(spec_name) if spec_name else None
+
+    searches = [('no_spec', 'Artifacts with no Type', len(dbp.pool.get_instances_of(Instance.get_name(), direct_instances_only=True)))]
     selected_search = request.req.args.get('search', None)
 
     if selected_spec is None and not selected_search is None and selected_search == 'no_spec':
@@ -114,6 +115,7 @@ def get_index(request, dbp, obj, resource):
         'context': Context.from_request(request.req, resource),
         'action': 'list',
         'specs': specs,
+        'searches': searches,
         'selected_spec': selected_spec,
         'selected_search': selected_search,
         'spec_columns': spec_attrs,

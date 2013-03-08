@@ -53,10 +53,10 @@
             <h1>More Custom Artifacts</h1>
             <div id="others">
                 <ul>
-                    <li>
+                    <li py:for="search in searches">
                         <py:choose test="">
-                        <a py:when="selected_search == 'no_spec'" class="selected" href="${req.href.customartifacts(search='no_spec')}">Artifacts with no Type<small> (${len(artifacts_values)})</small></a>
-                        <a py:otherwise="" href="${req.href.customartifacts(search='no_spec')}">Artifacts with no Type</a>
+                        <a py:when="selected_search == search[0]" class="selected" href="${req.href.customartifacts(search=search[0])}">${search[1]}<small> (${search[2]})</small></a>
+                        <a py:otherwise="" href="${req.href.customartifacts(search=search[0])}">${search[1]}<small> (${search[2]})</small></a>
                         </py:choose>
                     </li>
                 </ul>
