@@ -28,7 +28,7 @@
   <body>
      <div id="content" class="asa-index">
 
-        <py:if test="selected_spec">
+        <py:if test="selected_spec and not selected_search">
             <div class="buttons" style="float:right; margin-right:2em;">
                 <br/>
                 <form method="get" action="${href.customartifacts('spec',selected_spec.get_name())}">
@@ -108,7 +108,7 @@
                     </thead>
                     <py:if test="len(artifacts_values)==0">
                         <tr>
-                            <td colspan="${len(spec_columns)+len(arti_columns)+2}" class="message">No Custom Artifacts found</td>
+                            <td colspan="${len(spec_columns)+len(arti_columns)}" class="message">No Custom Artifacts found</td>
                         </tr>
                     </py:if>
                     <py:if test="len(artifacts_values)>0">
