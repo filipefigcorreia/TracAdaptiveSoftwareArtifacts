@@ -110,7 +110,8 @@ class Core(Component):
         add_javascript(req, 'customartifacts/js/forms.js')
 
         path_parts = req.environ.get('PATH_INFO', '').split("/")
-        if path_parts[1] == 'wiki':
+        module_area = path_parts[1] if len(path_parts)>1 else None
+        if module_area == 'wiki':
             from datetime import datetime
             dbp = DBPool(self.env, InstancePool())
             resource_id = ""
@@ -122,8 +123,8 @@ class Core(Component):
             else:
                 dbp.track_it("wiki", resource_id, "view", req.authname, str(datetime.now()))
 
-        if path_parts[1] == 'wiki' and 'action' in req.args and req.args['action'] == 'edit' or \
-            path_parts[1] in ['ticket', 'newticket']:
+        if module_area == 'wiki' and 'action' in req.args and req.args['action'] == 'edit' or \
+            module_area in ['ticket', 'newticket']:
                 add_javascript(req, "customartifacts/js/wiki.js")
 
         add_script_data(req, {'baseurl': req.href.customartifacts()})
