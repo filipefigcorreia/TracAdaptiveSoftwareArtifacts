@@ -108,7 +108,7 @@
                     </thead>
                     <py:if test="len(artifacts_values)==0">
                         <tr>
-                            <td colspan="${len(spec_columns)+len(arti_columns)}" class="message">No Custom Artifacts found</td>
+                            <td colspan="${len(spec_columns)+len(arti_columns)+1}" class="message">No Custom Artifacts found</td>
                         </tr>
                     </py:if>
                     <py:if test="len(artifacts_values)>0">
