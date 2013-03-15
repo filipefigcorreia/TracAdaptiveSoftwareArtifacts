@@ -130,7 +130,7 @@ function link_to_existing_artifact_ajax_call(click_callback, value){
 var setupEditor = function() {
     // Hide trac's textarea and show a contenteditable div in its place
     var textarea = $('textarea#text,textarea#field-description');
-    textarea.hide().before('<div id="editor"/>');
+    textarea.hide().before('<div id="editor" style="clear: left;"/>');
 
     var editor = ace.edit("editor");
     //Get Ace Keyboard Handler and remove Find Events
@@ -510,7 +510,7 @@ var setupListing = function(editor){
     $('fieldset#changeinfo').css('width', '56%');
     $('fieldset#changeinfo').css('min-width', '56%');
     $('fieldset#changeinfo').css('float', 'left');
-    $('.buttons').css('float', 'left');
+    $('form#edit .buttons').css('float', 'left');
     $('#comment').css('width', '98%');
     var height_box = $('fieldset#changeinfo').height();
     $('#changeinfo').after('<fieldset id="listing"/>');
