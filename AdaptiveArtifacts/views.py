@@ -332,6 +332,7 @@ def get_view_artifact(request, dbp, obj, resource):
         'artifacts_values': values,
         'related_pages': related_pages,
         'related_artifacts': referring_artifacts,
+        'show_diagram': dbp.env.config.getbool('asa', 'show_diagram', default=True),
         'yuml_url': yuml.get_url(),
     }
     return 'view_artifact_%s.html' % (request.get_format(),), data, None
