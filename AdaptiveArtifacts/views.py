@@ -10,6 +10,7 @@ import re
 from urllib2 import HTTPError
 from trac.mimeview.api import Context
 from trac.web.chrome import add_notice, add_warning
+from trac.web.chrome import add_ctxtnav
 from trac.util import get_reporter_id
 from trac.resource import Resource, get_resource_url
 from trac.util.datefmt import format_datetime, user_time
@@ -174,6 +175,9 @@ def get_view_artifact(request, dbp, obj, resource):
     if not obj.__class__ == Instance:
         spec_name = obj.__class__.get_name()
         spec_url = request.req.href.customartifacts('spec/' + obj.__class__.get_id(), action='view')
+        add_ctxtnav(request.req,
+                    "Back to all artifacts of type '{0}'".format(spec_name),
+                    request.req.href.customartifacts(spec=spec_name))
     else:
         spec_name = spec_url = ""
 
