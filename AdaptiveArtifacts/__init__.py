@@ -9,7 +9,8 @@ from trac.resource import IResourceManager, Resource
 from trac.web.chrome import Chrome, INavigationContributor, ITemplateProvider, add_javascript, add_stylesheet, add_script_data
 from trac.web.main import IRequestHandler
 from trac.web.api import IRequestFilter
-from trac.wiki import IWikiSyntaxProvider, IWikiChangeListener
+from trac.wiki import IWikiSyntaxProvider, IWikiMacroProvider, IWikiChangeListener
+from trac.wiki.api import parse_args
 from trac.util import Markup
 from genshi.builder import tag
 from AdaptiveArtifacts.persistence.data import DBPool
@@ -149,10 +150,29 @@ class Core(Component):
 
 class UI(Component):
     """Provides the plugin's user-interface."""
-    implements(INavigationContributor, IWikiSyntaxProvider, IWikiChangeListener)
+    implements(INavigationContributor, IWikiSyntaxProvider, IWikiMacroProvider, IWikiChangeListener)
 
     def __init__(self):
         self.base_url = 'customartifacts'
+
+    def _get_link(self, href, artifact_id, label=None, art_attr=None):
+        try:
+            pool = InstancePool()
+            dbp = DBPool(self.env, pool)
+            dbp.load_artifact(id=artifact_id)
+            artifact = pool.get_item(id=artifact_id)
+            spec_name = artifact.__class__.get_name() if not artifact.__class__ is Instance else None
+            if not art_attr is None:
+                label = artifact.get_value(art_attr) or label
+            if label is None:
+                label = str(artifact)
+            if spec_name is None:
+                title = "Custom Software Artifact '%s'" % (label,)
+            else:
+                title = "Custom Software Artifact '%s' of type '%s'" % (label, spec_name)
+        except ValueError:
+            title = "Custom Software Artifact with ID '%s' does not exist" % (artifact_id,)
+        return tag.a(label, href=href.customartifacts('artifact', artifact_id), class_="asa-link", title=title)
 
     # INavigationContributor methods
     def get_active_navigation_item(self, req):
@@ -174,19 +194,58 @@ class UI(Component):
         return []
 
     def _format_asa_link(self, formatter, ns, target, label):
-        try:
-            pool = InstancePool()
-            dbp = DBPool(self.env, pool)
-            dbp.load_artifact(id=target)
-            artifact = pool.get_item(id=target)
-            spec_name = artifact.__class__.get_name() if not artifact.__class__ is Instance else None
-            if spec_name is None:
-                title = "Custom Software Artifact '%s'" % (label,)
+        return self._get_link(formatter.href, target, label)
+
+    # IWikiMacroProvider
+
+    def get_macros(self):
+        yield "ASA"
+        yield "ASALink"
+
+    def is_inline(self, content):
+        return True
+
+    def expand_macro(self, formatter, name, content):
+        args, kw = parse_args(content)
+        args = [arg.strip() for arg in args]
+        if not args or not args[0].isdigit():
+            raise TracError('Custom artifact id not specified')
+        art_id = int(args[0])
+        if name == "ASALink":
+            # [[ASALink(42)]]
+            # [[ASALink(42, Name)]]
+            art_attr_name = None
+            if len(args)>1:
+                art_attr_name = args[1]
+            if art_attr_name is None:
+                return self._get_link(formatter.href, art_id)
             else:
-                title = "Custom Software Artifact '%s' of type '%s'" % (label,spec_name)
-        except ValueError:
-            title = "Custom Software Artifact with ID '%s' does not exist" % (target,)
-        return tag.a(label, href=formatter.href.customartifacts('artifact', target), class_="asa-link", title=title)
+                return self._get_link(formatter.href, art_id, art_attr=art_attr_name)
+        elif name == "ASA":
+            # [[ASA(42)]]
+            args, kw = parse_args(content)
+            if not args or not args[0].isdigit():
+                raise TracError('Custom artifact id not specified')
+            artifact_id = int(args[0])
+            dbp = DBPool(self.env, InstancePool())
+            dbp.load_artifact(id=artifact_id)
+            artifact = dbp.pool.get_item(id=artifact_id)
+
+            from views import _get_artifact_details
+            from trac.mimeview.api import Context
+
+            res = Core._get_resource(artifact) if not artifact in (Entity, Instance, None) and not type(artifact)==unicode else None
+            spec_name, spec_url, values = _get_artifact_details(artifact, formatter.req)
+
+            tpl='view_artifact_dialog.html'
+            data = {
+                'context': Context.from_request(formatter.req, res),
+                'spec_name': spec_name,
+                'spec_url': spec_url,
+                'artifact': artifact,
+                'artifacts_values': values,
+            }
+            return Chrome(self.env).render_template(formatter.req, tpl, data, None, fragment=True)
 
     # IWikiChangeListener methods
     def wiki_page_added(self, page):

@@ -169,27 +169,33 @@ def get_view_spec(request, dbp, obj, resource):
     }
     return 'view_spec_page.html', data, None
 
-def get_view_artifact(request, dbp, obj, resource):
-    require_permission(request.req, resource, dbp.env)
 
+def _get_artifact_details(obj, req):
     if not obj.__class__ == Instance:
         spec_name = obj.__class__.get_name()
-        spec_url = request.req.href.customartifacts('spec/' + obj.__class__.get_id(), action='view')
-        add_ctxtnav(request.req,
+        spec_url = req.href.customartifacts('spec/' + obj.__class__.get_id(), action='view')
+        add_ctxtnav(req,
                     "Back to all artifacts of type '{0}'".format(spec_name),
-                    request.req.href.customartifacts(spec=spec_name))
+                    req.href.customartifacts(spec=spec_name))
     else:
         spec_name = spec_url = ""
 
     # Processing artifact values
     values = []
-    for name,val in obj.get_values():
+    for name, val in obj.get_values():
         if type(val) is list:
             n_values = len(val)
         else:
             n_values = 1
         values.append((name, n_values, val))
 
+    return spec_name, spec_url, values
+
+
+def get_view_artifact(request, dbp, obj, resource):
+    require_permission(request.req, resource, dbp.env)
+
+    spec_name, spec_url, values = _get_artifact_details(obj, request.req)
 
     # Getting wiki pages that refer the artifact
     related_pages = []
