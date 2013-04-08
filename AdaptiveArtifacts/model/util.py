@@ -3,6 +3,9 @@
 # This software is licensed as described in the file license.txt, which
 # you should have received as part of this distribution.
 
+import unicodedata
+import hashlib
+
 def to_valid_identifier_name(name):
     """
     Uses "name" to create a valid python identifier by removing illegal
@@ -15,6 +18,7 @@ def to_valid_identifier_name(name):
     them with a hash to ensure they don't clash with other identifiers.
     """
     def gen_valid_identifier(seq):
+        seq = unicodedata.normalize('NFKD', seq).encode('ascii','ignore')
         itr = iter(seq)
         # pull characters until we get a legal one for first in identifier
         for ch in itr:
@@ -27,8 +31,7 @@ def to_valid_identifier_name(name):
                 ch = '_'
             if ch == '_' or ch.isalpha() or ch.isdigit():
                 yield ch
-    import hashlib
-    return str(''.join(gen_valid_identifier(name)) + "_" + hashlib.md5(name).hexdigest())
+    return str(''.join(gen_valid_identifier(name)) + "_" + hashlib.md5(name.encode("utf-8")).hexdigest())
 
 class classinstancemethod(object):
     """
