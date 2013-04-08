@@ -171,7 +171,7 @@ class UI(Component):
         # Note that group numbers don't work as the following is only a regexp
         # fragment which will be part of a larger regexp, therefore one must
         # use group names, with reasonably unique names
-        yield (r'\?(?P<domain>[asa])_(?P<word>.+?)\?', self._format_asa_link)
+        return []
 
     def _format_asa_link(self, formatter, ns, target, label):
         try:
