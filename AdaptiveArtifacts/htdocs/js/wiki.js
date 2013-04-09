@@ -1,8 +1,11 @@
 function view_artifact_ajax_call(asa_token_content, editor){
-    var ind_init = asa_token_content.indexOf(":");
-    var sub = asa_token_content.substr(ind_init+1, asa_token_content.length);
-    var ind_end = sub.indexOf(" ");
-    var id = sub.substr(0, ind_end);
+    var pattern = /\[asa[:]([0-9]+)(?:[\s+|\.](?:[^\]]+)?)?\]/g;
+    var match = pattern.exec(asa_token_content);
+    if (match == null){
+        alert("Sorry, can't figure out which custom artifact this is.");
+        return;
+    }
+    var id = match[1];
 
     createASAFormDialogFromUrl('View Custom Artifact', baseurl+"/artifact/"+id+"?action=view",
         {
@@ -331,7 +334,7 @@ var setupTokenizer = function(editor){
         "start": [
             {token : function(val){
                return "asa_artifact";
-            }, regex : "\\[asa[:][0-9]+\\s+[^\[]+\\]"},
+            }, regex : "\\[asa[:][0-9]+(?:[\\s+|\\.](?:[^\\]]+)?)?\\]"},
             {token : function(val){
                 val = val.toLowerCase();
                 if (goodWords[val])
