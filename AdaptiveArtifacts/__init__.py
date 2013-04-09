@@ -22,10 +22,12 @@ from AdaptiveArtifacts.requests.request import Request
 from AdaptiveArtifacts.views import _get_artifact_details
 
 def get_artifact_ids_from_text(wiki_text):
-    return [id for id,val in get_artifact_id_names_from_text(wiki_text)]
+    return [aid for aid, val in get_artifact_id_names_from_text(wiki_text)]
 
 def get_artifact_id_names_from_text(wiki_text):
-    return re.findall('\[asa:(\d+)\ ([^\[]+)\]', wiki_text)
+    links = re.findall('\[asa[:]([0-9]+)(?:(?:\s+|\.)([^\]]+)?)?\]', wiki_text)
+    embeds = re.findall('\[\[ASA\(([0-9]+)\)\]\]', wiki_text)
+    return links + [(aid, u'') for aid in embeds]
 
 class Core(Component):
     """Core module of the plugin. Provides the Adaptive-Artifacts themselves. Needed by any of the other components."""
