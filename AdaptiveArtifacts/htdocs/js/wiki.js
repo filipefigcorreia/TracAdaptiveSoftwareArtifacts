@@ -196,7 +196,7 @@ var setupEditor = function() {
     // Originally copied from trac/wiki/templates/wiki_edit.html
     // Rewires the event of checking the "Adjust edit area height" box
     $("#editrows").change(function() {
-        $('#editor').height(this.options[this.selectedIndex].value * $("div.ace_gutter-layer").find(".ace_gutter-cell:first").height())
+        $('#editor').height(this.options[this.selectedIndex].value * $("div.ace_gutter-layer").find(".ace_gutter-cell:first").height());
         editor.renderer.onResize(true);
     });
 
@@ -436,15 +436,13 @@ var setupBalloons = function(editor){
             return;
         }
         var session = editor.session;
-        var old_token;
         var token = session.getTokenAt(position.row, position.column);
 
         if (token){
             if (token.type == 'keyword' || token.type == 'asa_artifact') {
 
-                if(token!=null && token!=old_token && timeout){
+                if(token!=null && timeout){
                     clearTimeout(timeout);
-                    old_token==token;
                 }
                 timeout = setTimeout(function(){
                     var screenPosition = editor.renderer.textToScreenCoordinates(position.row, token.start + token.value.length);
