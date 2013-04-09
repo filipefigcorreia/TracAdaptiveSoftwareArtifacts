@@ -11,6 +11,7 @@ from trac.web.main import IRequestHandler
 from trac.web.api import IRequestFilter
 from trac.wiki import IWikiSyntaxProvider, IWikiMacroProvider, IWikiChangeListener
 from trac.wiki.api import parse_args
+from trac.wiki.formatter import system_message
 from trac.util import Markup
 from trac.mimeview.api import Context
 from genshi.builder import tag
@@ -150,7 +151,8 @@ class Core(Component):
         from pkg_resources import resource_filename
         return [('customartifacts', resource_filename(__name__, 'htdocs'))]
 
-
+def inline_system_message(text):
+    return tag.span(text, class_="inline-system-message")
 
 class UI(Component):
     """Provides the plugin's user-interface."""
@@ -167,7 +169,10 @@ class UI(Component):
             artifact = pool.get_item(id=artifact_id)
             spec_name = artifact.__class__.get_name() if not artifact.__class__ is Instance else None
             if not art_attr is None:
-                label = artifact.get_value(art_attr) or label
+                label = artifact.get_value(art_attr)
+                if label is None:
+                    return inline_system_message(u"Error: The attribute '{0}' was not found.".format(art_attr))
+
             if label is None:
                 label = str(artifact)
             if spec_name is None:
@@ -201,6 +206,12 @@ class UI(Component):
         attr_name = None
         if "." in target:
             target, attr_name = target.split(".", 1)
+            if len(attr_name)==0: # there are no chars after the ".", assume we want the title
+                attr_name = None
+                label = None
+        else:
+            if target==label: # label is the same as target when no label is specified
+                label = None
         return self._get_link(formatter.href, target, label, art_attr=attr_name)
 
     # IWikiMacroProvider
@@ -219,7 +230,10 @@ class UI(Component):
             raise TracError('Custom artifact id not specified')
         artifact_id = int(args[0])
         dbp = DBPool(self.env, InstancePool())
-        dbp.load_artifact(id=artifact_id)
+        try:
+            dbp.load_artifact(id=artifact_id)
+        except ValueError:
+            return system_message("Custom Artifact not found", "No custom artifact was found for id '{0}'.".format(artifact_id))
         artifact = dbp.pool.get_item(id=artifact_id)
         artifact_url = formatter.req.href.customartifacts('artifact/{0}'.format(artifact.get_id()))
         res = Core._get_resource(artifact) if not artifact in (Entity, Instance, None) and not type(artifact)==unicode else None
@@ -235,6 +249,16 @@ class UI(Component):
             'artifacts_values': values,
         }
         return Chrome(self.env).render_template(formatter.req, tpl, data, None, fragment=True)
+
+    def get_macro_description(self, name):
+        return """
+Allows to embed Custom Artifacts in a wiki page.
+
+This is how you would embed a custom artifact with identifier "42":
+{{{
+[[ASA(42)]]]
+}}}
+"""
 
     # IWikiChangeListener methods
     def wiki_page_added(self, page):

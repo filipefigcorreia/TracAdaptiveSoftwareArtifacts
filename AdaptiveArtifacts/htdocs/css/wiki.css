@@ -31,3 +31,19 @@ a#asa_view_button_tooltip {
     height: 16px;
     display:block;
 }
+
+.inline-system-message {
+    display: inline-block;
+    background: #fdc;
+    border: 1px solid #d00;
+    border-radius: .5em;
+    box-shadow: .1em .1em .5em 0 #777;
+    color: #500;
+    margin: 0;
+    padding: 0.1em;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    line-height: 0.9em;
+    font-size: 90%;
+    font-family: monospace;
+}
