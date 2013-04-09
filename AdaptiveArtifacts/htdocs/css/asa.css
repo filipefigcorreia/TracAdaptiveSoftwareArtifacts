@@ -14,6 +14,7 @@
     margin-top: 1em;
     padding: 0.5em 1em;
     position: relative;
+    max-width: 58em;
     min-width: 26em;
 }
 

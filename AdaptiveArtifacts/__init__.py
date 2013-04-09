@@ -230,6 +230,7 @@ class UI(Component):
             dbp = DBPool(self.env, InstancePool())
             dbp.load_artifact(id=artifact_id)
             artifact = dbp.pool.get_item(id=artifact_id)
+            artifact_url = formatter.req.href.customartifacts('artifact/{0}'.format(artifact.get_id()))
 
             from views import _get_artifact_details
             from trac.mimeview.api import Context
@@ -243,6 +244,7 @@ class UI(Component):
                 'spec_name': spec_name,
                 'spec_url': spec_url,
                 'artifact': artifact,
+                'artifact_url': artifact_url,
                 'artifacts_values': values,
             }
             return Chrome(self.env).render_template(formatter.req, tpl, data, None, fragment=True)

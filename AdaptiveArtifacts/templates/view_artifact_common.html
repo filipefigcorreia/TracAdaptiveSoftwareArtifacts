@@ -8,12 +8,14 @@
             <py:if test="artifact.str_attr">
                 <h1>
                     <div style="font-style: italic;">
+                        <a href="${artifact_url}">
                         <py:if test="artifact.str_attr">
                             ${unicode(artifact)}
                         </py:if>
                         <py:if test="not artifact.str_attr">
                             #${artifact.get_id()}
                         </py:if>
+                        </a>
                     </div>
                     <div style="font-weight: normal;font-size: 60%;">
                         Custom Artifact of

@@ -195,6 +195,7 @@ def _get_artifact_details(obj, req):
 def get_view_artifact(request, dbp, obj, resource):
     require_permission(request.req, resource, dbp.env)
 
+    artifact_url = request.req.href.customartifacts('artifact/{0}'.format(obj.get_id()))
     spec_name, spec_url, values = _get_artifact_details(obj, request.req)
 
     # Getting wiki pages that refer the artifact
@@ -335,6 +336,7 @@ def get_view_artifact(request, dbp, obj, resource):
         'spec_name': spec_name,
         'spec_url': spec_url,
         'artifact': obj,
+        'artifact_url': artifact_url,
         'artifacts_values': values,
         'related_pages': related_pages,
         'related_artifacts': referring_artifacts,
