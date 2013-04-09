@@ -12,12 +12,14 @@ from trac.web.api import IRequestFilter
 from trac.wiki import IWikiSyntaxProvider, IWikiMacroProvider, IWikiChangeListener
 from trac.wiki.api import parse_args
 from trac.util import Markup
+from trac.mimeview.api import Context
 from genshi.builder import tag
 from AdaptiveArtifacts.persistence.data import DBPool
 from AdaptiveArtifacts.persistence.search import Searcher
 from AdaptiveArtifacts.model.pool import InstancePool
 from AdaptiveArtifacts.model.pool import Entity, Instance
 from AdaptiveArtifacts.requests.request import Request
+from AdaptiveArtifacts.views import _get_artifact_details
 
 def get_artifact_ids_from_text(wiki_text):
     return [id for id,val in get_artifact_id_names_from_text(wiki_text)]
@@ -194,60 +196,43 @@ class UI(Component):
         return []
 
     def _format_asa_link(self, formatter, ns, target, label):
-        return self._get_link(formatter.href, target, label)
+        attr_name = None
+        if "." in target:
+            target, attr_name = target.split(".", 1)
+        return self._get_link(formatter.href, target, label, art_attr=attr_name)
 
     # IWikiMacroProvider
 
     def get_macros(self):
         yield "ASA"
-        yield "ASALink"
-
-    def is_inline(self, content):
-        return True
 
     def expand_macro(self, formatter, name, content):
+        # Example: [[ASA(42)]]
         args, kw = parse_args(content)
         args = [arg.strip() for arg in args]
         if not args or not args[0].isdigit():
             raise TracError('Custom artifact id not specified')
-        art_id = int(args[0])
-        if name == "ASALink":
-            # [[ASALink(42)]]
-            # [[ASALink(42, Name)]]
-            art_attr_name = None
-            if len(args)>1:
-                art_attr_name = args[1]
-            if art_attr_name is None:
-                return self._get_link(formatter.href, art_id)
-            else:
-                return self._get_link(formatter.href, art_id, art_attr=art_attr_name)
-        elif name == "ASA":
-            # [[ASA(42)]]
-            args, kw = parse_args(content)
-            if not args or not args[0].isdigit():
-                raise TracError('Custom artifact id not specified')
-            artifact_id = int(args[0])
-            dbp = DBPool(self.env, InstancePool())
-            dbp.load_artifact(id=artifact_id)
-            artifact = dbp.pool.get_item(id=artifact_id)
-            artifact_url = formatter.req.href.customartifacts('artifact/{0}'.format(artifact.get_id()))
+        args, kw = parse_args(content)
+        if not args or not args[0].isdigit():
+            raise TracError('Custom artifact id not specified')
+        artifact_id = int(args[0])
+        dbp = DBPool(self.env, InstancePool())
+        dbp.load_artifact(id=artifact_id)
+        artifact = dbp.pool.get_item(id=artifact_id)
+        artifact_url = formatter.req.href.customartifacts('artifact/{0}'.format(artifact.get_id()))
+        res = Core._get_resource(artifact) if not artifact in (Entity, Instance, None) and not type(artifact)==unicode else None
+        spec_name, spec_url, values = _get_artifact_details(artifact, formatter.req)
 
-            from views import _get_artifact_details
-            from trac.mimeview.api import Context
-
-            res = Core._get_resource(artifact) if not artifact in (Entity, Instance, None) and not type(artifact)==unicode else None
-            spec_name, spec_url, values = _get_artifact_details(artifact, formatter.req)
-
-            tpl='view_artifact_dialog.html'
-            data = {
-                'context': Context.from_request(formatter.req, res),
-                'spec_name': spec_name,
-                'spec_url': spec_url,
-                'artifact': artifact,
-                'artifact_url': artifact_url,
-                'artifacts_values': values,
-            }
-            return Chrome(self.env).render_template(formatter.req, tpl, data, None, fragment=True)
+        tpl='view_artifact_dialog.html'
+        data = {
+            'context': Context.from_request(formatter.req, res),
+            'spec_name': spec_name,
+            'spec_url': spec_url,
+            'artifact': artifact,
+            'artifact_url': artifact_url,
+            'artifacts_values': values,
+        }
+        return Chrome(self.env).render_template(formatter.req, tpl, data, None, fragment=True)
 
     # IWikiChangeListener methods
     def wiki_page_added(self, page):
