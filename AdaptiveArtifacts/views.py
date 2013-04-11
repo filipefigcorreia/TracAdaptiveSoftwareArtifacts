@@ -94,6 +94,7 @@ def get_index(request, dbp, obj, resource):
                         if not type(data) is list:
                             data = [data]
                         joined = ", ".join(data)
+                        joined = re.sub('(\[\[ASA\([0-9]+\)\]\])', '', joined) # no ASA macro expansions in the listing
                         ordered_values_lst.append({"full": joined, "is_long": True if len(joined) > 40 else None})
                     else:
                         ordered_values_lst.append({"full": u"", "is_long": None})
