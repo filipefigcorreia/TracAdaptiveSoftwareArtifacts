@@ -7,7 +7,7 @@
     margin-right: auto;
 }
 
-#asa-card {
+.asa-card {
     background: #ddebff;
     border: 1px solid #99b5dd;
     border-radius: 0.4em;
@@ -18,12 +18,21 @@
     min-width: 26em;
 }
 
-#asa-card h1 {
+.asa-card h1 {
     padding-bottom: 0.5em;
     margin-bottom: 0;
     /*border-bottom: 1px solid #99b5dd;*/
     width: 100%;
     margin-left: auto;
+}
+
+.asa-card h1 div.title {
+    font-style: italic;
+}
+
+.asa-card h1 div.type {
+    font-weight: normal;
+    font-size: 60%;
 }
 
 ul.artifact-details {
@@ -35,7 +44,7 @@ ul.artifact-details {
 ul.artifact-details li {
     padding-bottom: 0.4em;
 }
-#asa-card .label {
+.asa-card .label {
     color: #334866;
     font-size: 100%;
     font-weight: normal;
