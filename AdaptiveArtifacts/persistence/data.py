@@ -520,19 +520,20 @@ class DBPool(object):
             cursor = db.cursor()
             cursor.execute(
                 u"""INSERT INTO asa_analytics VALUES('%s','%s','%s','%s','%s')""" %
-                (resource_type, resource_id.decode("utf-8"), operation, username, time)
+                (resource_type, resource_id if type(resource_id) is unicode else resource_id.decode("utf-8"), operation, username, time)
             )
 
-    def track_it_acc_start(self, resource_type, resource_id, operation, username, time_started):
+    def track_it_acc_start(self, resource_type, resource_id, operation, username, time_started, embedded_in_resource_type = None, embedded_in_resource_id = None):
         session_id = [None] # a bit hackish. session_id must be a reference to be available inside the function below
         @with_transaction(self.env)
         def do_track_it_acc_start(db):
             cursor = db.cursor()
-            cursor.execute("""
-                INSERT INTO asa_accurate_analytics(resource_type, resource_id, operation, username, time_started)
-                VALUES('%s','%s','%s','%s','%s')""" %
-                (resource_type, resource_id, operation, username, time_started)
-            )
+            if embedded_in_resource_type and embedded_in_resource_id:
+                query = "INSERT INTO asa_accurate_analytics(resource_type, resource_id, operation, username, time_started, embedded_in_resource_type, embedded_in_resource_id) VALUES('%s','%s','%s','%s','%s','%s','%s')"
+                cursor.execute(query % (resource_type, resource_id, operation, username, time_started, embedded_in_resource_type, embedded_in_resource_id))
+            else:
+                query = "INSERT INTO asa_accurate_analytics(resource_type, resource_id, operation, username, time_started) VALUES('%s','%s','%s','%s','%s')"
+                cursor.execute(query % (resource_type, resource_id, operation, username, time_started))
             session_id[0] = cursor.lastrowid
         return session_id[0]
 

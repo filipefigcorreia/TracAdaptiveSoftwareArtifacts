@@ -77,7 +77,7 @@ Requests.getArtifactHtml = function(artifact_id, callback){
     });
 };
 
-Requests.track_it_start = function(resource_type, resource_id, operation, callback){
+Requests.track_it_start = function(resource_type, resource_id, operation, embedded_in_resource_type, embedded_in_resource_id, callback){
     $.ajax({
         url: baseurl+"/tracking/start",
         type: 'POST',
@@ -90,7 +90,9 @@ Requests.track_it_start = function(resource_type, resource_id, operation, callba
             {
                 'resource_type': resource_type,
                 'resource_id': resource_id,
-                'operation': operation
+                'operation': operation,
+                'embedded_in_resource_type': embedded_in_resource_type,
+                'embedded_in_resource_id': embedded_in_resource_id
             }
         )}
     });

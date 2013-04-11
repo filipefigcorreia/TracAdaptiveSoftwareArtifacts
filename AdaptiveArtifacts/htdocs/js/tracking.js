@@ -39,7 +39,7 @@ Tracker.prototype.parse_url = function(pathname, query){
     return [resource_type, resource_id, operation];
 };
 
-Tracker.prototype.track_it_start = function(url){
+Tracker.prototype.get_url_obj = function(url){
     var url_obj = null;
     if (typeof url == "string"){
         url_obj = document.createElement('a');
@@ -47,14 +47,29 @@ Tracker.prototype.track_it_start = function(url){
     } else {
         url_obj = url;
     }
+    return url_obj;
+};
+
+Tracker.prototype.track_it_start = function(url, embedded_in_url){
+    var url_obj = this.get_url_obj(url);
     var parts = this.parse_url(url_obj.pathname, url_obj.search);
     if (parts != null){
-        //console.log(["start", parts]);
-        var me = this;
-        Requests.track_it_start(parts[0], parts[1], parts[2], function(data) {
-            me.session_id = data["id"];
-        });
+        this.track_it_start_by_typeidop(parts[0], parts[1], parts[2], embedded_in_url)
     }
+};
+
+Tracker.prototype.track_it_start_by_typeidop = function(resource_type, resource_id, operation, embedded_url) {
+    var embedded_resource_type = null;
+    var embedded_resource_id = null;
+    if (embedded_url != undefined && embedded_url != null) {
+        var embedded_parts = this.parse_url(this.get_url_obj(embedded_url).pathname, "");
+        embedded_resource_type = embedded_parts[0];
+        embedded_resource_id = embedded_parts[1];
+    }
+    var me = this;
+    Requests.track_it_start(resource_type, resource_id, operation, embedded_resource_type, embedded_resource_id, function(data) {
+        me.session_id = data["id"];
+    });
 };
 
 Tracker.prototype.track_it_end = function(){
@@ -68,22 +83,44 @@ Tracker.prototype.track_it_end = function(){
 
 $(document).ready(function(){
     page_tracker = new Tracker();
+    var embedded_artifacts_trackers = [];
 
     $(window).on("focus", function() {
         if (page_tracker.session_id != null){
-            page_tracker.track_it_end();
+            stop_all_trackers()
         }
-        page_tracker.track_it_start(location);
+        start_all_trackers();
     });
 
     $(window).blur(function() {
-        page_tracker.track_it_end();
+        stop_all_trackers();
     });
 
     window.onbeforeunload = function() {
-        page_tracker.track_it_end();
+        stop_all_trackers();
     };
 
-    page_tracker.track_it_start(location);
+    start_all_trackers();
+
+    function start_all_trackers() {
+        page_tracker.track_it_start(location);
+        if (typeof embedded_artifacts != 'undefined') {
+            for(var i = 0; i < embedded_artifacts.length; i++) {
+                var artifact_id = embedded_artifacts[i];
+                var artifact_tracker = new Tracker();
+                artifact_tracker.track_it_start_by_typeidop("asa_artifact", artifact_id, "view", location);
+                embedded_artifacts_trackers.push(artifact_tracker);
+            }
+        }
+    }
+
+    function stop_all_trackers(){
+        page_tracker.track_it_end();
+        for(var i = 0; i < embedded_artifacts_trackers.length; i++) {
+            var artifact_tracker = embedded_artifacts_trackers[i];
+            artifact_tracker.track_it_end();
+        }
+        embedded_artifacts_trackers = [];
+    }
 });
 

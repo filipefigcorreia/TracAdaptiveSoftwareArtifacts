@@ -10,6 +10,7 @@ from trac.web.chrome import Chrome, INavigationContributor, ITemplateProvider, a
 from trac.web.main import IRequestHandler
 from trac.web.api import IRequestFilter
 from trac.wiki import IWikiSyntaxProvider, IWikiMacroProvider, IWikiChangeListener
+from trac.wiki.model import WikiPage
 from trac.wiki.api import parse_args
 from trac.wiki.formatter import system_message
 from trac.util import Markup
@@ -27,8 +28,11 @@ def get_artifact_ids_from_text(wiki_text):
 
 def get_artifact_id_names_from_text(wiki_text):
     links = re.findall('\[asa[:]([0-9]+)(?:(?:\s+|\.)([^\]]+)?)?\]', wiki_text)
-    embeds = re.findall('\[\[ASA\(([0-9]+)\)\]\]', wiki_text)
+    embeds = get_embedded_artifact_ids_from_text(wiki_text)
     return links + [(aid, u'') for aid in embeds]
+
+def get_embedded_artifact_ids_from_text(wiki_text):
+    return re.findall('\[\[ASA\(([0-9]+)\)\]\]', wiki_text)
 
 class Core(Component):
     """Core module of the plugin. Provides the Adaptive-Artifacts themselves. Needed by any of the other components."""
@@ -115,12 +119,12 @@ class Core(Component):
         add_javascript(req, 'customartifacts/js/uuid.js')
         add_javascript(req, 'customartifacts/js/forms.js')
 
-        path_parts = req.environ.get('PATH_INFO', '').split("/")
+        path_parts = req.environ.get('PATH_INFO', '').decode("utf-8").split("/")
         module_area = path_parts[1] if len(path_parts)>1 else None
         if module_area == 'wiki':
             from datetime import datetime
             dbp = DBPool(self.env, InstancePool())
-            resource_id = ""
+            resource_id = u""
             if len(path_parts) > 2:
                 resource_id = path_parts[2]
 
@@ -128,6 +132,9 @@ class Core(Component):
                 dbp.track_it("wiki", resource_id, "edit", req.authname, str(datetime.now()))
             else:
                 dbp.track_it("wiki", resource_id, "view", req.authname, str(datetime.now()))
+
+            page = WikiPage(dbp.env, resource_id)
+            add_script_data(req, {'embedded_artifacts': get_embedded_artifact_ids_from_text(page.text)})
 
         if module_area == 'wiki' and 'action' in req.args and req.args['action'] == 'edit' or \
             module_area in ['ticket', 'newticket']:

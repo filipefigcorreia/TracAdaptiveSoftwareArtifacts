@@ -751,11 +751,12 @@ def post_new_tracking(request, dbp, obj, resource):
         resource_type = resource['resource_type'] if 'resource_type' in resource else ""
         resource_id = resource['resource_id'] if 'resource_id' in resource else ""
         operation = resource['operation'] if 'operation' in resource else ""
-        session_id = dbp.track_it_acc_start(resource_type, resource_id, operation, request.req.authname, str(datetime.now()))
+        embedded_in_resource_type = resource['embedded_in_resource_type'] if 'embedded_in_resource_type' in resource else None
+        embedded_in_resource_id = resource['embedded_in_resource_id'] if 'embedded_in_resource_id' in resource else None
+        session_id = dbp.track_it_acc_start(resource_type, resource_id, operation, request.req.authname, str(datetime.now()), embedded_in_resource_type, embedded_in_resource_id)
         data = {"id": session_id}
     elif obj == "end":
-        id = request.req.args['id']
-        dbp.track_it_acc_end(id, str(datetime.now()))
+        dbp.track_it_acc_end(request.req.args['id'], str(datetime.now()))
     _return_as_json(request, data)
     return
 

@@ -88,6 +88,8 @@ schema = [
         Column('username'),
         Column('time_started'),
         Column('time_ended'),
+        Column('embedded_in_resource_type'),
+        Column('embedded_in_resource_id'),
     ],
     ]
 
@@ -101,7 +103,7 @@ class Setup(Component):
         self.db_key = 'asa_plugin_database_version'
         self.default_version = '0.0'
         self.schema_version = version.StrictVersion(self._get_system_value(self.db_key) or self.default_version)
-        self.running_version = version.StrictVersion('0.4') # TODO: get this value from setup.py
+        self.running_version = version.StrictVersion('0.5') # TODO: get this value from setup.py
 
     # start IEnvironmentSetupParticipant methods
     def environment_created(self):
@@ -122,8 +124,12 @@ class Setup(Component):
             elif self.schema_version in ('0.1', '0.2'):
                 self._upgrade_to_0dot3(db)
                 self._upgrade_to_0dot4(db)
+                self._upgrade_to_0dot5(db)
             elif self.schema_version == '0.3':
                 self._upgrade_to_0dot4(db)
+                self._upgrade_to_0dot5(db)
+            elif self.schema_version == '0.4':
+                self._upgrade_to_0dot5(db)
 #           elif self.schema_version == 'XXXX':
 #                cursor = db.cursor()
 #                cursor.execute("UPDATE various stuff ...")
@@ -176,6 +182,17 @@ class Setup(Component):
                 self._create_table(table, cursor)
         cursor.execute("UPDATE system SET value='0.4' WHERE name='%s'" % (self.db_key,))
         self.log.info('Upgraded ASA tables from version 0.3 to 0.4')
+
+    def _upgrade_to_0dot5(self, db):
+        cursor = db.cursor()
+        for table in schema: # TODO: fix. reference to global var
+            if table.name in ("asa_accurate_analytics"):
+                for column in table.columns:
+                    if column.name in ["embedded_in_resource_type", "embedded_in_resource_id"]:
+                        cursor.execute("ALTER TABLE asa_accurate_analytics ADD COLUMN '%s' text" % (column.name,))
+        cursor.execute("UPDATE system SET value='0.5' WHERE name='%s'" % (self.db_key,))
+        self.log.info('Upgraded ASA tables from version 0.4 to 0.5')
+
 
     def _create_table(self, table, cursor):
         connector, _ = DatabaseManager(self.env)._get_connector()
